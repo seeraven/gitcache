@@ -27,7 +27,7 @@ WAIT_ON_ERROR=0
 
 function usage() {
     echo
-    echo "Usage: $1 [-h] [-s] [-c] [-v]"
+    echo "Usage: $1 [-h] [-s] [-c|-p] [-v]"
     echo ""
     echo "Functional tests of gitcache."
     echo
@@ -35,11 +35,12 @@ function usage() {
     echo " -h                : Print this help."
     echo " -s                : Save the gitcache output as reference."
     echo " -c                : Use the coverage wrapper."
+    echo " -p                : Use the pyinstaller generated executable."
     echo " -v                : Be more verbose."
     exit 1
 }
 
-while getopts ":hscv" OPT; do
+while getopts ":hscpv" OPT; do
     case $OPT in
 	h )
 	    usage $0
@@ -49,6 +50,9 @@ while getopts ":hscv" OPT; do
 	    ;;
 	c )
 	    GITCACHE_BIN="coverage run --append --rcfile=${BASE_DIR}/.coveragerc-functional $GITCACHE_BIN"
+	    ;;
+	p )
+	    GITCACHE_BIN=${BASE_DIR}/dist/gitcache
 	    ;;
 	v )
 	    VERBOSE=1
@@ -71,6 +75,7 @@ export SAVE_REFERENCE
 export TMP_WORKDIR=$(mktemp --directory)
 export GITCACHE_DIR=$(mktemp --directory)
 export GITCACHE_REAL_GIT=/usr/bin/git
+export GITCACHE_LOGFORMAT='%(message)s'
 
 
 # -----------------------------------------------------------------------------

@@ -1,0 +1,4 @@
+Fetching origin
+Fetching master
+Fetching master
+Already up to date.

@@ -1,0 +1,9 @@
+Starting Update of GITCACHE_DIR/mirrors/github.com/seeraven/gitcache.
+Update of GITCACHE_DIR/mirrors/github.com/seeraven/gitcache was successfully completed within TIME.
+Starting LFS fetch of ref master from https://github.com/seeraven/gitcache into GITCACHE_DIR/mirrors/github.com/seeraven/gitcache.
+LFS fetch of ref master from https://github.com/seeraven/gitcache into GITCACHE_DIR/mirrors/github.com/seeraven/gitcache was successfully completed within TIME.
+Starting Clone from mirror GITCACHE_DIR/mirrors/github.com/seeraven/gitcache.
+Cloning into 'TMP_WORKDIR/gitcache2'...
+done.
+Clone from mirror GITCACHE_DIR/mirrors/github.com/seeraven/gitcache was successfully completed within TIME.
+Setting push URL to https://github.com/seeraven/gitcache and configure LFS.

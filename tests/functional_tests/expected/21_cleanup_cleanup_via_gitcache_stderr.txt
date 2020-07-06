@@ -1,0 +1,2 @@
+Starting cleanup of mirrors.
+Removed 0 mirrors.

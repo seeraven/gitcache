@@ -1,0 +1,26 @@
+usage: gitcache [-h] [-c] [-u] [-d MIRROR] [-s] [-z]
+
+gitcache
+========
+
+Local cache for git repositories to speed up working with large repositories
+and multiple clones.
+
+Without any arguments, this command prints the current configuration. Using
+the listed options below, the output can be changed and special actions can
+be triggered.
+
+If called with the first argument 'git' or when called as 'git' using a symlink,
+it acts as a wrapper for the git command and intercepts the commands required
+for the mirror handling.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -c, --cleanup         Remove all outdated repositories.
+  -u, --update-all      Update all mirrors.
+  -d MIRROR, --delete MIRROR
+                        Delete a mirror identified by its URL or its path in the cache. This option can be specified multiple times.
+  -s, --show-statistics
+                        Show the statistics.
+  -z, --zero-statistics
+                        Clear the statistics.

@@ -1,0 +1,6 @@
+Update time of mirror GITCACHE_DIR/mirrors/github.com/seeraven/gitcache not reached yet.
+Starting Clone from mirror GITCACHE_DIR/mirrors/github.com/seeraven/gitcache.
+Cloning into 'TMP_WORKDIR/gitcache3'...
+done.
+Clone from mirror GITCACHE_DIR/mirrors/github.com/seeraven/gitcache was successfully completed within TIME.
+Setting push URL to https://github.com/seeraven/gitcache and configure LFS.

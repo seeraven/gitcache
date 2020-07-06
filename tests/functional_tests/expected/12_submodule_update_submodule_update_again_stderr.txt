@@ -1,0 +1,6 @@
+Starting Update of GITCACHE_DIR/mirrors/github.com/githubtraining/example-submodule.
+Update of GITCACHE_DIR/mirrors/github.com/githubtraining/example-submodule was successfully completed within TIME.
+Starting LFS fetch of ref master from https://github.com/githubtraining/example-submodule.git into GITCACHE_DIR/mirrors/github.com/githubtraining/example-submodule.
+LFS fetch of ref master from https://github.com/githubtraining/example-submodule.git into GITCACHE_DIR/mirrors/github.com/githubtraining/example-submodule was successfully completed within TIME.
+Starting Fetch from mirror GITCACHE_DIR/mirrors/github.com/githubtraining/example-submodule.
+Fetch from mirror GITCACHE_DIR/mirrors/github.com/githubtraining/example-submodule was successfully completed within TIME.

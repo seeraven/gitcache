@@ -1,0 +1,2 @@
+Update time of mirror GITCACHE_DIR/mirrors/github.com/seeraven/gitcache not reached yet.
+From GITCACHE_DIR/mirrors/github.com/seeraven/gitcache/git

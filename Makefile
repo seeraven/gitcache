@@ -17,10 +17,14 @@ SHELL               = /bin/bash
 PYLINT_RCFILE      := $(PWD)/.pylintrc
 PYCODESTYLE_CONFIG := $(PWD)/.pycodestyle
 
+MODULES            := git_cache
 SCRIPTS            := gitcache
+MODULES_ABS        := $(patsubst %,$(PWD)/%,$(MODULES))
 SCRIPTS_ABS        := $(patsubst %,$(PWD)/%,$(SCRIPTS))
 PYTHONPATH         := $(PWD)
-SOURCES            := $(SCRIPTS_ABS)
+SOURCES            := $(SCRIPTS_ABS) $(MODULES_ABS)
+UNITTEST_DIR       := tests/unittests
+UNITTEST_FILES     := $(shell find $(UNITTEST_DIR) -name '*.py')
 
 
 # ----------------------------------------------------------------------------
@@ -28,8 +32,8 @@ SOURCES            := $(SCRIPTS_ABS)
 # ----------------------------------------------------------------------------
 ifeq (run,$(firstword $(MAKECMDGOALS)))
   RUN_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
-  # Turn them into do-nothing targets
-  $(eval $(RUN_ARGS):;@:)
+  # Turn them into do-nothing targets (disabled as it crashes with URLs)
+  #$(eval $(RUN_ARGS):;@:)
 endif
 
 
@@ -37,9 +41,9 @@ endif
 #  DEFAULT TARGETS
 # ----------------------------------------------------------------------------
 
-.PHONY: help system-setup venv-bash run check-style pylint pycodestyle flake8 functional-tests functional-tests-coverage clean
+.PHONY: help system-setup venv-bash run check-style pylint pycodestyle flake8 tests tests-coverage unittests unittests-coverage functional-tests functional-tests-coverage apidoc doc man pyinstaller clean
 
-all:	check-style.venv functional-tests-coverage.venv
+all:	check-style.venv tests-coverage.venv doc.venv man.venv
 
 
 # ----------------------------------------------------------------------------
@@ -61,8 +65,17 @@ help:
 	@echo " flake8                    : Call flake8 on the source files."
 	@echo
 	@echo "Targets for Testing:"
+	@echo " tests                     : Execute unittests and functional tests."
+	@echo " tests-coverage            : Determine code coverage of all tests."
+	@echo " unittests                 : Execute unittests."
+	@echo " unittests-coverage        : Determine unittest code coverage."
 	@echo " functional-tests          : Execute functional tests."
 	@echo " functional-tests-coverage : Determine functional tests code coverage."
+	@echo
+	@echo "Targets for Distribution:"
+	@echo " pyinstaller               : Generate dist/gitcache distributable."
+	@echo " pyinstaller-test          : Test the dist/gitcache distributable"
+	@echo "                             using the functional tests."
 	@echo
 	@echo "Target for Execution from the sources:"
 	@echo " run                       : Run 'gitcache' with the correct"
@@ -82,6 +95,7 @@ help:
 	@echo " clean                     : Remove all temporary files."
 	@echo
 	@echo "Development Information:"
+	@echo " MODULES    = $(MODULES)"
 	@echo " SCRIPTS    = $(SCRIPTS)"
 	@echo " PYTHONPATH = $(PYTHONPATH)"
 	@echo " SOURCES    = $(SOURCES)"
@@ -150,18 +164,51 @@ run:
 check-style: pylint pycodestyle flake8
 
 pylint:
-	@pylint --rcfile=$(PYLINT_RCFILE) $(SOURCES)
+	@pylint --rcfile=$(PYLINT_RCFILE) $(SOURCES) $(UNITTEST_FILES)
 	@echo "pylint found no errors."
 
 
 pycodestyle:
-	@pycodestyle --config=$(PYCODESTYLE_CONFIG) $(SOURCES)
+	@pycodestyle --config=$(PYCODESTYLE_CONFIG) $(SOURCES) $(UNITTEST_DIR)
 	@echo "pycodestyle found no errors."
 
 
 flake8:
-	@flake8 $(SOURCES)
+	@flake8 $(SOURCES) $(UNITTEST_DIR)
 	@echo "flake8 found no errors."
+
+
+# ----------------------------------------------------------------------------
+#  TESTS
+# ----------------------------------------------------------------------------
+
+tests: unittests functional-tests
+
+tests-coverage: unittests-coverage functional-tests-coverage
+	@coverage combine --rcfile=.coveragerc-combined .coverage .coverage-functional-tests
+	@echo "Unit and Functional Tests Code Coverage:"
+	@coverage report --rcfile=.coveragerc-combined
+	@coverage html --rcfile=.coveragerc-combined
+	@coverage xml --rcfile=.coveragerc-combined
+
+
+# ----------------------------------------------------------------------------
+#  UNIT TESTS
+# ----------------------------------------------------------------------------
+
+unittests:
+	@PYTHONPATH=$(PYTHONPATH) nosetests -v -w tests/unittests
+
+unittests-coverage:
+	@rm -rf doc/coverage
+	@rm -f .coverage
+	@mkdir -p doc/coverage
+	@PYTHONPATH=$(PYTHONPATH) nosetests -v -w tests/unittests --with-coverage \
+        --cover-package=git_cache --cover-erase --cover-min-percentage=80 \
+	--cover-inclusive \
+        --cover-branches \
+        --cover-html --cover-html-dir=../../doc/unittests-coverage \
+        --cover-xml  --cover-xml-file=../../doc/unittests-coverage/coverage.xml
 
 
 # ----------------------------------------------------------------------------
@@ -187,13 +234,45 @@ functional-tests-coverage:
 
 
 # ----------------------------------------------------------------------------
+#  DOCUMENTATION
+# ----------------------------------------------------------------------------
+
+apidoc:
+	@rm -rf doc/source/apidoc
+	@PYTHONPATH=$(PYTHONPATH) sphinx-apidoc -f -M -T -o doc/source/apidoc $(MODULES)
+
+doc: apidoc
+	@PYTHONPATH=$(PYTHONPATH) sphinx-build -W -b html doc/source doc/build
+
+man:
+	@PYTHONPATH=$(PYTHONPATH) sphinx-build -W -b man doc/manpage doc/build
+
+
+# ----------------------------------------------------------------------------
+#  DISTRIBUTION
+# ----------------------------------------------------------------------------
+
+pyinstaller: dist/gitcache
+
+dist/gitcache:
+	@pyinstaller gitcache --onefile
+
+pyinstaller-test: dist/gitcache
+	@tests/functional_tests/run_tests.sh -p
+
+
+# ----------------------------------------------------------------------------
 #  MAINTENANCE TARGETS
 # ----------------------------------------------------------------------------
 
 clean:
-	@rm -rf venv .coverage .coverage-*
+	@rm -rf venv doc/*coverage doc/build doc/source/apidoc .coverage .coverage-*
 	@rm -rf dist build *.spec
 	@find . -name "__pycache__" -exec rm -rf {} \; 2>/dev/null || true
 	@find . -iname "*~" -exec rm -f {} \;
 	@find . -iname "*.pyc" -exec rm -f {} \;
 
+
+# ----------------------------------------------------------------------------
+#  EOF
+# ----------------------------------------------------------------------------

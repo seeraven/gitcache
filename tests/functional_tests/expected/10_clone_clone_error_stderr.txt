@@ -1,0 +1,13 @@
+Starting Initial clone of https://github.com/seeraven/nonexistant into GITCACHE_DIR/mirrors/github.com/seeraven/nonexistant.
+Cloning into bare repository 'GITCACHE_DIR/mirrors/github.com/seeraven/nonexistant/git'...
+fatal: repository 'https://github.com/seeraven/nonexistant/' not found
+Command '/usr/bin/git clone --progress --mirror https://github.com/seeraven/nonexistant GITCACHE_DIR/mirrors/github.com/seeraven/nonexistant/git' failed. Starting retry 1 of 3.
+Cloning into bare repository 'GITCACHE_DIR/mirrors/github.com/seeraven/nonexistant/git'...
+fatal: repository 'https://github.com/seeraven/nonexistant/' not found
+Command '/usr/bin/git clone --progress --mirror https://github.com/seeraven/nonexistant GITCACHE_DIR/mirrors/github.com/seeraven/nonexistant/git' failed. Starting retry 2 of 3.
+Cloning into bare repository 'GITCACHE_DIR/mirrors/github.com/seeraven/nonexistant/git'...
+fatal: repository 'https://github.com/seeraven/nonexistant/' not found
+Command '/usr/bin/git clone --progress --mirror https://github.com/seeraven/nonexistant GITCACHE_DIR/mirrors/github.com/seeraven/nonexistant/git' failed. Starting retry 3 of 3.
+Cloning into bare repository 'GITCACHE_DIR/mirrors/github.com/seeraven/nonexistant/git'...
+fatal: repository 'https://github.com/seeraven/nonexistant/' not found
+Initial clone of https://github.com/seeraven/nonexistant into GITCACHE_DIR/mirrors/github.com/seeraven/nonexistant failed after TIME with return code 128!

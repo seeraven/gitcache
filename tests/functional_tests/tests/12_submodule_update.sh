@@ -1,6 +1,6 @@
 #!/bin/bash -e
 # ----------------------------------------------------------------------------
-# Check the clone output.
+# Check the submodule update.
 #
 # Copyright (c) 2020 by Clemens Rabe <clemens.rabe@clemensrabe.de>
 # All rights reserved.
@@ -17,9 +17,21 @@ source $TEST_BASE_DIR/helpers/output_helpers.sh
 # -----------------------------------------------------------------------------
 # Tests
 # -----------------------------------------------------------------------------
-capture_output_success clone https://github.com/seeraven/gitcache.git ${TMP_WORKDIR}/gitcache
+rm -rf ${GITCACHE_DIR}
+rm -rf ${TMP_WORKDIR}/*
+
+capture_output_success clone       git clone https://github.com/githubtraining/example-dependency ${TMP_WORKDIR}/submodules
+capture_output_success clone_stats -s
+
+capture_output_success submodule_update       git -C ${TMP_WORKDIR}/submodules submodule update
+capture_output_success submodule_update_stats -s
+
+capture_output_success submodule_update_again       git -C ${TMP_WORKDIR}/submodules submodule update
+capture_output_success submodule_update_again_stats -s
 
 
 # -----------------------------------------------------------------------------
 # EOF
 # -----------------------------------------------------------------------------
+
+

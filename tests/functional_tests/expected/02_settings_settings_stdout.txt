@@ -1,0 +1,41 @@
+gitcache global settings:
+-------------------------
+  GITCACHE_DIR      = GITCACHE_DIR
+  GITCACHE_DB       = GITCACHE_DIR/db
+  GITCACHE_DB_LOCK  = GITCACHE_DIR/db.lock
+
+gitcache configuration:
+-----------------------
+Clone:
+ commandtimeout       = 1 hour               (GITCACHE_CLONE_COMMAND_TIMEOUT)
+ outputtimeout        = 5 minutes            (GITCACHE_CLONE_OUTPUT_TIMEOUT)
+ retries              = 3                    (GITCACHE_CLONE_RETRIES)
+
+Command:
+ checkinterval        = TIME            (GITCACHE_COMMAND_CHECK_INTERVAL)
+ locktimeout          = 1 hour               (GITCACHE_COMMAND_LOCK_TIMEOUT)
+ warniflockedfor      = TIME           (GITCACHE_COMMAND_WARN_IF_LOCKED_FOR)
+
+GC:
+ commandtimeout       = 1 hour               (GITCACHE_GC_COMMAND_TIMEOUT)
+ outputtimeout        = 5 minutes            (GITCACHE_GC_OUTPUT_TIMEOUT)
+ retries              = 3                    (GITCACHE_GC_RETRIES)
+
+LFS:
+ commandtimeout       = 1 hour               (GITCACHE_LFS_COMMAND_TIMEOUT)
+ outputtimeout        = 5 minutes            (GITCACHE_LFS_OUTPUT_TIMEOUT)
+ permirrorstorage     = True                 (GITCACHE_LFS_PER_MIRROR_STORAGE)
+ retries              = 3                    (GITCACHE_LFS_RETRIES)
+
+MirrorHandling:
+ cleanupafter         = 14 days              (GITCACHE_CLEANUP_AFTER)
+ updateinterval       = TIME            (GITCACHE_UPDATE_INTERVAL)
+
+System:
+ realgit              = /usr/bin/git         (GITCACHE_REAL_GIT)
+
+Update:
+ commandtimeout       = 1 hour               (GITCACHE_UPDATE_COMMAND_TIMEOUT)
+ outputtimeout        = 5 minutes            (GITCACHE_UPDATE_OUTPUT_TIMEOUT)
+ retries              = 3                    (GITCACHE_UPDATE_RETRIES)
+

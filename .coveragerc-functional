@@ -1,0 +1,10 @@
+[run]
+branch = True
+data_file = .coverage-functional-tests
+source = git_cache
+
+[html]
+directory = doc/functional-tests-coverage
+
+[xml]
+output = doc/functional-tests-coverage/coverage.xml

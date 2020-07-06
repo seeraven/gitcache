@@ -1,0 +1,9 @@
+[run]
+branch = True
+data_file = .coverage-combined
+
+[html]
+directory = doc/combined-coverage
+
+[xml]
+output = doc/combined-coverage/coverage.xml

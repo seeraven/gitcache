@@ -1,0 +1,10 @@
+Starting Initial clone of https://github.com/githubtraining/example-submodule.git into GITCACHE_DIR/mirrors/github.com/githubtraining/example-submodule.
+Cloning into bare repository 'GITCACHE_DIR/mirrors/github.com/githubtraining/example-submodule/git'...
+Initial clone of https://github.com/githubtraining/example-submodule.git into GITCACHE_DIR/mirrors/github.com/githubtraining/example-submodule was successfully completed within TIME.
+Starting LFS fetch of ref master from https://github.com/githubtraining/example-submodule.git into GITCACHE_DIR/mirrors/github.com/githubtraining/example-submodule.
+LFS fetch of ref master from https://github.com/githubtraining/example-submodule.git into GITCACHE_DIR/mirrors/github.com/githubtraining/example-submodule was successfully completed within TIME.
+Starting Clone from mirror GITCACHE_DIR/mirrors/github.com/githubtraining/example-submodule.
+Cloning into 'js'...
+done.
+Clone from mirror GITCACHE_DIR/mirrors/github.com/githubtraining/example-submodule was successfully completed within TIME.
+Setting push URL to https://github.com/githubtraining/example-submodule.git and configure LFS.

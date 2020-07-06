@@ -1,0 +1,1 @@
+Save configuration file GITCACHE_DIR/config.
