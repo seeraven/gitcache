@@ -41,6 +41,20 @@ function capture_output()
     sed -i '/^Receiving objects: .*$/d'       $STDOUT_FILE $STDERR_FILE
     sed -i '/^Resolving deltas: .*$/d'        $STDOUT_FILE $STDERR_FILE
     sed -i '/^Unpacking objects: .*$/d'       $STDOUT_FILE $STDERR_FILE
+    sed -i '/^Checking connectivity..*$/d'    $STDOUT_FILE $STDERR_FILE
+
+    # Support for different git versions...
+    sed -i 's#fetch: Fetching reference refs/heads/#Fetching #g'  $STDOUT_FILE $STDERR_FILE
+    sed -i 's#fetch: Fetching reference refs/tags/#Fetching #g'   $STDOUT_FILE $STDERR_FILE
+    sed -i 's#git version [0-9.]*#git version VERSION#g'          $STDOUT_FILE $STDERR_FILE
+    sed -i 's#Already up-to-date.#Already up to date.#g'          $STDOUT_FILE $STDERR_FILE
+    sed -i 's#Note: switching to #Note: checking out #g'          $STDOUT_FILE $STDERR_FILE
+    sed -i "s#fatal: could not read Username for 'https://github.com': No such device or address#fatal: repository 'https://github.com/seeraven/nonexistant/' not found#g"          $STDOUT_FILE $STDERR_FILE
+    sed -i 's#state without impacting any branches by switching back to a branch.#state without impacting any branches by performing another checkout.#g'          $STDOUT_FILE $STDERR_FILE
+    sed -i 's#do so (now or later) by using -c with the switch command. Example:#do so (now or later) by using -b with the checkout command again. Example:#g'     $STDOUT_FILE $STDERR_FILE
+    sed -i 's#git switch -c <new-branch-name>#git checkout -b <new-branch-name>#g' $STDOUT_FILE $STDERR_FILE
+    sed -i '/advice.detachedHead to false/{n;d}'                  $STDOUT_FILE $STDERR_FILE
+    sed -i '/^Or undo this operation with:/,/to false/d'          $STDOUT_FILE $STDERR_FILE
 
     if [ "$SAVE_REFERENCE" == "1" ]; then
         cp $STDOUT_FILE $EXPECTED_STDOUT_FILE

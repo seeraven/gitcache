@@ -131,3 +131,10 @@ dmypy.json
 # Temporary files
 *~
 *.bak
+
+.coverage-combined
+doc/combined-coverage/
+doc/functional-tests-coverage/
+doc/source/apidoc/
+doc/unittests-coverage/
+releases/

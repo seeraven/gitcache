@@ -76,6 +76,8 @@ help:
 	@echo " pyinstaller               : Generate dist/gitcache distributable."
 	@echo " pyinstaller-test          : Test the dist/gitcache distributable"
 	@echo "                             using the functional tests."
+	@echo " build-release             : Build the distributables for Ubuntu 16.04,"
+	@echo "                             18.04 and 20.04 in the releases dir."
 	@echo
 	@echo "Target for Execution from the sources:"
 	@echo " run                       : Run 'gitcache' with the correct"
@@ -259,6 +261,32 @@ dist/gitcache:
 
 pyinstaller-test: dist/gitcache
 	@tests/functional_tests/run_tests.sh -p
+
+build-release: releases/gitcache_Ubuntu16.04_amd64 releases/gitcache_Ubuntu18.04_amd64 releases/gitcache_Ubuntu20.04_amd64
+
+releases/gitcache_Ubuntu16.04_amd64:
+	@mkdir -p releases
+	@docker run --rm \
+	-e TGTUID=$(shell id -u) -e TGTGID=$(shell id -g) \
+	-v $(PWD):/workdir \
+	ubuntu:16.04 \
+	/workdir/build_in_docker/ubuntu.sh
+
+releases/gitcache_Ubuntu18.04_amd64:
+	@mkdir -p releases
+	@docker run --rm \
+	-e TGTUID=$(shell id -u) -e TGTGID=$(shell id -g) \
+	-v $(PWD):/workdir \
+	ubuntu:18.04 \
+	/workdir/build_in_docker/ubuntu.sh
+
+releases/gitcache_Ubuntu20.04_amd64:
+	@mkdir -p releases
+	@docker run --rm \
+	-e TGTUID=$(shell id -u) -e TGTGID=$(shell id -g) \
+	-v $(PWD):/workdir \
+	ubuntu:20.04 \
+	/workdir/build_in_docker/ubuntu.sh
 
 
 # ----------------------------------------------------------------------------

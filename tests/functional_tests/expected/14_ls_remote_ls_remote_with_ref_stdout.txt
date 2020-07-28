@@ -1,4 +1,6 @@
 Fetching origin
 Fetching master
-57dc95b6051250bd9edc6b8645cbbcedf20b0416	HEAD
-57dc95b6051250bd9edc6b8645cbbcedf20b0416	refs/heads/master
+cc0f33d77cecf5325d71148011f082301b26b2b9	HEAD
+cc0f33d77cecf5325d71148011f082301b26b2b9	refs/heads/master
+cc0f33d77cecf5325d71148011f082301b26b2b9	refs/tags/v1.0.0
+80da032462be21e611237a469b4e8a38e22a4392	refs/tags/v1.0.0-rc1
