@@ -70,9 +70,8 @@ def git_lfs_fetch(all_args, global_options, command_args):
         else:
             refs.append(arg)
 
+    config = Config()
     if options or refs:
-        config = Config()
-
         global_options_str = ' '.join(["'%s'" % i for i in global_options])
         command_with_options = "%s %s" % (config.get("System", "RealGit"),
                                           global_options_str)
