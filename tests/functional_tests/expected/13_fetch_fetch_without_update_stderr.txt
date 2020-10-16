@@ -1,3 +1,4 @@
 Update time of mirror GITCACHE_DIR/mirrors/github.com/seeraven/gitcache not reached yet.
+Configuring LFS.
 Starting Fetch from mirror GITCACHE_DIR/mirrors/github.com/seeraven/gitcache.
 Fetch from mirror GITCACHE_DIR/mirrors/github.com/seeraven/gitcache was successfully completed within TIME.

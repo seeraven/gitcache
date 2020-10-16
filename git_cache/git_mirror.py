@@ -329,7 +329,7 @@ class GitMirror:
         """
         command = "cd %s; %s remote update --prune" % (self.git_dir,
                                                        self.config.get("System", "RealGit"))
-        return_code, _, _ = pretty_call_command_retry(
+        return_code, stdout_buffer, stderr_buffer = pretty_call_command_retry(
             'Update of %s' % self.path,
             'garbage collection error',
             command,
@@ -339,6 +339,9 @@ class GitMirror:
             abort_on_pattern=b'remove gc.log' if handle_gc_error else None)
 
         if return_code == 0:
+            if handle_gc_error:
+                if (b'remove gc.log' in stdout_buffer) or (b'remove gc.log' in stderr_buffer):
+                    self._run_gc()
             self.database.save_update_time(self.path)
         elif handle_gc_error and return_code == -3000:
             if self._run_gc():

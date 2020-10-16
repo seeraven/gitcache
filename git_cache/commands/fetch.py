@@ -17,6 +17,7 @@ Copyright:
 # Module Import
 # -----------------------------------------------------------------------------
 import logging
+import os
 
 from ..command_execution import getstatusoutput, pretty_call_command_retry
 from ..config import Config
@@ -41,7 +42,7 @@ def git_fetch(all_args, global_options, command_args):
     Args:
         all_args (list):       All arguments to the 'git' command.
         global_options (list): The options given to git, not the command.
-        command_args (list):   The arguments for the clone command.
+        command_args (list):   The arguments for the fetch command.
 
     Return:
         Returns 0 on success, otherwise the return code of the last failed
@@ -81,6 +82,30 @@ def git_fetch(all_args, global_options, command_args):
         config = mirror.config
         action = "Fetch from mirror %s" % mirror.path
         new_args = [x if x != remote_url else mirror.git_dir for x in all_args]
+
+        # We configure the LFS storage here to support the Jenkins way
+        # of cloning git repositories.
+        LOG.info("Configuring LFS.")
+        paths = []
+        save_next_path = False
+        for arg in global_options:
+            if save_next_path:
+                paths.append(arg)
+                save_next_path = False
+            elif arg == '-C':
+                save_next_path = True
+            elif arg == 'fetch':
+                break
+
+        command = ';'.join(["cd %s" % x for x in paths])
+        if command != '':
+            command += ';'
+        command += "%s config --local lfs.url %s/info/lfs" % (config.get("System", "RealGit"),
+                                                              mirror.url)
+        if config.get('LFS', 'PerMirrorStorage'):
+            command += ";%s config --local lfs.storage %s" % (config.get("System", "RealGit"),
+                                                              mirror.git_lfs_dir)
+        os.system(command)
     else:
         new_args = all_args
 
