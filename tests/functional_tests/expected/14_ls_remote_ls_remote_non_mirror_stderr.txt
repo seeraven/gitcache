@@ -1,1 +1,1 @@
-From https://github.com/seeraven/gitcache.git
+From https://github.com/seeraven/submodule-example.git

@@ -1,2 +1,2 @@
-Update time of mirror GITCACHE_DIR/mirrors/github.com/seeraven/gitcache not reached yet.
-From GITCACHE_DIR/mirrors/github.com/seeraven/gitcache/git
+Update time of mirror GITCACHE_DIR/mirrors/github.com/seeraven/submodule-example not reached yet.
+From GITCACHE_DIR/mirrors/github.com/seeraven/submodule-example/git

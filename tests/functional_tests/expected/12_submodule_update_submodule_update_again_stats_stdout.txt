@@ -1,15 +1,20 @@
-Mirror of https://github.com/githubtraining/example-dependency:
+Mirror of https://github.com/seeraven/dmdcache:
+  Mirror Updates:      1
+  Clones from Mirror:  1
+  Updates from Mirror: 1
+
+Mirror of https://github.com/seeraven/gitcache:
+  Mirror Updates:      1
+  Clones from Mirror:  1
+  Updates from Mirror: 1
+
+Mirror of https://github.com/seeraven/submodule-example:
   Mirror Updates:      0
   Clones from Mirror:  1
   Updates from Mirror: 0
 
-Mirror of https://github.com/githubtraining/example-submodule.git:
-  Mirror Updates:      1
-  Clones from Mirror:  1
-  Updates from Mirror: 1
-
 Total:
-  Mirror Updates:      1
-  Clones from Mirror:  2
-  Updates from Mirror: 1
+  Mirror Updates:      2
+  Clones from Mirror:  3
+  Updates from Mirror: 2
 

@@ -1,7 +1,14 @@
-Starting Update of GITCACHE_DIR/mirrors/github.com/githubtraining/example-submodule.
-Update of GITCACHE_DIR/mirrors/github.com/githubtraining/example-submodule was successfully completed within TIME.
-Starting LFS fetch of ref master from https://github.com/githubtraining/example-submodule.git into GITCACHE_DIR/mirrors/github.com/githubtraining/example-submodule.
-LFS fetch of ref master from https://github.com/githubtraining/example-submodule.git into GITCACHE_DIR/mirrors/github.com/githubtraining/example-submodule was successfully completed within TIME.
+Starting Update of GITCACHE_DIR/mirrors/github.com/seeraven/dmdcache.
+Update of GITCACHE_DIR/mirrors/github.com/seeraven/dmdcache was successfully completed within TIME.
+Starting LFS fetch of ref master from https://github.com/seeraven/dmdcache into GITCACHE_DIR/mirrors/github.com/seeraven/dmdcache.
+LFS fetch of ref master from https://github.com/seeraven/dmdcache into GITCACHE_DIR/mirrors/github.com/seeraven/dmdcache was successfully completed within TIME.
 Configuring LFS.
-Starting Fetch from mirror GITCACHE_DIR/mirrors/github.com/githubtraining/example-submodule.
-Fetch from mirror GITCACHE_DIR/mirrors/github.com/githubtraining/example-submodule was successfully completed within TIME.
+Starting Fetch from mirror GITCACHE_DIR/mirrors/github.com/seeraven/dmdcache.
+Fetch from mirror GITCACHE_DIR/mirrors/github.com/seeraven/dmdcache was successfully completed within TIME.
+Starting Update of GITCACHE_DIR/mirrors/github.com/seeraven/gitcache.
+Update of GITCACHE_DIR/mirrors/github.com/seeraven/gitcache was successfully completed within TIME.
+Starting LFS fetch of ref master from https://github.com/seeraven/gitcache into GITCACHE_DIR/mirrors/github.com/seeraven/gitcache.
+LFS fetch of ref master from https://github.com/seeraven/gitcache into GITCACHE_DIR/mirrors/github.com/seeraven/gitcache was successfully completed within TIME.
+Configuring LFS.
+Starting Fetch from mirror GITCACHE_DIR/mirrors/github.com/seeraven/gitcache.
+Fetch from mirror GITCACHE_DIR/mirrors/github.com/seeraven/gitcache was successfully completed within TIME.

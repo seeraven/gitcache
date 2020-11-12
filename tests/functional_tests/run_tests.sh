@@ -42,24 +42,24 @@ function usage() {
 
 while getopts ":hscpv" OPT; do
     case $OPT in
-	h )
-	    usage $0
-	    ;;
-	s )
-	    SAVE_REFERENCE=1
-	    ;;
-	c )
-	    GITCACHE_BIN="coverage run --append --rcfile=${BASE_DIR}/.coveragerc-functional $GITCACHE_BIN"
-	    ;;
-	p )
-	    GITCACHE_BIN=${BASE_DIR}/dist/gitcache
-	    ;;
-	v )
-	    VERBOSE=1
-	    ;;
-	\? )
-	    usage $0
-	    ;;
+        h )
+            usage $0
+            ;;
+        s )
+            SAVE_REFERENCE=1
+            ;;
+        c )
+            GITCACHE_BIN="coverage run --append --rcfile=${BASE_DIR}/.coveragerc-functional $GITCACHE_BIN"
+            ;;
+        p )
+            GITCACHE_BIN=${BASE_DIR}/dist/gitcache
+            ;;
+        v )
+            VERBOSE=1
+            ;;
+        \? )
+            usage $0
+            ;;
     esac
 done
 
@@ -87,20 +87,20 @@ TMPOUTPUT=$(tempfile)
 for SCRIPT in ${TEST_BASE_DIR}/tests/*.sh; do
     echo -n "Running test $(basename $SCRIPT) ... "
     if $SCRIPT &> $TMPOUTPUT; then
-	echo "OK"
-	if [[ $VERBOSE -eq 1 ]]; then
-	    echo "-----------------------------------------------------------------"
-	    echo " Output:"
-	    cat $TMPOUTPUT
-	    echo "-----------------------------------------------------------------"
-	fi
+        echo "OK"
+        if [[ $VERBOSE -eq 1 ]]; then
+            echo "-----------------------------------------------------------------"
+            echo " Output:"
+            cat $TMPOUTPUT
+            echo "-----------------------------------------------------------------"
+        fi
     else
-	echo "FAILED"
-	echo "-----------------------------------------------------------------"
-	echo " Output:"
-	cat $TMPOUTPUT
-	echo "-----------------------------------------------------------------"
-	RETVAL=1
+        echo "FAILED"
+        echo "-----------------------------------------------------------------"
+        echo " Output:"
+        cat $TMPOUTPUT
+        echo "-----------------------------------------------------------------"
+        RETVAL=1
     fi
 done
 

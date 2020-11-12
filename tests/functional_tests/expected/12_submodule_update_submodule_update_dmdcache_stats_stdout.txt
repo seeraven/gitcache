@@ -3,11 +3,6 @@ Mirror of https://github.com/seeraven/dmdcache:
   Clones from Mirror:  1
   Updates from Mirror: 0
 
-Mirror of https://github.com/seeraven/gitcache:
-  Mirror Updates:      0
-  Clones from Mirror:  1
-  Updates from Mirror: 0
-
 Mirror of https://github.com/seeraven/submodule-example:
   Mirror Updates:      0
   Clones from Mirror:  1
@@ -15,6 +10,6 @@ Mirror of https://github.com/seeraven/submodule-example:
 
 Total:
   Mirror Updates:      0
-  Clones from Mirror:  3
+  Clones from Mirror:  2
   Updates from Mirror: 0
 

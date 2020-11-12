@@ -28,6 +28,7 @@ from .commands.fetch import git_fetch
 from .commands.lfs_fetch import git_lfs_fetch
 from .commands.ls_remote import git_ls_remote
 from .commands.pull import git_pull
+from .commands.submodule_init import git_submodule_init
 from .commands.submodule_update import git_submodule_update
 from .commands.update_all import git_update_all_mirrors
 from .config import Config
@@ -143,8 +144,11 @@ def handle_git_command(called_as, args):
     elif command == 'fetch':
         sys.exit(git_fetch(args, global_options, command_arguments))
 
+    elif command == 'submodule' and 'init' in command_arguments:
+        sys.exit(git_submodule_init(args, global_options))
+
     elif command == 'submodule' and 'update' in command_arguments:
-        sys.exit(git_submodule_update(called_as, args, global_options))
+        sys.exit(git_submodule_update(called_as, args, global_options, command_arguments[1:]))
 
     LOG.debug("Command '%s' is not handled by gitcache. Calling the real git command.", command)
     sys.exit(call_real_git(args))

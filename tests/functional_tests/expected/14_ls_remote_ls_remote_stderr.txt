@@ -1,5 +1,5 @@
-Starting Update of GITCACHE_DIR/mirrors/github.com/seeraven/gitcache.
-Update of GITCACHE_DIR/mirrors/github.com/seeraven/gitcache was successfully completed within TIME.
-Starting LFS fetch of ref master from https://github.com/seeraven/gitcache.git into GITCACHE_DIR/mirrors/github.com/seeraven/gitcache.
-LFS fetch of ref master from https://github.com/seeraven/gitcache.git into GITCACHE_DIR/mirrors/github.com/seeraven/gitcache was successfully completed within TIME.
-From GITCACHE_DIR/mirrors/github.com/seeraven/gitcache/git
+Starting Update of GITCACHE_DIR/mirrors/github.com/seeraven/submodule-example.
+Update of GITCACHE_DIR/mirrors/github.com/seeraven/submodule-example was successfully completed within TIME.
+Starting LFS fetch of ref main from https://github.com/seeraven/submodule-example.git into GITCACHE_DIR/mirrors/github.com/seeraven/submodule-example.
+LFS fetch of ref main from https://github.com/seeraven/submodule-example.git into GITCACHE_DIR/mirrors/github.com/seeraven/submodule-example was successfully completed within TIME.
+From GITCACHE_DIR/mirrors/github.com/seeraven/submodule-example/git

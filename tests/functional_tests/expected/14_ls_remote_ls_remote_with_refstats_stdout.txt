@@ -1,4 +1,4 @@
-Mirror of https://github.com/seeraven/gitcache.git:
+Mirror of https://github.com/seeraven/submodule-example.git:
   Mirror Updates:      3
   Clones from Mirror:  1
   Updates from Mirror: 3

@@ -1,7 +1,5 @@
 Fetching origin
-Fetching master
-d4553a39682ed6954e8ffa3ccee33f4a1f9b23f1	HEAD
-d4553a39682ed6954e8ffa3ccee33f4a1f9b23f1	refs/heads/master
-cc0f33d77cecf5325d71148011f082301b26b2b9	refs/tags/v1.0.0
-80da032462be21e611237a469b4e8a38e22a4392	refs/tags/v1.0.0-rc1
-d4553a39682ed6954e8ffa3ccee33f4a1f9b23f1	refs/tags/v1.0.1
+Fetching main
+c949e5cc8c6eb7b4e26915eeb5e6767d3b648108	HEAD
+c949e5cc8c6eb7b4e26915eeb5e6767d3b648108	refs/heads/main
+c949e5cc8c6eb7b4e26915eeb5e6767d3b648108	refs/tags/v1.0.0

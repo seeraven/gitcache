@@ -1,2 +1,4 @@
 Fetching origin
 Fetching master
+Fetching origin
+Fetching master
