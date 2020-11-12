@@ -57,7 +57,7 @@ def git_fetch(all_args, global_options, command_args):
 
     remote_url = None
     for arg in command_args:
-        if arg.startswith('http://') or arg.startswith('https://'):
+        if arg.startswith('http://') or arg.startswith('https://') or arg.startswith('ssh://'):
             remote_url = arg
             break
 

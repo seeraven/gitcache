@@ -409,7 +409,7 @@ class GitMirror:
         Return:
             Returns the mirror path or None if the url can't be converted.
         """
-        if url.startswith('http://') or url.startswith('https://'):
+        if url.startswith('http://') or url.startswith('https://') or url.startswith('ssh://'):
             sub_dir = url.split('//')[1]
             if '@' in sub_dir:
                 sub_dir = sub_dir.split('@')[1]
