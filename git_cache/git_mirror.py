@@ -22,7 +22,7 @@ import shutil
 
 import portalocker
 
-from .command_execution import pretty_call_command_retry
+from .command_execution import getstatusoutput, pretty_call_command_retry
 from .config import Config
 from .database import Database
 from .global_settings import GITCACHE_DIR
@@ -124,7 +124,7 @@ class GitMirror:
         self.config = Config()
         self.config.load(self.configfile)
 
-    def update(self, ref='master', force=False):
+    def update(self, ref=None, force=False):
         """Update or create the mirror.
 
         If the mirror path does not exist, a bare mirror is created.
@@ -133,7 +133,8 @@ class GitMirror:
         not performed within the last n seconds.
 
         Args:
-            ref (str):    The ref to use for the fetch of the lfs data.
+            ref (str):    The ref to use for the fetch of the lfs data. If None,
+                          the default branch is determined and used.
             force (bool): If set to True, the mirror is updated even if the
                           update interval is not yet reached.
 
@@ -154,11 +155,12 @@ class GitMirror:
             return False
         return True
 
-    def fetch_lfs(self, ref, options=None):
+    def fetch_lfs(self, ref=None, options=None):
         """Fetch the lfs data of the specified ref for the mirror.
 
         Args:
-            ref (str):      The ref to use for the fetch of the lfs data.
+            ref (str):      The ref to use for the fetch of the lfs data. If None,
+                            the default branch is determined and used.
             options (list): Options of the git lfs fetch call.
 
         Return:
@@ -168,7 +170,10 @@ class GitMirror:
             with Locker("Mirror %s" % self.path, self.lockfile, self.config):
                 return self._fetch_lfs(ref, options)
         except portalocker.exceptions.LockException:
-            LOG.error("LFS fetch of %s timed out due to locked mirror.", ref)
+            if ref is not None:
+                LOG.error("LFS fetch of %s timed out due to locked mirror.", ref)
+            else:
+                LOG.error("LFS fetch of default ref timed out due to locked mirror.")
             return False
         return True
 
@@ -199,13 +204,14 @@ class GitMirror:
             return False
         return True
 
-    def clone_from_mirror(self, original_args, ref):
+    def clone_from_mirror(self, original_args, ref=None):
         """Clone from the mirror.
 
         Args:
             original_args (list): The original arguments to git (without 'git') including
                                   the 'clone' command.
-            ref (str):            The ref to use for the fetch of the lfs data.
+            ref (str):            The ref to use for the fetch of the lfs data. If None,
+                                  the default branch is determined and used.
 
         Return:
             Returns the return code of the last command.
@@ -288,11 +294,12 @@ class GitMirror:
         return (self.database.get_time_since_last_update(self.path) >=
                 self.config.get("MirrorHandling", "CleanupAfter"))
 
-    def _clone(self, ref='master'):
+    def _clone(self, ref=None):
         """Clone the mirror.
 
         Args:
-            ref (str): The ref to use for the fetch of the lfs data.
+            ref (str): The ref to use for the fetch of the lfs data. If None,
+                       the default branch is determined and used.
 
         Return:
             Returns True on success.
@@ -316,11 +323,12 @@ class GitMirror:
 
         return self._fetch_lfs(ref)
 
-    def _update(self, ref='master', handle_gc_error=True):
+    def _update(self, ref=None, handle_gc_error=True):
         """Update the mirror.
 
         Args:
-            ref (str):              The ref to use for the fetch of the lfs data.
+            ref (str):              The ref to use for the fetch of the lfs data. If None,
+                                    the default branch is determined and used.
             handle_gc_error (bool): If set to True, garbage collection errors are detected
                                     and handled.
 
@@ -370,11 +378,12 @@ class GitMirror:
 
         return return_code == 0
 
-    def _fetch_lfs(self, ref, options=None):
+    def _fetch_lfs(self, ref=None, options=None):
         """Fetch the lfs data of the specified ref.
 
         Args:
-            ref (str):      The ref to use for the fetch of the lfs data.
+            ref (str):      The ref to use for the fetch of the lfs data. If None,
+                            the default branch is determined and used.
             options (list): Options of the git lfs fetch call.
 
         Return:
@@ -383,6 +392,12 @@ class GitMirror:
         git_options = ""
         if self.config.get('LFS', 'PerMirrorStorage'):
             git_options = "-c lfs.storage=%s" % self.git_lfs_dir
+        if ref is None:
+            ref = self._get_default_ref()
+            if ref is None:
+                LOG.error("Can't determine default ref of git repository!")
+                return 1
+
         command = "cd %s; %s %s lfs fetch %s origin %s" % (self.git_dir,
                                                            self.config.get("System", "RealGit"),
                                                            git_options,
@@ -398,6 +413,19 @@ class GitMirror:
             output_timeout=self.config.get("LFS", "OutputTimeout"))
 
         return return_code == 0
+
+    def _get_default_ref(self):
+        """Get the default ref like master or main.
+
+        Return:
+            Returns the default ref.
+        """
+        command = "cd %s; %s symbolic-ref --short HEAD" % (self.git_dir,
+                                                           self.config.get("System", "RealGit"))
+        return_code, ref = getstatusoutput(command)
+        if return_code == 0:
+            return ref.strip()
+        return None
 
     @staticmethod
     def url_to_path(url):

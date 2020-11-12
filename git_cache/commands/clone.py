@@ -40,7 +40,7 @@ def get_ref_from_args(args):
 
     Return:
         Returns the reference specified by the -b/--branch option or
-        'master' if none was found.
+        None if none was found.
     """
     ref_is_next_arg = False
 
@@ -53,7 +53,7 @@ def get_ref_from_args(args):
             return arg[2:]
         elif arg.startswith('--branch='):
             return arg[9:]
-    return 'master'
+    return None
 
 
 def git_clone(all_args, command_args):
