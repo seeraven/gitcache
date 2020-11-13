@@ -21,13 +21,14 @@ GITCACHE_BIN=${BASE_DIR}/gitcache
 # -----------------------------------------------------------------------------
 # CHECK COMMAND LINE ARGUMENTS
 # -----------------------------------------------------------------------------
+TEST_SCRIPTS=$(ls ${TEST_BASE_DIR}/tests/*.sh)
 SAVE_REFERENCE=0
 VERBOSE=0
 WAIT_ON_ERROR=0
 
 function usage() {
     echo
-    echo "Usage: $1 [-h] [-s] [-c|-p] [-v]"
+    echo "Usage: $1 [-h] [-s] [-c|-p] [-v] [test1 [test2 ...]]"
     echo ""
     echo "Functional tests of gitcache."
     echo
@@ -37,6 +38,13 @@ function usage() {
     echo " -c                : Use the coverage wrapper."
     echo " -p                : Use the pyinstaller generated executable."
     echo " -v                : Be more verbose."
+    echo
+    echo "Arguments:"
+    echo " You can select individual tests to limit the execution. Available tests are:"
+    for SCRIPT in ${TEST_SCRIPTS}; do
+        echo "  - $(basename $SCRIPT .sh)"
+    done
+    echo
     exit 1
 }
 
@@ -62,6 +70,29 @@ while getopts ":hscpv" OPT; do
             ;;
     esac
 done
+shift $((OPTIND -1))
+
+# Select test scripts
+if [[ $# -gt 0 ]]; then
+    TEST_SCRIPTS=
+    while [[ $# -gt 0 ]]; do
+        if [ -e $1 ]; then
+            TEST_SCRIPTS="${TEST_SCRIPTS} $1"
+        elif [ -e ${TEST_BASE_DIR}/tests/$1.sh ]; then
+            TEST_SCRIPTS="${TEST_SCRIPTS} ${TEST_BASE_DIR}/tests/$1.sh"
+        elif [ -e ${TEST_BASE_DIR}/tests/$1 ]; then
+            TEST_SCRIPTS="${TEST_SCRIPTS} ${TEST_BASE_DIR}/tests/$1"
+        else
+            echo "ERROR: Test script $1 not found!"
+            echo "Candidates were:"
+            echo "  $1"
+            echo "  ${TEST_BASE_DIR}/tests/$1"
+            echo "  ${TEST_BASE_DIR}/tests/$1.sh"
+            exit 1
+        fi
+        shift
+    done
+fi
 
 
 # -----------------------------------------------------------------------------
@@ -84,7 +115,7 @@ export GITCACHE_LOGFORMAT='%(message)s'
 RETVAL=0
 TMPOUTPUT=$(tempfile)
 
-for SCRIPT in ${TEST_BASE_DIR}/tests/*.sh; do
+for SCRIPT in ${TEST_SCRIPTS}; do
     echo -n "Running test $(basename $SCRIPT) ... "
     if $SCRIPT &> $TMPOUTPUT; then
         echo "OK"

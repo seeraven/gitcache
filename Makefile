@@ -70,7 +70,17 @@ help:
 	@echo " unittests                 : Execute unittests."
 	@echo " unittests-coverage        : Determine unittest code coverage."
 	@echo " functional-tests          : Execute functional tests."
+	@echo "                             Tests can be selected by using the TEST_SELECTION"
+	@echo "                             variable, e.g.,"
+	@echo "                             'TEST_SELECTION=01_usage make functional-tests.venv'."
+	@echo "                             To see a list of available tests, call"
+	@echo "                             'TEST_SELECTION=-h make functional-tests.venv'."
 	@echo " functional-tests-coverage : Determine functional tests code coverage."
+	@echo
+	@echo "Targets for Functional Test Development:"
+	@echo " functional-tests-debug       : Like 'functional-tests' but be more verbose."
+	@echo " functional-tests-save-output : Like 'functional-tests' but save the output"
+	@echo "                                as the reference for the expected output."
 	@echo
 	@echo "Targets for Distribution:"
 	@echo " pyinstaller               : Generate dist/gitcache distributable."
@@ -218,13 +228,13 @@ unittests-coverage:
 # ----------------------------------------------------------------------------
 
 functional-tests:
-	@PYTHONPATH=$(PYTHONPATH) tests/functional_tests/run_tests.sh
+	@PYTHONPATH=$(PYTHONPATH) tests/functional_tests/run_tests.sh $(TEST_SELECTION)
 
 functional-tests-debug:
-	@PYTHONPATH=$(PYTHONPATH) tests/functional_tests/run_tests.sh -v -w
+	@PYTHONPATH=$(PYTHONPATH) tests/functional_tests/run_tests.sh -v $(TEST_SELECTION)
 
 functional-tests-save-output:
-	@PYTHONPATH=$(PYTHONPATH) tests/functional_tests/run_tests.sh -s
+	@PYTHONPATH=$(PYTHONPATH) tests/functional_tests/run_tests.sh -s $(TEST_SELECTION)
 
 functional-tests-coverage:
 	@rm -f .coverage-functional-tests
