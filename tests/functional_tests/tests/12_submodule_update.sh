@@ -23,9 +23,6 @@ fi
 # -----------------------------------------------------------------------------
 # Tests
 # -----------------------------------------------------------------------------
-rm -rf ${GITCACHE_DIR}
-rm -rf ${TMP_WORKDIR}/*
-
 capture_output_success clone       git clone https://github.com/seeraven/submodule-example ${TMP_WORKDIR}/submodules
 capture_output_success clone_stats -s
 

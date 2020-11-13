@@ -1,5 +1,3 @@
 Update time of mirror GITCACHE_DIR/mirrors/github.com/seeraven/gitcache not reached yet.
-Starting LFS fetch of ref master from https://github.com/seeraven/gitcache.git into GITCACHE_DIR/mirrors/github.com/seeraven/gitcache.
-LFS fetch of ref master from https://github.com/seeraven/gitcache.git into GITCACHE_DIR/mirrors/github.com/seeraven/gitcache was successfully completed within TIME.
 Starting Update from mirror GITCACHE_DIR/mirrors/github.com/seeraven/gitcache.
 Update from mirror GITCACHE_DIR/mirrors/github.com/seeraven/gitcache was successfully completed within TIME.

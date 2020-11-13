@@ -15,11 +15,10 @@ source $TEST_BASE_DIR/helpers/output_helpers.sh
 
 
 # -----------------------------------------------------------------------------
-# Tests
+# Tests:
+#   - Test the direct git options that lead to immediate bail out of the
+#     gitcache.
 # -----------------------------------------------------------------------------
-rm -rf ${GITCACHE_DIR}
-rm -rf ${TMP_WORKDIR}/*
-
 capture_output_success version   git --version
 capture_output_success exec_path git --exec-path
 capture_output_success html_path git --html-path

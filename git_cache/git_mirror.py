@@ -393,7 +393,7 @@ class GitMirror:
         if self.config.get('LFS', 'PerMirrorStorage'):
             git_options = "-c lfs.storage=%s" % self.git_lfs_dir
         if ref is None:
-            ref = self._get_default_ref()
+            ref = self.get_default_ref()
             if ref is None:
                 LOG.error("Can't determine default ref of git repository!")
                 return 1
@@ -414,7 +414,7 @@ class GitMirror:
 
         return return_code == 0
 
-    def _get_default_ref(self):
+    def get_default_ref(self):
         """Get the default ref like master or main.
 
         Return:

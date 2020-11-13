@@ -64,9 +64,13 @@ def git_pull(all_args, global_options):
             mirror.update()
             database.increment_counter(mirror.path, "updates")
 
+            # The mirror.update() updates the LFS data of the default ref of
+            # the mirror repository, which should be 'master' or 'main'. If we
+            # are currently on a different branch, we want to update that branch
+            # as well.
             command = "%s rev-parse --abbrev-ref HEAD" % command_with_options
             retval, ref = getstatusoutput(command)
-            if retval == 0:
+            if retval == 0 and ref != mirror.get_default_ref():
                 mirror.fetch_lfs(ref)
 
             config = mirror.config

@@ -14,7 +14,7 @@
 #  SETTINGS
 # ----------------------------------------------------------------------------
 export TEST_BASE_DIR=$(dirname $(readlink -f $0))
-BASE_DIR=$(dirname $(dirname $TEST_BASE_DIR))
+BASE_DIR=$(dirname $(dirname ${TEST_BASE_DIR}))
 GITCACHE_BIN=${BASE_DIR}/gitcache
 
 
@@ -57,7 +57,7 @@ while getopts ":hscpv" OPT; do
             SAVE_REFERENCE=1
             ;;
         c )
-            GITCACHE_BIN="coverage run --append --rcfile=${BASE_DIR}/.coveragerc-functional $GITCACHE_BIN"
+            GITCACHE_BIN="coverage run --append --rcfile=${BASE_DIR}/.coveragerc-functional ${GITCACHE_BIN}"
             ;;
         p )
             GITCACHE_BIN=${BASE_DIR}/dist/gitcache
@@ -98,7 +98,7 @@ fi
 # -----------------------------------------------------------------------------
 # EXPORTS FOR TEST SCRIPTS
 # -----------------------------------------------------------------------------
-export EXPECTED_OUTPUT_DIR=$TEST_BASE_DIR/expected
+export EXPECTED_OUTPUT_DIR=${TEST_BASE_DIR}/expected
 mkdir -p ${EXPECTED_OUTPUT_DIR}
 export GITCACHE_BIN
 export SAVE_REFERENCE
@@ -116,6 +116,7 @@ RETVAL=0
 TMPOUTPUT=$(tempfile)
 
 for SCRIPT in ${TEST_SCRIPTS}; do
+    rm -rf ${GITCACHE_DIR} ${TMP_WORKDIR}/*
     echo -n "Running test $(basename $SCRIPT) ... "
     if $SCRIPT &> $TMPOUTPUT; then
         echo "OK"
@@ -136,7 +137,7 @@ for SCRIPT in ${TEST_SCRIPTS}; do
 done
 
 rm -f $TMPOUTPUT
-rm -rf $GITCACHE_DIR $TMP_WORKDIR
+rm -rf $GITCACHE_DIR ${TMP_WORKDIR}
 
 exit $RETVAL
 

@@ -1,10 +1,10 @@
 Mirror of https://github.com/seeraven/gitcache.git:
-  Mirror Updates:      1
+  Mirror Updates:      3
   Clones from Mirror:  1
-  Updates from Mirror: 2
+  Updates from Mirror: 4
 
 Total:
-  Mirror Updates:      1
+  Mirror Updates:      3
   Clones from Mirror:  1
-  Updates from Mirror: 2
+  Updates from Mirror: 4
 

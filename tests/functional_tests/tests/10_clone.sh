@@ -15,10 +15,15 @@ source $TEST_BASE_DIR/helpers/output_helpers.sh
 
 
 # -----------------------------------------------------------------------------
-# Tests
+# Tests:
+#   - Clone with default update interval of 0 which initializes/updates the
+#     cache.
+#   - Clone with a update interval of 1h to avoid updating the cache.
+#   - Clone a non-existant url to ensure errors are propagated correctly.
+#   - Clone an explicit branch.
+#   - Clone an explicit tag.
+#   - Clone from path directly.
 # -----------------------------------------------------------------------------
-rm -rf ${GITCACHE_DIR}
-rm -rf ${TMP_WORKDIR}/*
 
 # Initial clone and updating the mirror
 capture_output_success clone git -C ${TMP_WORKDIR} clone https://github.com/seeraven/gitcache.git

@@ -15,15 +15,20 @@ source $TEST_BASE_DIR/helpers/output_helpers.sh
 
 
 # -----------------------------------------------------------------------------
-# Tests
+# Tests:
+#   - Test the initial statistics output by calling 'gitcache -s'
+#   - Test the statistics after a clone by calling 'gitcache -s'
+#   - Test clearing the statistics by calling 'gitcache -z'
 # -----------------------------------------------------------------------------
-rm -rf ${GITCACHE_DIR}
-rm -rf ${TMP_WORKDIR}/*
 
-# Initial clone
-capture_output_success clone git clone https://github.com/seeraven/gitcache.git ${TMP_WORKDIR}/gitcache
+# Initial statistics
+capture_output_success init_stats  -s
+
+# Clone and after clone statistics
+capture_output_success clone       git clone https://github.com/seeraven/gitcache.git ${TMP_WORKDIR}/gitcache
 capture_output_success clone_stats -s
 
+# Zero statistics
 capture_output_success clone_zero_stats   -z
 capture_output_success clone_zeroed_stats -s
 

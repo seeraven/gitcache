@@ -11,6 +11,9 @@
 # Usage: capture_output <expected retval> <name> <args>
 function capture_output()
 {
+    echo "---------------------------------------------------------------------"
+    echo "INFO: Function capture_output called with arguments $@"
+
     STDOUT_FILE=$(tempfile)
     STDERR_FILE=$(tempfile)
 
@@ -22,8 +25,10 @@ function capture_output()
     shift
 
     set +e
+    echo "INFO: Executing command: $GITCACHE_BIN $@"
     $GITCACHE_BIN $@ > $STDOUT_FILE 2> $STDERR_FILE
     RETVAL=$?
+    echo "INFO: Command return code: $RETVAL (expected ${EXPECTED_RETVAL})"
     set -e
 
     if [ $RETVAL != $EXPECTED_RETVAL ]; then
@@ -59,6 +64,7 @@ function capture_output()
     if [ "$SAVE_REFERENCE" == "1" ]; then
         cp $STDOUT_FILE $EXPECTED_STDOUT_FILE
         cp $STDERR_FILE $EXPECTED_STDERR_FILE
+        echo "INFO: Saved reference"
     else
         if ! cmp -s $STDOUT_FILE $EXPECTED_STDOUT_FILE; then
             echo "ERROR: Command gitcache $@ gave unexpected stdout output:"
@@ -70,6 +76,8 @@ function capture_output()
                 echo "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
             fi
             RETVAL=10
+        else
+            echo "INFO: Stdout output as expected in $EXPECTED_STDOUT_FILE"
         fi
         if ! cmp -s $STDERR_FILE $EXPECTED_STDERR_FILE; then
             echo "ERROR: Command gitcache $@ gave unexpected sterr output:"
@@ -81,10 +89,13 @@ function capture_output()
                 echo "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
             fi
             RETVAL=10
+        else
+            echo "INFO: Stderr output as expected in $EXPECTED_STDERR_FILE"
         fi
     fi
 
     rm -f $STDOUT_FILE $STDERR_FILE
+    echo "---------------------------------------------------------------------"
 
     return $RETVAL
 }

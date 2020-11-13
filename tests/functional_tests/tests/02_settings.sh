@@ -15,7 +15,8 @@ source $TEST_BASE_DIR/helpers/output_helpers.sh
 
 
 # -----------------------------------------------------------------------------
-# Tests
+# Tests:
+#   - Test the settings output message with an return code of 0.
 # -----------------------------------------------------------------------------
 capture_output_success settings
 
