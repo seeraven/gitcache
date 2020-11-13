@@ -47,6 +47,7 @@ function capture_output()
     sed -i '/^Resolving deltas: .*$/d'        $STDOUT_FILE $STDERR_FILE
     sed -i '/^Unpacking objects: .*$/d'       $STDOUT_FILE $STDERR_FILE
     sed -i '/^Checking connectivity..*$/d'    $STDOUT_FILE $STDERR_FILE
+    sed -i '/^Coverage.py warning.*$/d'       $STDOUT_FILE $STDERR_FILE
 
     # Support for different git versions...
     sed -i 's#fetch: Fetching reference refs/heads/#Fetching #g'  $STDOUT_FILE $STDERR_FILE

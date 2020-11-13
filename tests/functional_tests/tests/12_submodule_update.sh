@@ -23,33 +23,54 @@ fi
 # -----------------------------------------------------------------------------
 # Tests
 # -----------------------------------------------------------------------------
-capture_output_success clone       git clone https://github.com/seeraven/submodule-example ${TMP_WORKDIR}/submodules
-capture_output_success clone_stats -s
 
-capture_output_success submodule_init       git -C ${TMP_WORKDIR}/submodules submodule init
-capture_output_success submodule_init_stats -s
+# test_variation <prefix> <working dir> <relative path prefix> <git_c_options>
+function test_variation() {
+    PREFIX=$1
+    shift
+    WDIR=$1
+    shift
+    SUBPATH=$1
+    shift
 
-capture_output_success submodule_update       git -C ${TMP_WORKDIR}/submodules submodule update
-capture_output_success submodule_update_stats -s
+    rm -rf ${GITCACHE_DIR}
+    rm -rf ${TMP_WORKDIR}/*
 
-capture_output_success submodule_update_again       git -C ${TMP_WORKDIR}/submodules submodule update
-capture_output_success submodule_update_again_stats -s
+    capture_output_success ${PREFIX}_clone       git clone https://github.com/seeraven/submodule-example ${TMP_WORKDIR}/submodules
+    capture_output_success ${PREFIX}_clone_stats -s
 
+    pushd $WDIR
+    capture_output_success ${PREFIX}_submodule_init       git $@ submodule init
+    capture_output_success ${PREFIX}_submodule_init_stats -s
+    
+    capture_output_success ${PREFIX}_submodule_update       git $@ submodule update
+    capture_output_success ${PREFIX}_submodule_update_stats -s
 
-rm -rf ${GITCACHE_DIR}
-rm -rf ${TMP_WORKDIR}/*
+    capture_output_success ${PREFIX}_submodule_update_again       git $@ submodule update
+    capture_output_success ${PREFIX}_submodule_update_again_stats -s
+    popd
 
-capture_output_success clone2       git clone https://github.com/seeraven/submodule-example ${TMP_WORKDIR}/submodules
-capture_output_success clone2_stats -s
+    rm -rf ${GITCACHE_DIR}
+    rm -rf ${TMP_WORKDIR}/*
 
-capture_output_success submodule_init_dmdcache       git -C ${TMP_WORKDIR}/submodules submodule init ${TMP_WORKDIR}/submodules/dmdcache
-capture_output_success submodule_init_dmdcache_stats -s
+    capture_output_success ${PREFIX}_clone2       git clone https://github.com/seeraven/submodule-example ${TMP_WORKDIR}/submodules
+    capture_output_success ${PREFIX}_clone2_stats -s
 
-capture_output_success submodule_update_dmdcache       git -C ${TMP_WORKDIR}/submodules submodule update ${TMP_WORKDIR}/submodules/dmdcache
-capture_output_success submodule_update_dmdcache_stats -s
+    pushd $WDIR
+    capture_output_success ${PREFIX}_submodule_init_dmdcache       git $@ submodule init ${SUBPATH}dmdcache
+    capture_output_success ${PREFIX}_submodule_init_dmdcache_stats -s
 
-capture_output_success submodule_update_gitcache       git -C ${TMP_WORKDIR}/submodules submodule update --init ${TMP_WORKDIR}/submodules/gitcache
-capture_output_success submodule_update_gitcache_stats -s
+    capture_output_success ${PREFIX}_submodule_update_dmdcache       git $@ submodule update ${SUBPATH}dmdcache
+    capture_output_success ${PREFIX}_submodule_update_dmdcache_stats -s
+
+    capture_output_success ${PREFIX}_submodule_update_gitcache       git $@ submodule update --init ${SUBPATH}gitcache
+    capture_output_success ${PREFIX}_submodule_update_gitcache_stats -s
+    popd
+}
+
+test_variation single_C $PWD ${TMP_WORKDIR}/submodules/ -C ${TMP_WORKDIR}/submodules
+test_variation multi_C  $PWD ${TMP_WORKDIR}/submodules/ -C ${TMP_WORKDIR} -C submodules
+test_variation no_C     ${TMP_WORKDIR}/submodules ""
 
 
 # -----------------------------------------------------------------------------

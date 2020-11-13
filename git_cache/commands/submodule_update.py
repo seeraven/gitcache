@@ -95,8 +95,9 @@ def git_submodule_update(called_as, all_args, global_options, command_args):
         all_args = [i for i in all_args if i != '--init']
 
     # Make update_paths relative to the checked out repository
-    # pylint: disable=no-value-for-parameter
-    update_paths = [os.path.relpath(path, os.path.join(*paths)) for path in update_paths]
+    if paths:
+        # pylint: disable=no-value-for-parameter
+        update_paths = [os.path.relpath(path, os.path.join(*paths)) for path in update_paths]
 
     # Bugs of the current implementation:
     #  - Relative target URL is not handled correctly in clone.
