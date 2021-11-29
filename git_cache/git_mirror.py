@@ -228,7 +228,7 @@ class GitMirror:
         if self.config.get('LFS', 'PerMirrorStorage'):
             new_args.insert(3, "-c")
             new_args.insert(4, "lfs.storage=%s" % self.git_lfs_dir)
-
+        
         target_dir = original_args[-1]
         if target_dir == self.url:
             target_dir = os.path.basename(self.url).replace('.git', '')
@@ -271,7 +271,10 @@ class GitMirror:
             command += ";%s config --local lfs.storage %s" % (self.config.get("System", "RealGit"),
                                                               self.git_lfs_dir)
 
-        return os.system(command)
+        retval = os.system(command)
+        if retval != 0:
+            LOG.error("Command '%s' gave return code of %d!", command, retval)
+        return retval
 
     def _update_time_reached(self):
         """Check if the update time of the mirror is reached.
@@ -401,7 +404,7 @@ class GitMirror:
         command = "cd %s; %s %s lfs fetch %s origin %s" % (self.git_dir,
                                                            self.config.get("System", "RealGit"),
                                                            git_options,
-                                                           ' '.join(options) if options else '',
+                                                           self.escape_options(options),
                                                            ref)
 
         return_code, _, _ = pretty_call_command_retry(
@@ -455,6 +458,22 @@ class GitMirror:
 
         return None
 
+    @staticmethod
+    def escape_options(options):
+        """Convert a list of options into single-quote escaped elements.
+
+        Args:
+            options (list): List of options.
+
+        Return:
+            Returns a string containing the escaped options separated by
+            spaces.
+        """
+        if options:
+            escaped_options = ["'%s'" % option for option in options]
+            return ' '.join(escaped_options)
+        else:
+            return ''
 
 # -----------------------------------------------------------------------------
 # EOF
