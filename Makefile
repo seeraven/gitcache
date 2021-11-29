@@ -16,6 +16,7 @@
 SHELL               = /bin/bash
 PYLINT_RCFILE      := $(PWD)/.pylintrc
 PYCODESTYLE_CONFIG := $(PWD)/.pycodestyle
+PIP                ?= pip
 
 MODULES            := git_cache
 SCRIPTS            := gitcache
@@ -121,7 +122,7 @@ system-setup:
 	@echo "-------------------------------------------------------------"
 	@echo "Installing pip..."
 	@echo "-------------------------------------------------------------"
-	@pip install -U pip
+	@pip install -U "$(PIP)"
 	@echo "-------------------------------------------------------------"
 	@echo "Installing package requirements..."
 	@echo "-------------------------------------------------------------"
@@ -272,15 +273,7 @@ dist/gitcache:
 pyinstaller-test: dist/gitcache
 	@tests/functional_tests/run_tests.sh -p
 
-build-release: releases/gitcache_Ubuntu16.04_amd64 releases/gitcache_Ubuntu18.04_amd64 releases/gitcache_Ubuntu20.04_amd64
-
-releases/gitcache_Ubuntu16.04_amd64:
-	@mkdir -p releases
-	@docker run --rm \
-	-e TGTUID=$(shell id -u) -e TGTGID=$(shell id -g) \
-	-v $(PWD):/workdir \
-	ubuntu:16.04 \
-	/workdir/build_in_docker/ubuntu.sh
+build-release: releases/gitcache_Ubuntu18.04_amd64 releases/gitcache_Ubuntu20.04_amd64 releases/gitcache_Ubuntu21.04_amd64
 
 releases/gitcache_Ubuntu18.04_amd64:
 	@mkdir -p releases
@@ -297,6 +290,21 @@ releases/gitcache_Ubuntu20.04_amd64:
 	-v $(PWD):/workdir \
 	ubuntu:20.04 \
 	/workdir/build_in_docker/ubuntu.sh
+
+releases/gitcache_Ubuntu21.04_amd64:
+	@mkdir -p releases
+	@docker run --rm \
+	-e TGTUID=$(shell id -u) -e TGTGID=$(shell id -g) \
+	-v $(PWD):/workdir \
+	ubuntu:21.04 \
+	/workdir/build_in_docker/ubuntu.sh
+
+test-latest-git:
+	@docker run --rm \
+	-e TGTUID=$(shell id -u) -e TGTGID=$(shell id -g) \
+	-v $(PWD):/workdir \
+	ubuntu:20.04 \
+	/workdir/build_in_docker/ubuntu_latest_git.sh
 
 
 # ----------------------------------------------------------------------------
