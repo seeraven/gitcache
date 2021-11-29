@@ -47,55 +47,61 @@ def git_lfs_fetch(all_args, global_options, command_args):
         Returns 0 on success, otherwise the return code of the last failed
         command.
     """
-    # git lfs fetch [--recent|--all|--prune] [remote [ref...]]
+    # git lfs fetch [options] [remote [ref...]]
     #  No Mirror Update: git lfs fetch (as it was already updated by other calls)
-    #  No Mirror Update  git lfs fetch origin
+    #  No Mirror Update: git lfs fetch origin
+    #  No Mirror Update: git lfs fetch <other origin>
+    #  Mirror Update:    git lfs fetch <options> ... (as the options might include not-fetched elements)
     #  Mirror Update     git lfs fetch origin ref...
-    #  Mirror Update:    git lfs fetch [--recent|--all|--prune] ...
+    options_with_arg = ['-I', '--include', '-X', '--exclude']
     options = []
     remote = None
     refs = []
-    ignore_next_arg = False
+    add_next_arg = False
     for arg in command_args:
-        if ignore_next_arg:
-            ignore_next_arg = False
-        elif arg in ['-I', '--include', '-X', '--exclude']:
-            ignore_next_arg = True
-        elif arg in ['--recent', '--all', '--prune']:
+        if add_next_arg:
             options.append(arg)
+            add_next_arg = False
+        elif arg in options_with_arg:
+            options.append(arg)
+            add_next_arg = True
         elif arg.startswith('-'):
-            pass
+            options.append(arg)
         elif remote is None:
             remote = arg
         else:
             refs.append(arg)
 
+    if remote is None:
+        remote = 'origin'
+
     config = Config()
-    if options or refs:
-        global_options_str = ' '.join(["'%s'" % i for i in global_options])
-        command_with_options = "%s %s" % (config.get("System", "RealGit"),
-                                          global_options_str)
+    if remote == 'origin':
+        if options or refs:
+            global_options_str = ' '.join(["'%s'" % i for i in global_options])
+            command_with_options = "%s %s" % (config.get("System", "RealGit"),
+                                              global_options_str)
 
-        if not refs:
-            command = "%s rev-parse --abbrev-ref HEAD" % command_with_options
-            retval, ref = getstatusoutput(command)
-            if retval == 0:
-                refs.append(ref)
+            if not refs:
+                command = "%s rev-parse --abbrev-ref HEAD" % command_with_options
+                retval, ref = getstatusoutput(command)
+                if retval == 0:
+                    refs.append(ref)
 
-        command = "%s remote get-url origin" % command_with_options
-        retval, pull_url = getstatusoutput(command)
-        if retval == 0 and pull_url.startswith(GITCACHE_DIR):
-            command = "%s remote get-url --push origin" % command_with_options
-            retval, push_url = getstatusoutput(command)
-            if retval == 0:
-                database = Database()
-                mirror = GitMirror(url=push_url, database=database)
-                for ref in refs:
-                    mirror.fetch_lfs(ref, options)
+            command = "%s remote get-url origin" % command_with_options
+            retval, pull_url = getstatusoutput(command)
+            if retval == 0 and pull_url.startswith(GITCACHE_DIR):
+                command = "%s remote get-url --push origin" % command_with_options
+                retval, push_url = getstatusoutput(command)
+                if retval == 0:
+                    database = Database()
+                    mirror = GitMirror(url=push_url, database=database)
+                    for ref in refs:
+                        mirror.fetch_lfs(ref, options)
+                else:
+                    LOG.warning("Can't get push URL of the repository!")
             else:
-                LOG.warning("Can't get push URL of the repository!")
-        else:
-            LOG.debug("Repository is not managed by gitcache!")
+                LOG.debug("Repository is not managed by gitcache!")
 
     original_command_args = [config.get("System", "RealGit")] + all_args
     return simple_call_command(original_command_args)

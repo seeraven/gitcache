@@ -136,6 +136,7 @@ def handle_git_command(called_as, args):
         sys.exit(git_clone(args, command_arguments))
 
     elif command == 'lfs' and 'fetch' in command_arguments:
+        command_arguments.remove('fetch')
         sys.exit(git_lfs_fetch(args, global_options, command_arguments))
 
     elif command == 'pull':
@@ -148,7 +149,8 @@ def handle_git_command(called_as, args):
         sys.exit(git_submodule_init(args, global_options))
 
     elif command == 'submodule' and 'update' in command_arguments:
-        sys.exit(git_submodule_update(called_as, args, global_options, command_arguments[1:]))
+        command_arguments.remove('update')
+        sys.exit(git_submodule_update(called_as, args, global_options, command_arguments))
 
     LOG.debug("Command '%s' is not handled by gitcache. Calling the real git command.", command)
     sys.exit(call_real_git(args))
