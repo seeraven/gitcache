@@ -26,7 +26,7 @@ function capture_output()
 
     set +e
     echo "INFO: Executing command: $GITCACHE_BIN $@"
-    $GITCACHE_BIN $@ > $STDOUT_FILE 2> $STDERR_FILE
+    $GITCACHE_BIN "$@" > $STDOUT_FILE 2> $STDERR_FILE
     RETVAL=$?
     echo "INFO: Command return code: $RETVAL (expected ${EXPECTED_RETVAL})"
     set -e
@@ -48,6 +48,8 @@ function capture_output()
     sed -i '/^Unpacking objects: .*$/d'       $STDOUT_FILE $STDERR_FILE
     sed -i '/^Checking connectivity..*$/d'    $STDOUT_FILE $STDERR_FILE
     sed -i '/^Coverage.py warning.*$/d'       $STDOUT_FILE $STDERR_FILE
+    sed -i '/Git LFS: .[0-9]* of .*/d'        $STDOUT_FILE $STDERR_FILE
+    sed -i '/Downloading LFS objects: .*/d'   $STDOUT_FILE $STDERR_FILE
 
     # Support for different git versions...
     sed -i 's#fetch: Fetching reference refs/heads/#Fetching #g'  $STDOUT_FILE $STDERR_FILE
@@ -104,13 +106,13 @@ function capture_output()
 # Usage: capture_output_success <name> <args>
 function capture_output_success()
 {
-    capture_output 0 $@
+    capture_output 0 "$@"
 }
 
 # Usage: capture_output_failure <name> <args>
 function capture_output_failure()
 {
-    capture_output 1 $@
+    capture_output 1 "$@"
 }
 
 # -----------------------------------------------------------------------------
