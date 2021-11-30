@@ -66,74 +66,76 @@ def call_command(command, command_timeout=None, output_timeout=None):
     stdout_r, stdout_w = pty.openpty()
     stderr_r, stderr_w = pty.openpty()
 
-    proc = subprocess.Popen(command,
-                            bufsize=0,
-                            shell=True,
-                            stdout=stdout_w,
-                            stderr=stderr_w)
-    os.close(stdout_w)
-    os.close(stderr_w)
-
-    output_start_time = time.time()
-    command_start_time = output_start_time
-    command_timeout_occured = False
-    output_timeout_occured = False
-    buffer_size = 1024
+    return_code = -1
     stdout_buffer = b''
     stderr_buffer = b''
+    with subprocess.Popen(command,
+                          bufsize=0,
+                          shell=True,
+                          stdout=stdout_w,
+                          stderr=stderr_w) as proc:
+        os.close(stdout_w)
+        os.close(stderr_w)
 
-    def read_buffer(read_fd, output_stream):
-        buffer = b''
-        try:
-            buffer = os.read(read_fd, buffer_size)
-        except OSError as exception:
-            if exception.errno != errno.EIO:
-                raise
-        else:
-            output_stream.buffer.write(buffer)
-            output_stream.buffer.flush()
-        return buffer
+        output_start_time = time.time()
+        command_start_time = output_start_time
+        command_timeout_occured = False
+        output_timeout_occured = False
+        buffer_size = 1024
 
-    while proc.poll() is None:
-        # Since the select call can't detect whether the process exited, we use a
-        # small timeout on the select call (one second) and check afterwards for
-        # a timeout on the stdout/stderr streams
-        streams_ready = select.select([stdout_r, stderr_r], [], [], 1.0)[0]
-        if streams_ready:
-            if stdout_r in streams_ready:
-                stdout_buffer += read_buffer(stdout_r, sys.stdout)
-            if stderr_r in streams_ready:
-                stderr_buffer += read_buffer(stderr_r, sys.stderr)
-            output_start_time = time.time()
+        def read_buffer(read_fd, output_stream):
+            buffer = b''
+            try:
+                buffer = os.read(read_fd, buffer_size)
+            except OSError as exception:
+                if exception.errno != errno.EIO:
+                    raise
+            else:
+                output_stream.buffer.write(buffer)
+                output_stream.buffer.flush()
+            return buffer
 
-        elif proc.poll() is None:
-            if output_timeout and ((time.time() - output_start_time) >= output_timeout):
-                LOG.debug("No stdout/stderr output received within %d seconds!",
-                          (time.time() - output_start_time))
-                output_timeout_occured = True
-                proc.kill()
-                break
+        while proc.poll() is None:
+            # Since the select call can't detect whether the process exited, we use a
+            # small timeout on the select call (one second) and check afterwards for
+            # a timeout on the stdout/stderr streams
+            streams_ready = select.select([stdout_r, stderr_r], [], [], 1.0)[0]
+            if streams_ready:
+                if stdout_r in streams_ready:
+                    stdout_buffer += read_buffer(stdout_r, sys.stdout)
+                if stderr_r in streams_ready:
+                    stderr_buffer += read_buffer(stderr_r, sys.stderr)
+                output_start_time = time.time()
 
-            if command_timeout and ((time.time() - command_start_time) >= command_timeout):
-                LOG.debug("Timeout occured after %d seconds!", (time.time() - command_start_time))
-                command_timeout_occured = True
-                proc.kill()
-                break
+            elif proc.poll() is None:
+                if output_timeout and ((time.time() - output_start_time) >= output_timeout):
+                    LOG.debug("No stdout/stderr output received within %d seconds!",
+                              (time.time() - output_start_time))
+                    output_timeout_occured = True
+                    proc.kill()
+                    break
 
-    # To cleanup any pending resources
-    proc.wait()
-    os.close(stdout_r)
-    os.close(stderr_r)
-    sys.stdout.buffer.flush()
-    sys.stderr.buffer.flush()
+                if command_timeout and ((time.time() - command_start_time) >= command_timeout):
+                    LOG.debug("Timeout occured after %d seconds!",
+                              (time.time() - command_start_time))
+                    command_timeout_occured = True
+                    proc.kill()
+                    break
 
-    return_code = proc.returncode
-    if command_timeout_occured:
-        return_code = -1000
-    elif output_timeout_occured:
-        return_code = -2000
+        # To cleanup any pending resources
+        proc.wait()
+        os.close(stdout_r)
+        os.close(stderr_r)
+        sys.stdout.buffer.flush()
+        sys.stderr.buffer.flush()
 
-    LOG.debug("Command '%s' finished with return code %d.", command, return_code)
+        return_code = proc.returncode
+        if command_timeout_occured:
+            return_code = -1000
+        elif output_timeout_occured:
+            return_code = -2000
+
+        LOG.debug("Command '%s' finished with return code %d.", command, return_code)
     return (return_code, stdout_buffer, stderr_buffer)
 
 
