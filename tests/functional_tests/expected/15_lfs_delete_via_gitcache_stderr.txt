@@ -1,0 +1,3 @@
+Deleting specified mirrors.
+Deleted mirror GITCACHE_DIR/mirrors/github.com/seeraven/lfs-example.
+Mirror deleted.

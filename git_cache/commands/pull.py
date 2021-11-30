@@ -49,14 +49,14 @@ def git_pull(all_args, global_options):
     action = "Update"
     config = Config()
 
-    global_options_str = ' '.join(["'%s'" % i for i in global_options])
-    command_with_options = "%s %s" % (config.get("System", "RealGit"),
-                                      global_options_str)
+    global_options_str = ' '.join([f"'{i}'" for i in global_options])
+    real_git = config.get("System", "RealGit")
+    command_with_options = f"{real_git} {global_options_str}"
 
-    command = "%s remote get-url origin" % command_with_options
+    command = f"{command_with_options} remote get-url origin"
     retval, pull_url = getstatusoutput(command)
     if retval == 0 and pull_url.startswith(GITCACHE_DIR):
-        command = "%s remote get-url --push origin" % command_with_options
+        command = f"{command_with_options} remote get-url --push origin"
         retval, push_url = getstatusoutput(command)
         if retval == 0:
             database = Database()
@@ -68,24 +68,24 @@ def git_pull(all_args, global_options):
             # the mirror repository, which should be 'master' or 'main'. If we
             # are currently on a different branch, we want to update that branch
             # as well.
-            command = "%s rev-parse --abbrev-ref HEAD" % command_with_options
+            command = f"{command_with_options} rev-parse --abbrev-ref HEAD"
             retval, ref = getstatusoutput(command)
             if retval == 0 and ref != mirror.get_default_ref():
                 mirror.fetch_lfs(ref)
 
             config = mirror.config
-            action = "Update from mirror %s" % mirror.path
+            action = f"Update from mirror {mirror.path}"
         else:
             LOG.warning("Can't get push URL of the repository!")
     else:
         LOG.debug("Repository is not managed by gitcache!")
 
-    original_command_args = [config.get("System", "RealGit")] + all_args
+    original_command_args = [real_git] + all_args
 
     return_code, _, _ = pretty_call_command_retry(
         action,
         '',
-        ' '.join(["'%s'" % i for i in original_command_args]),
+        ' '.join([f"'{i}'" for i in original_command_args]),
         num_retries=config.get("Update", "Retries"),
         command_timeout=config.get("Update", "CommandTimeout"),
         output_timeout=config.get("Update", "OutputTimeout"))

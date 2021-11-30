@@ -178,12 +178,12 @@ class Database:
         self.database = {}
 
         if os.path.exists(GITCACHE_DB):
-            with open(GITCACHE_DB, "r") as handle:
+            with open(GITCACHE_DB, "r", encoding='utf-8') as handle:
                 self.database = json.load(handle)
 
     def _save(self):
         """Save the database to disc."""
-        with open(GITCACHE_DB, "w") as handle:
+        with open(GITCACHE_DB, "w", encoding='utf-8') as handle:
             json.dump(self.database, handle)
 
 

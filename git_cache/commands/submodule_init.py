@@ -45,29 +45,26 @@ def git_submodule_init(all_args, global_options):
     """
     config = Config()
 
-    global_options_str = ' '.join(["'%s'" % i for i in global_options])
-    command_with_options = "%s %s" % (config.get("System", "RealGit"),
-                                      global_options_str)
+    global_options_str = ' '.join([f"'{i}'" for i in global_options])
+    real_git = config.get("System", "RealGit")
+    command_with_options = f"{real_git} {global_options_str}"
 
-    command = "%s remote get-url origin" % command_with_options
+    command = f"{command_with_options} remote get-url origin"
     retval, pull_url = getstatusoutput(command)
     if retval == 0 and pull_url.startswith(GITCACHE_DIR):
-        command = "%s remote get-url --push origin" % command_with_options
+        command = f"{command_with_options} remote get-url --push origin"
         retval, push_url = getstatusoutput(command)
         if retval == 0:
-            command = "%s remote set-url origin %s" % (command_with_options,
-                                                       push_url)
+            command = f"{command_with_options} remote set-url origin {push_url}"
             retval, _ = getstatusoutput(command)
 
             if retval == 0:
-                retval = simple_call_command([config.get("System", "RealGit")] + all_args)
+                retval = simple_call_command([real_git] + all_args)
             else:
                 LOG.warning("Can't restore original pull URL of the repository!")
 
-            command = "%s remote set-url origin %s;" % (command_with_options,
-                                                        pull_url)
-            command += "%s remote set-url --push origin %s" % (command_with_options,
-                                                               push_url)
+            command = f"{command_with_options} remote set-url origin {pull_url};"
+            command += f"{command_with_options} remote set-url --push origin {push_url}"
             _, _ = getstatusoutput(command)
             return retval
 
@@ -76,7 +73,7 @@ def git_submodule_init(all_args, global_options):
         LOG.debug("Repository is not managed by gitcache!")
 
     # Fallback to original git
-    return simple_call_command([config.get("System", "RealGit")] + all_args)
+    return simple_call_command([real_git] + all_args)
 
 
 # -----------------------------------------------------------------------------

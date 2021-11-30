@@ -1,0 +1,15 @@
+Mirror of https://github.com/seeraven/gitcache.git:
+  Mirror Updates:      2
+  Clones from Mirror:  4
+  Updates from Mirror: 0
+
+Mirror of https://github.com/seeraven/scm-autologin-plugin:
+  Mirror Updates:      2
+  Clones from Mirror:  3
+  Updates from Mirror: 0
+
+Total:
+  Mirror Updates:      4
+  Clones from Mirror:  7
+  Updates from Mirror: 0
+

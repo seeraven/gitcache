@@ -49,24 +49,24 @@ def git_checkout(all_args, global_options, command_args):
     """
     config = Config()
 
-    global_options_str = ' '.join(["'%s'" % i for i in global_options])
-    command_with_options = "%s %s" % (config.get("System", "RealGit"),
-                                      global_options_str)
+    global_options_str = ' '.join([f"'{i}'" for i in global_options])
+    real_git = config.get("System", "RealGit")
+    command_with_options = f"{real_git} {global_options_str}"
 
     # Collect all refs for an lfs fetch
     ref_candidates = [x for x in command_args if not x.startswith('-') and not x.startswith(':')]
     lfs_fetch_refs = []
     for ref in ref_candidates:
-        command = "%s show-ref -q %s" % (command_with_options, ref)
+        command = f"{command_with_options} show-ref -q {ref}"
         retval, _ = getstatusoutput(command)
         if retval == 0:
             lfs_fetch_refs.append(ref)
 
     if lfs_fetch_refs:
-        command = "%s remote get-url origin" % command_with_options
+        command = f"{command_with_options} remote get-url origin"
         retval, pull_url = getstatusoutput(command)
         if retval == 0 and pull_url.startswith(GITCACHE_DIR):
-            command = "%s remote get-url --push origin" % command_with_options
+            command = f"{command_with_options} remote get-url --push origin"
             retval, push_url = getstatusoutput(command)
             if retval == 0:
                 database = Database()
@@ -78,7 +78,7 @@ def git_checkout(all_args, global_options, command_args):
         else:
             LOG.debug("Repository is not managed by gitcache!")
 
-    original_command_args = [config.get("System", "RealGit")] + all_args
+    original_command_args = [real_git] + all_args
     return simple_call_command(original_command_args)
 
 

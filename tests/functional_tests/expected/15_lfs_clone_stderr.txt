@@ -1,0 +1,11 @@
+Save configuration file GITCACHE_DIR/config.
+Starting Initial clone of https://github.com/seeraven/lfs-example.git into GITCACHE_DIR/mirrors/github.com/seeraven/lfs-example.
+Cloning into bare repository 'GITCACHE_DIR/mirrors/github.com/seeraven/lfs-example/git'...
+Initial clone of https://github.com/seeraven/lfs-example.git into GITCACHE_DIR/mirrors/github.com/seeraven/lfs-example was successfully completed within TIME.
+Starting LFS fetch of ref main from https://github.com/seeraven/lfs-example.git into GITCACHE_DIR/mirrors/github.com/seeraven/lfs-example.
+LFS fetch of ref main from https://github.com/seeraven/lfs-example.git into GITCACHE_DIR/mirrors/github.com/seeraven/lfs-example was successfully completed within TIME.
+Starting Clone from mirror GITCACHE_DIR/mirrors/github.com/seeraven/lfs-example.
+Cloning into 'lfs-example'...
+done.
+Clone from mirror GITCACHE_DIR/mirrors/github.com/seeraven/lfs-example was successfully completed within TIME.
+Setting push URL to https://github.com/seeraven/lfs-example.git and configure LFS.

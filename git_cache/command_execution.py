@@ -235,7 +235,7 @@ def simple_call_command(args):
     Return:
         Returns the return code of the command.
     """
-    command = ' '.join(["'%s'" % i for i in args])
+    command = ' '.join([f"'{i}'" for i in args])
     ret_code = os.WEXITSTATUS(os.system(command))
     return ret_code
 

@@ -51,7 +51,8 @@ def git_lfs_fetch(all_args, global_options, command_args):
     #  No Mirror Update: git lfs fetch (as it was already updated by other calls)
     #  No Mirror Update: git lfs fetch origin
     #  No Mirror Update: git lfs fetch <other origin>
-    #  Mirror Update:    git lfs fetch <options> ... (as the options might include not-fetched elements)
+    #  Mirror Update:    git lfs fetch <options> ... (as the options might include
+    #                                                 not-fetched elements)
     #  Mirror Update     git lfs fetch origin ref...
     options_with_arg = ['-I', '--include', '-X', '--exclude']
     options = []
@@ -76,22 +77,22 @@ def git_lfs_fetch(all_args, global_options, command_args):
         remote = 'origin'
 
     config = Config()
+    real_git = config.get("System", "RealGit")
     if remote == 'origin':
         if options or refs:
-            global_options_str = ' '.join(["'%s'" % i for i in global_options])
-            command_with_options = "%s %s" % (config.get("System", "RealGit"),
-                                              global_options_str)
+            global_options_str = ' '.join([f"'{i}'" for i in global_options])
+            command_with_options = f"{real_git} {global_options_str}"
 
             if not refs:
-                command = "%s rev-parse --abbrev-ref HEAD" % command_with_options
+                command = f"{command_with_options} rev-parse --abbrev-ref HEAD"
                 retval, ref = getstatusoutput(command)
                 if retval == 0:
                     refs.append(ref)
 
-            command = "%s remote get-url origin" % command_with_options
+            command = f"{command_with_options} remote get-url origin"
             retval, pull_url = getstatusoutput(command)
             if retval == 0 and pull_url.startswith(GITCACHE_DIR):
-                command = "%s remote get-url --push origin" % command_with_options
+                command = f"{command_with_options} remote get-url --push origin"
                 retval, push_url = getstatusoutput(command)
                 if retval == 0:
                     database = Database()
@@ -103,7 +104,7 @@ def git_lfs_fetch(all_args, global_options, command_args):
             else:
                 LOG.debug("Repository is not managed by gitcache!")
 
-    original_command_args = [config.get("System", "RealGit")] + all_args
+    original_command_args = [real_git] + all_args
     return simple_call_command(original_command_args)
 
 

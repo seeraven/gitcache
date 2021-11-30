@@ -96,7 +96,7 @@ class GitCacheConfigTest(TestCase):
         """git_cache.config.Config: Load from file."""
         importlib.reload(git_cache.global_settings)
         importlib.reload(git_cache.config)
-        with open("/tmp/config", "w") as file_handle:
+        with open("/tmp/config", "w", encoding='utf-8') as file_handle:
             file_handle.write("""
 [MirrorHandling]
 UpdateInterval = -1

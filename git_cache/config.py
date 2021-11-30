@@ -90,8 +90,7 @@ class ConfigItem:
         self.converter = converter
         self.env = env
         if self.env == 'auto':
-            self.env = 'GITCACHE_%s_%s' % (self.section.upper(),
-                                           self._get_snake_upper(self.option))
+            self.env = f'GITCACHE_{self.section.upper()}_{self._get_snake_upper(self.option)}'
 
     @staticmethod
     def _get_snake_upper(camel):
@@ -226,7 +225,7 @@ class Config:
         """
         if os.path.exists(filename):
             LOG.debug("Loading configuration file %s.", filename)
-            with open(filename, 'r') as file_handle:
+            with open(filename, 'r', encoding='utf-8') as file_handle:
                 self.config.read_file(file_handle, source=filename)
                 return True
 
@@ -242,7 +241,7 @@ class Config:
         LOG.info("Save configuration file %s.", filename)
         os.makedirs(os.path.dirname(filename), exist_ok=True)
 
-        with open(filename, 'w') as file_handle:
+        with open(filename, 'w', encoding='utf-8') as file_handle:
             self.config.write(file_handle)
 
     def __str__(self):
@@ -256,14 +255,13 @@ class Config:
             if ret:
                 ret += '\n'
 
-            ret += '%s:\n' % section
+            ret += f'{section}:\n'
             for option in sorted(self.config[section]):
                 env_key = self.env_keys.get(section.upper(), {}).get(option.upper())
                 if env_key:
-                    ret += ' %-20s = %-20s (%s)\n' % (option, self.config[section][option],
-                                                      env_key)
+                    ret += f' {option : <20} = {self.config[section][option] : <20} ({env_key})\n'
                 else:
-                    ret += ' %-20s = %s\n' % (option, self.config[section][option])
+                    ret += f' {option : <20} = {self.config[section][option]}\n'
         return ret
 
 

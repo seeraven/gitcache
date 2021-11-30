@@ -142,7 +142,7 @@ class GitMirror:
             Returns True if the mirror was updated or False if the request timed out.
         """
         try:
-            with Locker("Mirror %s" % self.path, self.lockfile, self.config):
+            with Locker(f"Mirror {self.path}", self.lockfile, self.config):
                 if not os.path.exists(self.git_dir):
                     return self._clone(ref)
 
@@ -167,7 +167,7 @@ class GitMirror:
             Returns True if the lfs fetch was successful.
         """
         try:
-            with Locker("Mirror %s" % self.path, self.lockfile, self.config):
+            with Locker(f"Mirror {self.path}", self.lockfile, self.config):
                 return self._fetch_lfs(ref, options)
         except portalocker.exceptions.LockException:
             if ref is not None:
@@ -195,7 +195,7 @@ class GitMirror:
             Returns True if the mirror was deleted or False if the request timed out.
         """
         try:
-            with Locker("Mirror %s" % self.path, self.lockfile, self.config):
+            with Locker(f"Mirror {self.path}", self.lockfile, self.config):
                 LOG.debug("Deleting mirror %s", self.path)
                 shutil.rmtree(self.path, ignore_errors=True)
                 self.database.remove(self.path)
@@ -220,24 +220,25 @@ class GitMirror:
             return 1
 
         git_lfs_url = self.url + "/info/lfs"
+        real_git = self.config.get("System", "RealGit")
 
         new_args = [x if x != self.url else self.git_dir for x in original_args]
-        new_args.insert(0, self.config.get("System", "RealGit"))
+        new_args.insert(0, real_git)
         new_args.insert(1, "-c")
-        new_args.insert(2, "lfs.url=%s" % git_lfs_url)
+        new_args.insert(2, f"lfs.url={git_lfs_url}")
         if self.config.get('LFS', 'PerMirrorStorage'):
             new_args.insert(3, "-c")
-            new_args.insert(4, "lfs.storage=%s" % self.git_lfs_dir)
-        
+            new_args.insert(4, f"lfs.storage={self.git_lfs_dir}")
+
         target_dir = original_args[-1]
         if target_dir == self.url:
             target_dir = os.path.basename(self.url).replace('.git', '')
             new_args.append(target_dir)
 
         return_code, _, _ = pretty_call_command_retry(
-            'Clone from mirror %s' % self.path,
+            f'Clone from mirror {self.path}',
             '',
-            ' '.join(["'%s'" % i for i in new_args]),
+            ' '.join([f"'{i}'" for i in new_args]),
             num_retries=self.config.get("Clone", "Retries"),
             command_timeout=self.config.get("Clone", "CommandTimeout"),
             output_timeout=self.config.get("Clone", "OutputTimeout"),
@@ -262,14 +263,11 @@ class GitMirror:
         paths.append(target_dir)
 
         LOG.info("Setting push URL to %s and configure LFS.", self.url)
-        command = ';'.join(["cd %s" % x for x in paths])
-        command += ";%s remote set-url --push origin %s" % (self.config.get("System", "RealGit"),
-                                                            self.url)
-        command += ";%s config --local lfs.url %s" % (self.config.get("System", "RealGit"),
-                                                      git_lfs_url)
+        command = ';'.join([f"cd {x}" for x in paths])
+        command += f";{real_git} remote set-url --push origin {self.url}"
+        command += f";{real_git} config --local lfs.url {git_lfs_url}"
         if self.config.get('LFS', 'PerMirrorStorage'):
-            command += ";%s config --local lfs.storage %s" % (self.config.get("System", "RealGit"),
-                                                              self.git_lfs_dir)
+            command += f";{real_git} config --local lfs.storage {self.git_lfs_dir}"
 
         retval = os.system(command)
         if retval != 0:
@@ -307,11 +305,10 @@ class GitMirror:
         Return:
             Returns True on success.
         """
-        command = "%s clone --progress --mirror %s %s" % (self.config.get("System", "RealGit"),
-                                                          self.url,
-                                                          self.git_dir)
+        real_git = self.config.get("System", "RealGit")
+        command = f"{real_git} clone --progress --mirror {self.url} {self.git_dir}"
         return_code, _, _ = pretty_call_command_retry(
-            'Initial clone of %s into %s' % (self.url, self.path),
+            f'Initial clone of {self.url} into {self.path}',
             '',
             command,
             num_retries=self.config.get("Clone", "Retries"),
@@ -338,10 +335,10 @@ class GitMirror:
         Return:
             Returns True on success.
         """
-        command = "cd %s; %s remote update --prune" % (self.git_dir,
-                                                       self.config.get("System", "RealGit"))
+        real_git = self.config.get("System", "RealGit")
+        command = f"cd {self.git_dir}; {real_git} remote update --prune"
         return_code, stdout_buffer, stderr_buffer = pretty_call_command_retry(
-            'Update of %s' % self.path,
+            f'Update of {self.path}',
             'garbage collection error',
             command,
             num_retries=self.config.get("Update", "Retries"),
@@ -369,10 +366,10 @@ class GitMirror:
         Return:
             Returns True on success.
         """
-        command = "cd %s; %s gc && rm -f gc.log" % (self.git_dir,
-                                                    self.config.get("System", "RealGit"))
+        real_git = self.config.get("System", "RealGit")
+        command = f"cd {self.git_dir}; {real_git} gc && rm -f gc.log"
         return_code, _, _ = pretty_call_command_retry(
-            'Garbage collection on %s' % self.path,
+            f'Garbage collection on {self.path}',
             '',
             command,
             num_retries=self.config.get("GC", "Retries"),
@@ -394,21 +391,19 @@ class GitMirror:
         """
         git_options = ""
         if self.config.get('LFS', 'PerMirrorStorage'):
-            git_options = "-c lfs.storage=%s" % self.git_lfs_dir
+            git_options = f"-c lfs.storage={self.git_lfs_dir}"
         if ref is None:
             ref = self.get_default_ref()
             if ref is None:
                 LOG.error("Can't determine default ref of git repository!")
                 return 1
 
-        command = "cd %s; %s %s lfs fetch %s origin %s" % (self.git_dir,
-                                                           self.config.get("System", "RealGit"),
-                                                           git_options,
-                                                           self.escape_options(options),
-                                                           ref)
+        real_git = self.config.get("System", "RealGit")
+        command = f"cd {self.git_dir}; "
+        command += f"{real_git} {git_options} lfs fetch {self.escape_options(options)} origin {ref}"
 
         return_code, _, _ = pretty_call_command_retry(
-            'LFS fetch of ref %s from %s into %s' % (ref, self.url, self.path),
+            f'LFS fetch of ref {ref} from {self.url} into {self.path}',
             '',
             command,
             num_retries=self.config.get("LFS", "Retries"),
@@ -423,8 +418,8 @@ class GitMirror:
         Return:
             Returns the default ref.
         """
-        command = "cd %s; %s symbolic-ref --short HEAD" % (self.git_dir,
-                                                           self.config.get("System", "RealGit"))
+        real_git = self.config.get("System", "RealGit")
+        command = f"cd {self.git_dir}; {real_git} symbolic-ref --short HEAD"
         return_code, ref = getstatusoutput(command)
         if return_code == 0:
             return ref.strip()
@@ -470,10 +465,10 @@ class GitMirror:
             spaces.
         """
         if options:
-            escaped_options = ["'%s'" % option for option in options]
+            escaped_options = [f"'{option}'" for option in options]
             return ' '.join(escaped_options)
-        else:
-            return ''
+
+        return ''
 
 # -----------------------------------------------------------------------------
 # EOF

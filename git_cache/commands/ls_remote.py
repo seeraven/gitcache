@@ -49,9 +49,9 @@ def git_ls_remote(all_args, global_options, command_args):
     """
     config = Config()
 
-    global_options_str = ' '.join(["'%s'" % i for i in global_options])
-    command_with_options = "%s %s" % (config.get("System", "RealGit"),
-                                      global_options_str)
+    global_options_str = ' '.join([f"'{i}'" for i in global_options])
+    real_git = config.get("System", "RealGit")
+    command_with_options = f"{real_git} {global_options_str}"
 
     remote_url = None
     for arg in command_args:
@@ -60,10 +60,10 @@ def git_ls_remote(all_args, global_options, command_args):
             break
 
     if remote_url is None:
-        command = "%s remote get-url origin" % command_with_options
+        command = f"{command_with_options} remote get-url origin"
         retval, pull_url = getstatusoutput(command)
         if retval == 0 and pull_url.startswith(GITCACHE_DIR):
-            command = "%s remote get-url --push origin" % command_with_options
+            command = f"{command_with_options} remote get-url --push origin"
             retval, push_url = getstatusoutput(command)
             if retval == 0:
                 remote_url = push_url
@@ -82,7 +82,7 @@ def git_ls_remote(all_args, global_options, command_args):
     else:
         new_args = all_args
 
-    original_command_args = [config.get("System", "RealGit")] + new_args
+    original_command_args = [real_git] + new_args
     return simple_call_command(original_command_args)
 
 

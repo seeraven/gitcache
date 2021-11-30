@@ -49,9 +49,10 @@ def git_submodule_update(called_as, all_args, global_options, command_args):
     """
     config = Config()
 
-    global_options_str = ' '.join(["'%s'" % i for i in global_options])
-    command_with_options = "%s %s" % (config.get("System", "RealGit"),
-                                      global_options_str)
+    called_as_str = ' '.join(called_as)
+    global_options_str = ' '.join([f"'{i}'" for i in global_options])
+    real_git = config.get("System", "RealGit")
+    command_with_options = f"{real_git} {global_options_str}"
 
     # Translate all '-C' options into a list of 'cd' commands
     paths = []
@@ -76,18 +77,18 @@ def git_submodule_update(called_as, all_args, global_options, command_args):
             update_paths.append(arg)
 
     # Get the original pull URL
-    command = "%s remote get-url origin" % command_with_options
+    command = f"{command_with_options} remote get-url origin"
     retval, pull_url = getstatusoutput(command)
     if retval == 0 and pull_url.startswith(GITCACHE_DIR):
-        command = "%s remote get-url --push origin" % command_with_options
+        command = f"{command_with_options} remote get-url --push origin"
         retval, push_url = getstatusoutput(command)
         if retval == 0:
             pull_url = push_url
 
     if has_init:
         # Handle '--init' part separately by temporarily restoring the original URL
-        command = '%s %s submodule init %s' % (' '.join(called_as), global_options_str,
-                                               ' '.join(update_paths))
+        update_paths_str = ' '.join(update_paths)
+        command = f'{called_as_str} {global_options_str} submodule init {update_paths_str}'
         return_value = os.system(command)
         if return_value != 0:
             LOG.error("Initializing submodule with the command %s failed.", command)
@@ -101,19 +102,19 @@ def git_submodule_update(called_as, all_args, global_options, command_args):
 
     # Bugs of the current implementation:
     #  - Relative target URL is not handled correctly in clone.
-    command = "%s config -f .gitmodules -l " % command_with_options
+    command = f"{command_with_options} config -f .gitmodules -l "
     command += "| awk -F '=' '{print $1}' | grep '^submodule' | grep '.url$'"
     retval, output = getstatusoutput(command)
     if retval == 0:
         for tgt_url_key in output.split():
-            command = "%s config -f .gitmodules --get %s" % (command_with_options, tgt_url_key)
+            command = f"{command_with_options} config -f .gitmodules --get {tgt_url_key}"
             retval, tgt_url = getstatusoutput(command)
 
             if retval != 0:
                 continue
 
             tgt_path_key = tgt_url_key.replace('.url', '.path')
-            command = "%s config -f .gitmodules --get %s" % (command_with_options, tgt_path_key)
+            command = f"{command_with_options} config -f .gitmodules --get {tgt_path_key}"
             retval, tgt_path = getstatusoutput(command)
 
             if retval != 0:
@@ -131,11 +132,10 @@ def git_submodule_update(called_as, all_args, global_options, command_args):
             abs_tgt_path = os.path.join(*paths, tgt_path)
             if os.path.exists(os.path.join(abs_tgt_path, '.git')):
                 # Perform a git fetch in the directory...
-                command = "cd %s; %s fetch" % (abs_tgt_path, ' '.join(called_as))
+                command = f"cd {abs_tgt_path}; {called_as_str} fetch"
             else:
                 # Perform a git clone into the directory...
-                command = "%s %s clone %s %s" % (' '.join(called_as), global_options_str,
-                                                 tgt_url, tgt_path)
+                command = f"{called_as_str} {global_options_str} clone {tgt_url} {tgt_path}"
 
             os.system(command)
 

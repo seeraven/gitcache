@@ -121,27 +121,27 @@ def git_cache():
         total_updates = 0
 
         for path in sorted(all_records):
-            print("Mirror of %s:" % all_records[path]["url"])
-            print("  Mirror Updates:      %d" % all_records[path]["mirror-updates"])
-            print("  Clones from Mirror:  %d" % all_records[path]["clones"])
-            print("  Updates from Mirror: %d" % all_records[path]["updates"])
+            print(f"Mirror of {all_records[path]['url']}:")
+            print(f"  Mirror Updates:      {all_records[path]['mirror-updates']}")
+            print(f"  Clones from Mirror:  {all_records[path]['clones']}")
+            print(f"  Updates from Mirror: {all_records[path]['updates']}")
             print()
             total_mirror_updates += all_records[path]["mirror-updates"]
             total_clones += all_records[path]["clones"]
             total_updates += all_records[path]["updates"]
 
         print("Total:")
-        print("  Mirror Updates:      %d" % total_mirror_updates)
-        print("  Clones from Mirror:  %d" % total_clones)
-        print("  Updates from Mirror: %d" % total_updates)
+        print(f"  Mirror Updates:      {total_mirror_updates}")
+        print(f"  Clones from Mirror:  {total_clones}")
+        print(f"  Updates from Mirror: {total_updates}")
         print()
 
     elif not (args.cleanup or args.update_all or args.delete or args.zero_statistics):
         print("gitcache global settings:")
         print("-------------------------")
-        print("  GITCACHE_DIR      = %s" % GITCACHE_DIR)
-        print("  GITCACHE_DB       = %s" % GITCACHE_DB)
-        print("  GITCACHE_DB_LOCK  = %s" % GITCACHE_DB_LOCK)
+        print(f"  GITCACHE_DIR      = {GITCACHE_DIR}")
+        print(f"  GITCACHE_DB       = {GITCACHE_DB}")
+        print(f"  GITCACHE_DB_LOCK  = {GITCACHE_DB_LOCK}")
         print()
         print("gitcache configuration:")
         print("-----------------------")
