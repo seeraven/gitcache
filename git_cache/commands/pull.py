@@ -18,11 +18,11 @@ Copyright:
 # -----------------------------------------------------------------------------
 import logging
 
-from ..command_execution import getstatusoutput, pretty_call_command_retry
+from .helpers import get_current_ref, get_mirror_url
+from ..command_execution import pretty_call_command_retry
 from ..config import Config
 from ..database import Database
 from ..git_mirror import GitMirror
-from ..global_settings import GITCACHE_DIR
 
 
 # -----------------------------------------------------------------------------
@@ -35,12 +35,11 @@ LOG = logging.getLogger(__name__)
 # Function Definitions
 # -----------------------------------------------------------------------------
 # pylint: disable=too-many-locals
-def git_pull(all_args, global_options):
+def git_pull(git_options):
     """Handle a git pull command.
 
     Args:
-        all_args (list):       All arguments to the 'git' command.
-        global_options (list): The options given to git, not the command.
+        git_options (obj):     The GitOptions object.
 
     Return:
         Returns 0 on success, otherwise the return code of the last failed
@@ -49,43 +48,39 @@ def git_pull(all_args, global_options):
     action = "Update"
     config = Config()
 
-    global_options_str = ' '.join([f"'{i}'" for i in global_options])
-    real_git = config.get("System", "RealGit")
-    command_with_options = f"{real_git} {global_options_str}"
+    repository = 'origin'
+    refs = []
+    if git_options.command_args:
+        repository = git_options.command_args[0]
+        refs = git_options.command_args[1:]
 
-    command = f"{command_with_options} remote get-url origin"
-    retval, pull_url = getstatusoutput(command)
-    if retval == 0 and pull_url.startswith(GITCACHE_DIR):
-        command = f"{command_with_options} remote get-url --push origin"
-        retval, push_url = getstatusoutput(command)
-        if retval == 0:
-            database = Database()
-            mirror = GitMirror(url=push_url, database=database)
-            mirror.update()
-            database.increment_counter(mirror.path, "updates")
+    mirror_url = get_mirror_url(git_options)
+    if mirror_url and repository == 'origin':
+        database = Database()
+        mirror = GitMirror(url=mirror_url, database=database)
+        mirror.update()
+        database.increment_counter(mirror.path, "updates")
 
-            # The mirror.update() updates the LFS data of the default ref of
-            # the mirror repository, which should be 'master' or 'main'. If we
-            # are currently on a different branch, we want to update that branch
-            # as well.
-            command = f"{command_with_options} rev-parse --abbrev-ref HEAD"
-            retval, ref = getstatusoutput(command)
-            if retval == 0 and ref != mirror.get_default_ref():
+        # The mirror.update() updates the LFS data of the default ref of
+        # the mirror repository, which should be 'master' or 'main'. If we
+        # are currently on a different branch, we want to update that branch
+        # as well.
+        if not refs:
+            refs.append(get_current_ref(git_options))
+        default_ref = mirror.get_default_ref()
+        for ref in refs:
+            if ref and ref != default_ref:
                 mirror.fetch_lfs(ref)
 
-            config = mirror.config
-            action = f"Update from mirror {mirror.path}"
-        else:
-            LOG.warning("Can't get push URL of the repository!")
-    else:
-        LOG.debug("Repository is not managed by gitcache!")
+        config = mirror.config
+        action = f"Update from mirror {mirror.path}"
 
-    original_command_args = [real_git] + all_args
+    original_command_str = ' '.join([f"'{i}'" for i in git_options.get_real_git_all_args()])
 
     return_code, _, _ = pretty_call_command_retry(
         action,
         '',
-        ' '.join([f"'{i}'" for i in original_command_args]),
+        original_command_str,
         num_retries=config.get("Update", "Retries"),
         command_timeout=config.get("Update", "CommandTimeout"),
         output_timeout=config.get("Update", "OutputTimeout"))

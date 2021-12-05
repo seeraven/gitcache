@@ -18,11 +18,10 @@ Copyright:
 # -----------------------------------------------------------------------------
 import logging
 
-from ..command_execution import getstatusoutput, simple_call_command
-from ..config import Config
+from .helpers import get_current_ref, get_mirror_url
+from ..command_execution import simple_call_command
 from ..database import Database
 from ..git_mirror import GitMirror
-from ..global_settings import GITCACHE_DIR
 
 
 # -----------------------------------------------------------------------------
@@ -35,13 +34,11 @@ LOG = logging.getLogger(__name__)
 # Function Definitions
 # -----------------------------------------------------------------------------
 # pylint: disable=too-many-locals
-def git_lfs_fetch(all_args, global_options, command_args):
+def git_lfs_fetch(git_options):
     """Handle a git lfs fetch command.
 
     Args:
-        all_args (list):       All arguments to the 'git' command.
-        global_options (list): The options given to git, not the command.
-        command_args (list):   The arguments for the clone command.
+        git_options (obj):     The GitOptions object.
 
     Return:
         Returns 0 on success, otherwise the return code of the last failed
@@ -54,58 +51,26 @@ def git_lfs_fetch(all_args, global_options, command_args):
     #  Mirror Update:    git lfs fetch <options> ... (as the options might include
     #                                                 not-fetched elements)
     #  Mirror Update     git lfs fetch origin ref...
-    options_with_arg = ['-I', '--include', '-X', '--exclude']
-    options = []
-    remote = None
-    refs = []
-    add_next_arg = False
-    for arg in command_args:
-        if add_next_arg:
-            options.append(arg)
-            add_next_arg = False
-        elif arg in options_with_arg:
-            options.append(arg)
-            add_next_arg = True
-        elif arg.startswith('-'):
-            options.append(arg)
-        elif remote is None:
-            remote = arg
-        else:
-            refs.append(arg)
+    mirror_url = get_mirror_url(git_options)
+    if mirror_url:
+        repository = 'origin'
+        refs = []
+        if git_options.command_args:
+            repository = git_options.command_args[0]
+            refs = git_options.command_args[1:]
 
-    if remote is None:
-        remote = 'origin'
-
-    config = Config()
-    real_git = config.get("System", "RealGit")
-    if remote == 'origin':
-        if options or refs:
-            global_options_str = ' '.join([f"'{i}'" for i in global_options])
-            command_with_options = f"{real_git} {global_options_str}"
-
+        if repository == 'origin' and (git_options.command_options or refs):
             if not refs:
-                command = f"{command_with_options} rev-parse --abbrev-ref HEAD"
-                retval, ref = getstatusoutput(command)
-                if retval == 0:
+                ref = get_current_ref(git_options)
+                if ref:
                     refs.append(ref)
 
-            command = f"{command_with_options} remote get-url origin"
-            retval, pull_url = getstatusoutput(command)
-            if retval == 0 and pull_url.startswith(GITCACHE_DIR):
-                command = f"{command_with_options} remote get-url --push origin"
-                retval, push_url = getstatusoutput(command)
-                if retval == 0:
-                    database = Database()
-                    mirror = GitMirror(url=push_url, database=database)
-                    for ref in refs:
-                        mirror.fetch_lfs(ref, options)
-                else:
-                    LOG.warning("Can't get push URL of the repository!")
-            else:
-                LOG.debug("Repository is not managed by gitcache!")
+            database = Database()
+            mirror = GitMirror(url=mirror_url, database=database)
+            for ref in refs:
+                mirror.fetch_lfs(ref, git_options.command_options)
 
-    original_command_args = [real_git] + all_args
-    return simple_call_command(original_command_args)
+    return simple_call_command(git_options.get_real_git_all_args())
 
 
 # -----------------------------------------------------------------------------

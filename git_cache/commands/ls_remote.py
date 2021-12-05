@@ -18,11 +18,11 @@ Copyright:
 # -----------------------------------------------------------------------------
 import logging
 
-from ..command_execution import getstatusoutput, simple_call_command
+from .helpers import get_mirror_url
+from ..command_execution import simple_call_command
 from ..config import Config
 from ..database import Database
 from ..git_mirror import GitMirror
-from ..global_settings import GITCACHE_DIR
 
 
 # -----------------------------------------------------------------------------
@@ -35,54 +35,48 @@ LOG = logging.getLogger(__name__)
 # Function Definitions
 # -----------------------------------------------------------------------------
 # pylint: disable=too-many-locals
-def git_ls_remote(all_args, global_options, command_args):
+def git_ls_remote(git_options):
     """Handle a git ls-remote command.
 
+    The git ls-remote command updates the mirror if no repository is specified
+    or the repository 'origin' is specified. After the update, the command
+    is rewritten to use the mirror.
+
     Args:
-        all_args (list):       All arguments to the 'git' command.
-        global_options (list): The options given to git, not the command.
-        command_args (list):   The arguments for the clone command.
+        git_options (obj):     The GitOptions object.
 
     Return:
         Returns 0 on success, otherwise the return code of the last failed
         command.
     """
     config = Config()
+    repository = None
+    mirror_url = None
 
-    global_options_str = ' '.join([f"'{i}'" for i in global_options])
-    real_git = config.get("System", "RealGit")
-    command_with_options = f"{real_git} {global_options_str}"
+    if git_options.command_args:
+        repository = git_options.command_args[0]
 
-    remote_url = None
-    for arg in command_args:
-        if arg.startswith('http://') or arg.startswith('https://') or arg.startswith('ssh://'):
-            remote_url = arg
-            break
+    if repository is None or repository == 'origin':
+        mirror_url = get_mirror_url(git_options)
 
-    if remote_url is None:
-        command = f"{command_with_options} remote get-url origin"
-        retval, pull_url = getstatusoutput(command)
-        if retval == 0 and pull_url.startswith(GITCACHE_DIR):
-            command = f"{command_with_options} remote get-url --push origin"
-            retval, push_url = getstatusoutput(command)
-            if retval == 0:
-                remote_url = push_url
-            else:
-                LOG.warning("Can't get push URL of the repository!")
-        else:
-            LOG.debug("Repository is not managed by gitcache!")
+    supported_prefixes = ['http://', 'https://', 'ssh://']
+    if repository and any(repository.startswith(prefix) for prefix in supported_prefixes):
+        mirror_url = repository
 
-    if remote_url:
+    if mirror_url:
         database = Database()
-        mirror = GitMirror(url=remote_url, database=database)
+        mirror = GitMirror(url=mirror_url, database=database)
         mirror.update()
         database.increment_counter(mirror.path, "updates")
-        config = mirror.config
-        new_args = [x if x != remote_url else mirror.git_dir for x in all_args]
+        new_args = git_options.global_options
+        new_args += [git_options.command]
+        new_args += git_options.command_options
+        new_args += ['origin']
+        new_args += git_options.command_args[1:]
     else:
-        new_args = all_args
+        new_args = git_options.all_args
 
-    original_command_args = [real_git] + new_args
+    original_command_args = [config.get("System", "RealGit")] + new_args
     return simple_call_command(original_command_args)
 
 

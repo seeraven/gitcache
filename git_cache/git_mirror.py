@@ -204,25 +204,26 @@ class GitMirror:
             return False
         return True
 
-    def clone_from_mirror(self, original_args, ref=None):
+    def clone_from_mirror(self, git_options):
         """Clone from the mirror.
 
         Args:
-            original_args (list): The original arguments to git (without 'git') including
-                                  the 'clone' command.
-            ref (str):            The ref to use for the fetch of the lfs data. If None,
-                                  the default branch is determined and used.
+            git_options (obj): The GitOptions object.
 
         Return:
             Returns the return code of the last command.
         """
+        ref = None
+        if 'branch' in git_options.command_group_values:
+            ref = git_options.command_group_values['branch'][0]
+
         if not self.update(ref):
             return 1
 
         git_lfs_url = self.url + "/info/lfs"
         real_git = self.config.get("System", "RealGit")
 
-        new_args = [x if x != self.url else self.git_dir for x in original_args]
+        new_args = [x if x != self.url else self.git_dir for x in git_options.all_args]
         new_args.insert(0, real_git)
         new_args.insert(1, "-c")
         new_args.insert(2, f"lfs.url={git_lfs_url}")
@@ -230,8 +231,9 @@ class GitMirror:
             new_args.insert(3, "-c")
             new_args.insert(4, f"lfs.storage={self.git_lfs_dir}")
 
-        target_dir = original_args[-1]
-        if target_dir == self.url:
+        if len(git_options.command_args) > 1:
+            target_dir = git_options.command_args[1]
+        else:
             target_dir = os.path.basename(self.url).replace('.git', '')
             new_args.append(target_dir)
 
@@ -249,21 +251,9 @@ class GitMirror:
 
         self.database.increment_counter(self.path, "clones")
 
-        # Translate all '-C' options into a list of 'cd' commands
-        paths = []
-        save_next_path = False
-        for arg in original_args:
-            if save_next_path:
-                paths.append(arg)
-                save_next_path = False
-            elif arg == '-C':
-                save_next_path = True
-            elif arg == 'clone':
-                break
-        paths.append(target_dir)
-
         LOG.info("Setting push URL to %s and configure LFS.", self.url)
-        command = ';'.join([f"cd {x}" for x in paths])
+        paths = git_options.get_global_group_values('run_path') + [target_dir]
+        command = ';'.join([f'cd "{x}"' for x in paths])
         command += f";{real_git} remote set-url --push origin {self.url}"
         command += f";{real_git} config --local lfs.url {git_lfs_url}"
         if self.config.get('LFS', 'PerMirrorStorage'):

@@ -19,11 +19,11 @@ Copyright:
 import logging
 import os
 
-from ..command_execution import getstatusoutput, pretty_call_command_retry
+from .helpers import get_mirror_url
+from ..command_execution import pretty_call_command_retry
 from ..config import Config
 from ..database import Database
 from ..git_mirror import GitMirror
-from ..global_settings import GITCACHE_DIR
 
 
 # -----------------------------------------------------------------------------
@@ -36,42 +36,28 @@ LOG = logging.getLogger(__name__)
 # Function Definitions
 # -----------------------------------------------------------------------------
 # pylint: disable=too-many-locals,too-many-statements
-def git_fetch(all_args, global_options, command_args):
+def git_fetch(git_options):
     """Handle a git fetch command.
 
     Args:
-        all_args (list):       All arguments to the 'git' command.
-        global_options (list): The options given to git, not the command.
-        command_args (list):   The arguments for the fetch command.
+        git_options (obj):     The GitOptions object.
 
     Return:
         Returns 0 on success, otherwise the return code of the last failed
         command.
     """
     config = Config()
-
-    global_options_str = ' '.join([f"'{i}'" for i in global_options])
     real_git = config.get("System", "RealGit")
-    command_with_options = f"{real_git} {global_options_str}"
 
     remote_url = None
-    for arg in command_args:
-        if arg.startswith('http://') or arg.startswith('https://') or arg.startswith('ssh://'):
-            remote_url = arg
-            break
+    if git_options.command_args:
+        for arg in git_options.command_args:
+            if arg.startswith('http://') or arg.startswith('https://') or arg.startswith('ssh://'):
+                remote_url = arg
+                break
 
     if remote_url is None:
-        command = f"{command_with_options} remote get-url origin"
-        retval, pull_url = getstatusoutput(command)
-        if retval == 0 and pull_url.startswith(GITCACHE_DIR):
-            command = f"{command_with_options} remote get-url --push origin"
-            retval, push_url = getstatusoutput(command)
-            if retval == 0:
-                remote_url = push_url
-            else:
-                LOG.warning("Can't get push URL of the repository!")
-        else:
-            LOG.debug("Repository is not managed by gitcache!")
+        remote_url = get_mirror_url(git_options)
 
     if remote_url:
         database = Database()
@@ -80,23 +66,12 @@ def git_fetch(all_args, global_options, command_args):
         database.increment_counter(mirror.path, "updates")
         config = mirror.config
         action = f"Fetch from mirror {mirror.path}"
-        new_args = [x if x != remote_url else mirror.git_dir for x in all_args]
+        new_args = [x if x != remote_url else mirror.git_dir for x in git_options.all_args]
 
         # We configure the LFS storage here to support the Jenkins way
         # of cloning git repositories.
         LOG.info("Configuring LFS.")
-        paths = []
-        save_next_path = False
-        for arg in global_options:
-            if save_next_path:
-                paths.append(arg)
-                save_next_path = False
-            elif arg == '-C':
-                save_next_path = True
-            elif arg == 'fetch':
-                break
-
-        command = ';'.join([f"cd {x}" for x in paths])
+        command = git_options.get_run_path_cd_commands()
         if command != '':
             command += ';'
         command += f"{real_git} config --local lfs.url {mirror.url}/info/lfs"
@@ -105,7 +80,7 @@ def git_fetch(all_args, global_options, command_args):
         os.system(command)
     else:
         action = "Fetch"
-        new_args = all_args
+        new_args = git_options.all_args
 
     original_command_args = [real_git] + new_args
 

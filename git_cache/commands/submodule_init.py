@@ -18,9 +18,8 @@ Copyright:
 # -----------------------------------------------------------------------------
 import logging
 
+from .helpers import get_mirror_url, get_pull_url
 from ..command_execution import getstatusoutput, simple_call_command
-from ..config import Config
-from ..global_settings import GITCACHE_DIR
 
 
 # -----------------------------------------------------------------------------
@@ -32,48 +31,40 @@ LOG = logging.getLogger(__name__)
 # -----------------------------------------------------------------------------
 # Function Definitions
 # -----------------------------------------------------------------------------
-def git_submodule_init(all_args, global_options):
+def git_submodule_init(git_options):
     """Handle a git submodule init command.
 
+    The 'submodule init' command initializes the git configuration for the
+    submodules. To support relative paths, we restore the original URL of a
+    mirror before calling the 'submodule init' command and restore it
+    afterwards.
+
     Args:
-        all_args (list):       All arguments to the 'git' command.
-        global_options (list): The options given to git, not the command.
+        git_options (obj):     The GitOptions object.
 
     Return:
         Returns 0 on success, otherwise the return code of the last failed
         command.
     """
-    config = Config()
+    mirror_url = get_mirror_url(git_options)
+    if mirror_url:
+        pull_url = get_pull_url(git_options)
 
-    global_options_str = ' '.join([f"'{i}'" for i in global_options])
-    real_git = config.get("System", "RealGit")
-    command_with_options = f"{real_git} {global_options_str}"
-
-    command = f"{command_with_options} remote get-url origin"
-    retval, pull_url = getstatusoutput(command)
-    if retval == 0 and pull_url.startswith(GITCACHE_DIR):
-        command = f"{command_with_options} remote get-url --push origin"
-        retval, push_url = getstatusoutput(command)
+        command_with_options = git_options.get_real_git_with_options()
+        command = f"{command_with_options} remote set-url origin {mirror_url}"
+        retval, _ = getstatusoutput(command)
         if retval == 0:
-            command = f"{command_with_options} remote set-url origin {push_url}"
-            retval, _ = getstatusoutput(command)
+            retval = simple_call_command(git_options.get_real_git_all_args())
+        else:
+            LOG.warning("Can't restore original pull URL of the repository!")
 
-            if retval == 0:
-                retval = simple_call_command([real_git] + all_args)
-            else:
-                LOG.warning("Can't restore original pull URL of the repository!")
-
-            command = f"{command_with_options} remote set-url origin {pull_url};"
-            command += f"{command_with_options} remote set-url --push origin {push_url}"
-            _, _ = getstatusoutput(command)
-            return retval
-
-        LOG.warning("Can't get push URL of the repository!")
-    else:
-        LOG.debug("Repository is not managed by gitcache!")
+        command = f"{command_with_options} remote set-url origin {pull_url};"
+        command += f"{command_with_options} remote set-url --push origin {mirror_url}"
+        _, _ = getstatusoutput(command)
+        return retval
 
     # Fallback to original git
-    return simple_call_command([real_git] + all_args)
+    return simple_call_command(git_options.get_real_git_all_args())
 
 
 # -----------------------------------------------------------------------------

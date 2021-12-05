@@ -32,6 +32,7 @@ from .commands.submodule_init import git_submodule_init
 from .commands.submodule_update import git_submodule_update
 from .commands.update_all import git_update_all_mirrors
 from .config import Config
+from .git_options import GitOptions
 
 
 # -----------------------------------------------------------------------------
@@ -43,48 +44,6 @@ LOG = logging.getLogger(__name__)
 # -----------------------------------------------------------------------------
 # Function Definitions
 # -----------------------------------------------------------------------------
-def split_git_command(args):
-    """Split the git command into global options of interest, command and command arguments.
-
-    Args:
-        args (list): The arguments to git.
-
-    Return:
-        Returns the tuple (global_options, command, arguments).
-    """
-    ignore_options_with_argument = ['--namespace', '--super-prefix']
-    append_options_with_argument = ['-C', '-c', '--git-dir', '--work-tree']
-    append_options_starting_with = ['--git-dir=', '--work-tree=']
-
-    global_options = []
-    command = None
-    arguments = []
-
-    append_next = False
-    ignore_next = False
-
-    for arg in args:
-        if command is None:
-            if append_next:
-                global_options.append(arg)
-                append_next = False
-            elif ignore_next:
-                ignore_next = False
-            elif arg in ignore_options_with_argument:
-                ignore_next = True
-            elif arg in append_options_with_argument:
-                global_options.append(arg)
-                append_next = True
-            elif any(arg.startswith(x) for x in append_options_starting_with):
-                global_options.append(arg)
-            elif not arg.startswith('-'):
-                command = arg
-        else:
-            arguments.append(arg)
-
-    return (global_options, command, arguments)
-
-
 def call_real_git(args):
     """Call the real git command with the given arguments.
 
@@ -107,52 +66,50 @@ def handle_git_command(called_as, args):
     """
     LOG.debug("handle_git_command(%s, %s) started", called_as, args)
 
-    bail_out_options = ['--help', '-h', '--version',
-                        '--exec-path', '--html-path', '--man-path', '--info-path']
-    if not args or any(x in bail_out_options for x in args):
+    git_options = GitOptions(args)
+    if git_options.has_bail_out():
         LOG.debug("bail out")
         sys.exit(call_real_git(args))
 
-    global_options, command, command_arguments = split_git_command(args)
-    LOG.debug("Found global options %s, command '%s' and arguments %s.",
-              global_options, command, command_arguments)
+    LOG.debug("Found global options %s, command '%s', command options '%s' and arguments %s.",
+              git_options.global_options, git_options.get_command(),
+              git_options.command_options, git_options.command_args)
 
-    if command == "cleanup":
+    if git_options.get_command() == "cleanup":
         sys.exit(git_cleanup())
 
-    elif command == "update-mirrors":
+    elif git_options.get_command() == "update-mirrors":
         sys.exit(git_update_all_mirrors())
 
-    elif command == 'delete-mirror':
-        sys.exit(git_delete_mirror(command_arguments))
+    elif git_options.get_command() == 'delete-mirror':
+        sys.exit(git_delete_mirror(git_options.command_args))
 
-    elif command == 'ls-remote':
-        sys.exit(git_ls_remote(args, global_options, command_arguments))
+    elif git_options.get_command() == 'ls-remote':
+        sys.exit(git_ls_remote(git_options))
 
-    elif command == 'checkout':
-        sys.exit(git_checkout(args, global_options, command_arguments))
+    elif git_options.get_command() == 'checkout':
+        sys.exit(git_checkout(git_options))
 
-    elif command == 'clone':
-        sys.exit(git_clone(args, command_arguments))
+    elif git_options.get_command() == 'clone':
+        sys.exit(git_clone(git_options))
 
-    elif command == 'lfs' and 'fetch' in command_arguments:
-        command_arguments.remove('fetch')
-        sys.exit(git_lfs_fetch(args, global_options, command_arguments))
+    elif git_options.get_command() == 'lfs_fetch':
+        sys.exit(git_lfs_fetch(git_options))
 
-    elif command == 'pull':
-        sys.exit(git_pull(args, global_options))
+    elif git_options.get_command() == 'pull':
+        sys.exit(git_pull(git_options))
 
-    elif command == 'fetch':
-        sys.exit(git_fetch(args, global_options, command_arguments))
+    elif git_options.get_command() == 'fetch':
+        sys.exit(git_fetch(git_options))
 
-    elif command == 'submodule' and 'init' in command_arguments:
-        sys.exit(git_submodule_init(args, global_options))
+    elif git_options.get_command() == 'submodule_init':
+        sys.exit(git_submodule_init(git_options))
 
-    elif command == 'submodule' and 'update' in command_arguments:
-        command_arguments.remove('update')
-        sys.exit(git_submodule_update(called_as, args, global_options, command_arguments))
+    elif git_options.get_command() == 'submodule_update':
+        sys.exit(git_submodule_update(called_as, git_options))
 
-    LOG.debug("Command '%s' is not handled by gitcache. Calling the real git command.", command)
+    LOG.debug("Command '%s' is not handled by gitcache. Calling the real git command.",
+              git_options.get_command())
     sys.exit(call_real_git(args))
 
 

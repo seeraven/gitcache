@@ -19,10 +19,8 @@ Copyright:
 import logging
 import os
 
+from .helpers import get_mirror_url, get_pull_url
 from ..command_execution import getstatusoutput, simple_call_command
-from ..config import Config
-from ..global_settings import GITCACHE_DIR
-
 
 # -----------------------------------------------------------------------------
 # Logger
@@ -34,87 +32,67 @@ LOG = logging.getLogger(__name__)
 # Function Definitions
 # -----------------------------------------------------------------------------
 # pylint: disable=too-many-locals,too-many-statements
-def git_submodule_update(called_as, all_args, global_options, command_args):
+def git_submodule_update(called_as, git_options):
     """Handle a git submodule update command.
+
+    A 'git submodule update' command is replaced by calling 'git fetch' or
+    'git clone' commands for each submodule using the gitcache wrapper. Then
+    the real git command is called to fix the configuration.
+
+    If the option '--init' is given, a 'git submodule init' using the
+    gitcache wrapper is performed first.
 
     Args:
         called_as (list):      The arguments used for the command call.
-        all_args (list):       All arguments to the 'git' command.
-        global_options (list): The options given to git, not the command.
-        command_args (list):   The options given to the git subcommand.
+        git_options (obj):     The GitOptions object.
 
     Return:
         Returns 0 on success, otherwise the return code of the last failed
         command.
     """
-    config = Config()
-
     called_as_str = ' '.join(called_as)
-    global_options_str = ' '.join([f"'{i}'" for i in global_options])
-    real_git = config.get("System", "RealGit")
-    command_with_options = f"{real_git} {global_options_str}"
+    global_options_str = ' '.join([f"'{i}'" for i in git_options.global_options])
 
-    # Translate all '-C' options into a list of 'cd' commands
-    paths = []
-    save_next_path = False
-    for arg in global_options:
-        if save_next_path:
-            paths.append(arg)
-            save_next_path = False
-        elif arg == '-C':
-            save_next_path = True
+    cd_paths = git_options.get_global_group_values('run_path')
+    update_paths = git_options.command_args
 
-    # Capture '--init' option and extract all paths to update (may be empty)
-    has_init = '--init' in command_args
-    update_paths = []
-    ignore_next_arg = False
-    for arg in command_args:
-        if ignore_next_arg:
-            ignore_next_arg = False
-        elif arg == '--reference':
-            ignore_next_arg = True
-        elif not arg.startswith('-'):
-            update_paths.append(arg)
-
-    # Get the original pull URL
-    command = f"{command_with_options} remote get-url origin"
-    retval, pull_url = getstatusoutput(command)
-    if retval == 0 and pull_url.startswith(GITCACHE_DIR):
-        command = f"{command_with_options} remote get-url --push origin"
-        retval, push_url = getstatusoutput(command)
-        if retval == 0:
-            pull_url = push_url
-
-    if has_init:
-        # Handle '--init' part separately by temporarily restoring the original URL
-        update_paths_str = ' '.join(update_paths)
+    # If the --init option is specified, we call 'submodule init' first and
+    # remove the option for the following commands
+    if 'init' in git_options.command_group_values:
+        update_paths_str = ' '.join([f"'{i}'" for i in update_paths])
         command = f'{called_as_str} {global_options_str} submodule init {update_paths_str}'
         return_value = os.system(command)
         if return_value != 0:
             LOG.error("Initializing submodule with the command %s failed.", command)
             return return_value
-        all_args = [i for i in all_args if i != '--init']
+        git_options.all_args = [i for i in git_options.all_args if i != '--init']
+        git_options.command_options = [i for i in git_options.command_options if i != '--init']
 
     # Make update_paths relative to the checked out repository
-    if paths:
+    if cd_paths:
         # pylint: disable=no-value-for-parameter
-        update_paths = [os.path.relpath(path, os.path.join(*paths)) for path in update_paths]
+        update_paths = [os.path.relpath(path, os.path.join(*cd_paths)) for path in update_paths]
 
     # Bugs of the current implementation:
     #  - Relative target URL is not handled correctly in clone.
-    command = f"{command_with_options} config -f .gitmodules -l "
+    call_real_git = git_options.get_real_git_with_options()
+    command = f"{call_real_git} config -f .gitmodules -l "
     command += "| awk -F '=' '{print $1}' | grep '^submodule' | grep '.url$'"
     retval, output = getstatusoutput(command)
     if retval == 0:
+        pull_url = get_mirror_url(git_options)
+        if not pull_url:
+            pull_url = get_pull_url(git_options)
+
         for tgt_url_key in output.split():
-            command = f"{command_with_options} config -f .gitmodules --get {tgt_url_key}"
+            command = f"{call_real_git} config -f .gitmodules --get {tgt_url_key}"
             retval, tgt_url = getstatusoutput(command)
 
             if retval != 0:
                 continue
 
             tgt_path_key = tgt_url_key.replace('.url', '.path')
-            command = f"{command_with_options} config -f .gitmodules --get {tgt_path_key}"
+            command = f"{call_real_git} config -f .gitmodules --get {tgt_path_key}"
             retval, tgt_path = getstatusoutput(command)
 
             if retval != 0:
@@ -129,7 +107,7 @@ def git_submodule_update(called_as, all_args, global_options, command_args):
                 url_parts[1] = os.path.normpath(os.path.join(url_parts[1], tgt_url))
                 tgt_url = '//'.join(url_parts)
 
-            abs_tgt_path = os.path.join(*paths, tgt_path)
+            abs_tgt_path = os.path.join(*cd_paths, tgt_path)
             if os.path.exists(os.path.join(abs_tgt_path, '.git')):
                 # Perform a git fetch in the directory...
                 command = f"cd {abs_tgt_path}; {called_as_str} fetch"
@@ -139,7 +117,7 @@ def git_submodule_update(called_as, all_args, global_options, command_args):
 
             os.system(command)
 
-    return simple_call_command([config.get("System", "RealGit")] + all_args)
+    return simple_call_command(git_options.get_real_git_all_args())
 
 
 # -----------------------------------------------------------------------------
