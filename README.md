@@ -82,7 +82,7 @@ gitcache is distributed as a single executable packaged using [pyInstaller].
 So all you have to do is to download the latest executable and copy it to a
 location of your choice, for example `~/bin`:
 
-    wget https://github.com/seeraven/gitcache/releases/download/v1.0.4/gitcache_Ubuntu18.04_amd64
+    wget https://github.com/seeraven/gitcache/releases/download/v1.0.5/gitcache_Ubuntu18.04_amd64
     mv gitcache_Ubuntu18.04_amd64 ~/bin/gitcache
     chmod +x ~/bin/gitcache
 
