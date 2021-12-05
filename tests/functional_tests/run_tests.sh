@@ -113,7 +113,7 @@ export GITCACHE_LOGFORMAT='%(message)s'
 # RUN TESTS
 # -----------------------------------------------------------------------------
 RETVAL=0
-TMPOUTPUT=$(tempfile)
+TMPOUTPUT=$(mktemp)
 
 for SCRIPT in ${TEST_SCRIPTS}; do
     rm -rf ${GITCACHE_DIR} ${TMP_WORKDIR}/*

@@ -14,8 +14,8 @@ function capture_output()
     echo "---------------------------------------------------------------------"
     echo "INFO: Function capture_output called with arguments $@"
 
-    STDOUT_FILE=$(tempfile)
-    STDERR_FILE=$(tempfile)
+    STDOUT_FILE=$(mktemp)
+    STDERR_FILE=$(mktemp)
 
     EXPECTED_RETVAL=$1
     shift
