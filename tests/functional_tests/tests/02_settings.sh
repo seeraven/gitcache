@@ -12,13 +12,16 @@
 
 EXPECTED_OUTPUT_PREFIX=$(basename $0 .sh)
 source $TEST_BASE_DIR/helpers/output_helpers.sh
+source $TEST_BASE_DIR/helpers/test_helpers.sh
 
 
 # -----------------------------------------------------------------------------
-# Tests:
-#   - Test the settings output message with an return code of 0.
+#  Test 'gitcache' without arguments that prints the settings
 # -----------------------------------------------------------------------------
 capture_output_success settings
+assert_gitcache_dir_exists
+assert_gitcache_config_exists
+assert_gitcache_db_does_not_exist
 
 
 # -----------------------------------------------------------------------------

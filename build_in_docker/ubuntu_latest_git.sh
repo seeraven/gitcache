@@ -19,7 +19,7 @@ add-apt-repository ppa:git-core/ppa -y
 curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | /bin/bash
 apt-get update
 
-apt-get -y install lsb-release make python3-dev python3-venv binutils git git-lfs
+apt-get -y install lsb-release make python3-dev python3-venv binutils git git-lfs jq
 
 ln -sf bash /bin/sh
 

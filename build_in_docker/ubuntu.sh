@@ -14,7 +14,7 @@ debconf-set-selections /tmp/tzdata_preseed
 apt-get update
 apt-get -y dist-upgrade
 
-apt-get -y install lsb-release make python3-dev python3-venv binutils git git-lfs
+apt-get -y install lsb-release make python3-dev python3-venv binutils git git-lfs jq
 
 ln -sf bash /bin/sh
 

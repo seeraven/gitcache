@@ -19,11 +19,11 @@ source $TEST_BASE_DIR/helpers/output_helpers.sh
 #   - Test the direct git options that lead to immediate bail out of the
 #     gitcache.
 # -----------------------------------------------------------------------------
-capture_output_success version   git --version
-capture_output_success exec_path git --exec-path
-capture_output_success html_path git --html-path
-capture_output_success man_path  git --man-path
-capture_output_success info_path git --info-path
+gitcache_ok  git --version
+gitcache_ok  git --exec-path
+gitcache_ok  git --html-path
+gitcache_ok  git --man-path
+gitcache_ok  git --info-path
 
 
 # -----------------------------------------------------------------------------

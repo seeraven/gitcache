@@ -12,13 +12,15 @@
 
 EXPECTED_OUTPUT_PREFIX=$(basename $0 .sh)
 source $TEST_BASE_DIR/helpers/output_helpers.sh
+source $TEST_BASE_DIR/helpers/test_helpers.sh
 
 
 # -----------------------------------------------------------------------------
-# Tests:
-#   - Test the usage output message with an return code of 0.
+#  Test 'gitcache -h' that prints the usage output message with an return code
+#  of 0.
 # -----------------------------------------------------------------------------
 capture_output_success usage -h
+assert_gitcache_dir_does_not_exist
 
 
 # -----------------------------------------------------------------------------

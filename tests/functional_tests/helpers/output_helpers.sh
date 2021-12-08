@@ -8,6 +8,57 @@
 # that is included as part of this package.
 # ----------------------------------------------------------------------------
 
+# Usage: run_gitcache <expected return code> <cmd> <args>
+function run_gitcache()
+{
+    echo "---------------------------------------------------------------------"
+    echo "INFO: Function run_gitcache called with arguments $@"
+
+    STDOUT_FILE=$(mktemp)
+    STDERR_FILE=$(mktemp)
+
+    EXPECTED_RETVAL=$1
+    shift
+
+    set +e
+    echo "INFO: Executing command: $GITCACHE_BIN $@"
+    $GITCACHE_BIN "$@" > $STDOUT_FILE 2> $STDERR_FILE
+    RETVAL=$?
+    set -e
+
+    if [ $RETVAL != $EXPECTED_RETVAL ]; then
+        echo "ERROR: Command gitcache $@ gave unexpected return value $RETVAL (expected ${EXPECTED_RETVAL})"
+        echo "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
+        echo "Stdout:"
+        cat ${STDOUT_FILE}
+        echo "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
+        echo "Stderr:"
+        cat ${STDERR_FILE}
+        echo "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
+        RETVAL=10
+    else
+        echo "INFO:  Command return code: $RETVAL (as expected)"
+        RETVAL=0
+    fi
+
+    rm -f $STDOUT_FILE $STDERR_FILE
+    echo "---------------------------------------------------------------------"
+
+    return $RETVAL
+}
+
+# Usage: gitcache_ok <cmd> <args>
+function gitcache_ok()
+{
+    run_gitcache 0 "$@"
+}
+
+# Usage: gitcache_error <cmd> <args>
+function gitcache_error()
+{
+    run_gitcache 1 "$@"
+}
+
 # Usage: capture_output <expected retval> <name> <args>
 function capture_output()
 {

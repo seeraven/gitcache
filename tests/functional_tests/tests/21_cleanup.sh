@@ -12,23 +12,28 @@
 
 EXPECTED_OUTPUT_PREFIX=$(basename $0 .sh)
 source $TEST_BASE_DIR/helpers/output_helpers.sh
+source $TEST_BASE_DIR/helpers/test_helpers.sh
 
 
-# -----------------------------------------------------------------------------
-# Tests
-# -----------------------------------------------------------------------------
-rm -rf ${GITCACHE_DIR}
-rm -rf ${TMP_WORKDIR}/*
+REPO=https://github.com/seeraven/gitcache.git
 
-capture_output_success clone git clone https://github.com/seeraven/gitcache.git ${TMP_WORKDIR}/gitcache
+# Initial clone
+gitcache_ok  git clone $REPO ${TMP_WORKDIR}/gitcache
 
+# Cleanup with 'git cleanup'
 export GITCACHE_CLEANUP_AFTER=1
 sleep 2s
-capture_output_success cleanup_via_git       git cleanup
-capture_output_success cleanup_via_git_stats -s
+gitcache_ok  git cleanup
+assert_db_field mirror-updates of $REPO is ''
 
-capture_output_success cleanup_via_gitcache       -c
-capture_output_success cleanup_via_gitcache_stats -s
+# Clone again
+rm -rf ${TMP_WORKDIR}/gitcache
+gitcache_ok  git clone $REPO ${TMP_WORKDIR}/gitcache
+
+# Cleanup with 'gitcache -c'
+sleep 2s
+gitcache_ok  -c
+assert_db_field mirror-updates of $REPO is ''
 export GITCACHE_CLEANUP_AFTER=3600
 
 

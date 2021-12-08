@@ -137,7 +137,7 @@ for SCRIPT in ${TEST_SCRIPTS}; do
 done
 
 rm -f $TMPOUTPUT
-rm -rf $GITCACHE_DIR ${TMP_WORKDIR}
+#rm -rf $GITCACHE_DIR ${TMP_WORKDIR}
 
 exit $RETVAL
 

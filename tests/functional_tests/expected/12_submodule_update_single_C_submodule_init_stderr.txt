@@ -1,2 +1,0 @@
-Submodule 'dmdcache' (https://github.com/seeraven/dmdcache) registered for path 'dmdcache'
-Submodule 'gitcache' (https://github.com/seeraven/gitcache) registered for path 'gitcache'

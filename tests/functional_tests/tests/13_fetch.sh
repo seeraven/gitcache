@@ -1,6 +1,6 @@
 #!/bin/bash -e
 # ----------------------------------------------------------------------------
-# Check the fetch output.
+# Check the fetch command.
 #
 # Copyright (c) 2020 by Clemens Rabe <clemens.rabe@clemensrabe.de>
 # All rights reserved.
@@ -12,34 +12,45 @@
 
 EXPECTED_OUTPUT_PREFIX=$(basename $0 .sh)
 source $TEST_BASE_DIR/helpers/output_helpers.sh
+source $TEST_BASE_DIR/helpers/test_helpers.sh
 
 
-# -----------------------------------------------------------------------------
-# Tests
-# -----------------------------------------------------------------------------
-rm -rf ${GITCACHE_DIR}
-rm -rf ${TMP_WORKDIR}/*
+REPO=https://github.com/seeraven/gitcache.git
 
-capture_output_success clone git clone https://github.com/seeraven/gitcache.git ${TMP_WORKDIR}/gitcache
+# Initial clone
+gitcache_ok  git clone $REPO ${TMP_WORKDIR}/gitcache
 
-capture_output_success fetch       git -C ${TMP_WORKDIR}/gitcache fetch
-capture_output_success fetch_stats -s
+# Fetch updates the mirror
+gitcache_ok  git -C ${TMP_WORKDIR}/gitcache fetch
+assert_db_field mirror-updates of $REPO is 1
+assert_db_field clones of $REPO is 1
+assert_db_field updates of $REPO is 1
 
-capture_output_success fetch_with_url       git -C ${TMP_WORKDIR}/gitcache fetch https://github.com/seeraven/gitcache.git
-capture_output_success fetch_with_urlstats -s
+# Fetch with explicit origin url updates the mirror
+gitcache_ok  git -C ${TMP_WORKDIR}/gitcache fetch $REPO
+assert_db_field mirror-updates of $REPO is 2
+assert_db_field clones of $REPO is 1
+assert_db_field updates of $REPO is 2
 
-capture_output_success fetch_with_ref       git -C ${TMP_WORKDIR}/gitcache fetch origin
-capture_output_success fetch_with_refstats -s
+# Fetch with origin ref updates the mirror
+gitcache_ok  git -C ${TMP_WORKDIR}/gitcache fetch origin
+assert_db_field mirror-updates of $REPO is 3
+assert_db_field clones of $REPO is 1
+assert_db_field updates of $REPO is 3
 
+# Fetch outside update interval does not update the mirror
 export GITCACHE_UPDATE_INTERVAL=3600
-capture_output_success fetch_without_update       git -C ${TMP_WORKDIR}/gitcache fetch
-capture_output_success fetch_without_update_stats -s
+gitcache_ok  git -C ${TMP_WORKDIR}/gitcache fetch
+assert_db_field mirror-updates of $REPO is 3
+assert_db_field clones of $REPO is 1
+assert_db_field updates of $REPO is 4
 export GITCACHE_UPDATE_INTERVAL=0
 
 # Fetch on non-managed repository
-capture_output_success clone_directory  git clone ${TMP_WORKDIR}/gitcache ${TMP_WORKDIR}/gitcache5
-git -C ${TMP_WORKDIR}/gitcache5 remote set-url origin https://github.com/seeraven/gitcache.git
-capture_output_success fetch_non_mirror git -C ${TMP_WORKDIR}/gitcache5 fetch
+gitcache_ok  git clone ${TMP_WORKDIR}/gitcache ${TMP_WORKDIR}/gitcache5
+git -C ${TMP_WORKDIR}/gitcache5 remote set-url origin $REPO
+gitcache_ok  git -C ${TMP_WORKDIR}/gitcache5 fetch
+assert_db_field clones of ${TMP_WORKDIR}/gitcache is ''
 
 
 # -----------------------------------------------------------------------------
