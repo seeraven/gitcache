@@ -400,6 +400,9 @@ class GitMirror:
             command_timeout=self.config.get("LFS", "CommandTimeout"),
             output_timeout=self.config.get("LFS", "OutputTimeout"))
 
+        if return_code == 0:
+            self.database.increment_counter(self.path, "lfs-updates")
+
         return return_code == 0
 
     def get_default_ref(self):

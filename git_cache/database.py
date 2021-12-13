@@ -40,6 +40,7 @@ class Database:
       - :code:`url` with the upstream URL
       - :code:`last-update-time` with the time of the last mirror update.
       - :code:`mirror-updates` as a counter of the number of updates of the mirror.
+      - :code:`lfs-updates` as a counter of the number of lfs-updates of the mirror.
       - :code:`clones` as a counter of the number of clones from the mirror.
       - :code:`updates` as a counter of the number of updates from the mirror.
 
@@ -64,6 +65,7 @@ class Database:
             self.database[path] = {"url": url,
                                    "last-update-time": time.time(),
                                    "mirror-updates": 0,
+                                   "lfs-updates": 0,
                                    "clones": 0,
                                    "updates": 0}
             self._save()
@@ -96,8 +98,8 @@ class Database:
 
         Args:
             path (str):    The path of the repository mirror.
-            counter (str): The counter to increment. Use one of 'mirror-updates', 'clones' or
-                           'updates'.
+            counter (str): The counter to increment. Use one of 'mirror-updates', 'lfs-updates',
+                           'clones' or 'updates'.
         """
         with portalocker.Lock(GITCACHE_DB_LOCK):
             self._load()
@@ -112,7 +114,7 @@ class Database:
         """
         with portalocker.Lock(GITCACHE_DB_LOCK):
             self._load()
-            for counter in ['mirror-updates', 'clones', 'updates']:
+            for counter in ['mirror-updates', 'lfs-updates', 'clones', 'updates']:
                 self.database[path][counter] = 0
             self._save()
 
@@ -180,6 +182,8 @@ class Database:
         if os.path.exists(GITCACHE_DB):
             with open(GITCACHE_DB, "r", encoding='utf-8') as handle:
                 self.database = json.load(handle)
+                for path in self.database:
+                    self.database[path].setdefault("lfs-updates", 0)
 
     def _save(self):
         """Save the database to disc."""
