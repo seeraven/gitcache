@@ -82,8 +82,8 @@ gitcache is distributed as a single executable packaged using [pyInstaller].
 So all you have to do is to download the latest executable and copy it to a
 location of your choice, for example `~/bin`:
 
-    wget https://github.com/seeraven/gitcache/releases/download/v1.0.5/gitcache_Ubuntu18.04_amd64
-    mv gitcache_Ubuntu18.04_amd64 ~/bin/gitcache
+    wget https://github.com/seeraven/gitcache/releases/download/v1.0.6/gitcache_1.0.6_Ubuntu18.04_amd64
+    mv gitcache_1.0.6_Ubuntu18.04_amd64 ~/bin/gitcache
     chmod +x ~/bin/gitcache
 
 gitcache can be used as a stand-alone command, but it is much easier to use
@@ -145,10 +145,13 @@ forwarded to the real git command.
     its path in the cache.
   - `git ls-remote` to update the mirror and using it for the remote source
     of the ls-remote command.
+  - `git checkout` to perform an lfs fetch for specified refs.
   - `git clone` to create or update the mirror and clone from the mirror.
+  - `git lfs fetch` to fetch the lfs handled files for the mirror.
+  - `git lfs pull` to fetch the lfs handled files for the mirror.
   - `git pull` to update the mirror before updating the clone.
   - `git fetch` to update the mirror before updating the clone.
-  - `git lfs fetch` to update the lfs part.
+  - `git submodule init` to allow correct initialization of the submodules.
   - `git submodule update` to call the gitcache for every submodule.
 
 

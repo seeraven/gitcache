@@ -99,6 +99,10 @@ specially. All other commands are forwarded directly to :code:`git`.
     final clone of the repository is performed by cloning from the local mirror. Afterwards,
     the original upstream url is set as the push url of the repository.
 
+:code:`git checkout [ref]`
+    Intercepted to update the lfs part of the specified ref, as the lfs mirror
+    does usually not fetch all files.
+
 :code:`git pull`
     The mirror is updated first, then the repository.
 
@@ -107,6 +111,14 @@ specially. All other commands are forwarded directly to :code:`git`.
 
 :code:`git lfs fetch ...`
     Fetch the lfs parts for the repository and specified ref.
+
+:code:`git lfs pull ...`
+    Fetch the lfs parts for the repository and specified ref.
+
+:code:`git submodule init`
+    Perform the submodule init by calling the original git command with the
+    original remote URL. This is to ensure relative remote URLs are constructed
+    correctly.
 
 :code:`git submodule update`
     Perform the submodule update by calling the individual git commands to ensure that
