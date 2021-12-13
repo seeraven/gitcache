@@ -51,7 +51,7 @@ def git_checkout(git_options):
                       if not x.startswith('-') and not x.startswith(':')]
     lfs_fetch_refs = []
     for ref in ref_candidates:
-        command = f"{command_with_options} show-ref -q {ref}"
+        command = f"{command_with_options} show-ref {ref} | grep -q remotes"
         retval, _ = getstatusoutput(command)
         if retval == 0:
             lfs_fetch_refs.append(ref)
