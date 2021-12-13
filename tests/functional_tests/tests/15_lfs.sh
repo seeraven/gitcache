@@ -56,9 +56,8 @@ if ! grep -q "oid sha256" ${TMP_WORKDIR}/lfs-example/excluded/first.png; then
     exit 10
 fi
 
-# TODO: A git lfs pull is like a git pull and should be handled like a git lfs fetch
 gitcache_ok  git -C ${TMP_WORKDIR}/lfs-example lfs pull --include '*' --exclude ''
-assert_db_field lfs-updates of $REPO is 3
+assert_db_field lfs-updates of $REPO is 4
 
 if grep -q "oid sha256" ${TMP_WORKDIR}/lfs-example/excluded/first.png; then
     echo "ERROR: Included git-lfs file should be pulled during git lfs pull!"
@@ -79,9 +78,17 @@ if ! grep -q "oid sha256" ${TMP_WORKDIR}/lfs-example2/excluded/first.png; then
     exit 10
 fi
 
-# TODO: A git lfs pull is like a git pull and should be handled like a git lfs fetch
-gitcache_ok  git -C ${TMP_WORKDIR}/lfs-example2 lfs pull --include '*' --exclude ''
+# No lfs mirror update with default options
+gitcache_ok  git -C ${TMP_WORKDIR}/lfs-example2 lfs pull
 assert_db_field lfs-updates of $REPO is 1
+
+# No lfs mirror update with default repository
+gitcache_ok  git -C ${TMP_WORKDIR}/lfs-example2 lfs pull origin
+assert_db_field lfs-updates of $REPO is 1
+
+# Mirror update with options
+gitcache_ok  git -C ${TMP_WORKDIR}/lfs-example2 lfs pull --include '*' --exclude ''
+assert_db_field lfs-updates of $REPO is 2
 
 if grep -q "oid sha256" ${TMP_WORKDIR}/lfs-example2/excluded/first.png; then
     echo "ERROR: Included git-lfs file should be pulled during git lfs pull!"
