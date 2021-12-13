@@ -48,12 +48,24 @@ assert_db_field clones of $REPO is 1
 assert_db_field updates of $REPO is 4
 export GITCACHE_UPDATE_INTERVAL=0
 
+# Pull with repository specification
+gitcache_ok  git -C ${TMP_WORKDIR}/gitcache pull origin
+assert_db_field mirror-updates of $REPO is 4
+assert_db_field clones of $REPO is 1
+assert_db_field updates of $REPO is 5
+
+# Pull with repository and ref specification
+gitcache_ok  git -C ${TMP_WORKDIR}/gitcache pull origin master
+assert_db_field mirror-updates of $REPO is 5
+assert_db_field clones of $REPO is 1
+assert_db_field updates of $REPO is 6
+
 # Do not update mirror if repository does not use the mirror
 git -C ${TMP_WORKDIR}/gitcache remote set-url origin $REPO
 gitcache_ok  git -C ${TMP_WORKDIR}/gitcache pull
-assert_db_field mirror-updates of $REPO is 3
+assert_db_field mirror-updates of $REPO is 5
 assert_db_field clones of $REPO is 1
-assert_db_field updates of $REPO is 4
+assert_db_field updates of $REPO is 6
 
 
 # -----------------------------------------------------------------------------

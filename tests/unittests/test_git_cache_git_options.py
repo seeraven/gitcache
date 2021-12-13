@@ -69,6 +69,11 @@ class GitCacheGitOptionsTest(TestCase):
         run_path_cd_commands = git_options.get_run_path_cd_commands()
         self.assertEqual('cd "1";cd "2"', run_path_cd_commands)
 
+        args = ['fetch']
+        git_options = git_cache.git_options.GitOptions(args)
+        run_path_cd_commands = git_options.get_run_path_cd_commands()
+        self.assertEqual('', run_path_cd_commands)
+
     def test_parse(self):
         """git_cache.git_options.GitOptions: Test parsing commands."""
         args = '-C 1 fetch --upload-pack=pack -j5 --depth 2 -o 3 first scnd --filter flt'.split(' ')
@@ -111,6 +116,19 @@ class GitCacheGitOptionsTest(TestCase):
         self.assertEqual('scnd',     git_options.command_args[1])
         self.assertEqual('--filter', git_options.command_args[2])
         self.assertEqual('flt',      git_options.command_args[3])
+
+    def test_subcommand(self):
+        """git_cache.git_options.GitOptions: Test options in-between subcommand."""
+        args = 'submodule --quiet status'.split(' ')
+        git_options = git_cache.git_options.GitOptions(args)
+        self.assertEqual('submodule_status', git_options.command)
+        self.assertEqual(1, len(git_options.command_options))
+        self.assertEqual('--quiet', git_options.command_options[0])
+
+        # This command makes no sense but tests the stability of the parser:
+        args = 'submodule'.split(' ')
+        git_options = git_cache.git_options.GitOptions(args)
+        self.assertEqual('submodule', git_options.command)
 
 
 # -----------------------------------------------------------------------------

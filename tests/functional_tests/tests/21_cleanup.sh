@@ -20,6 +20,10 @@ REPO=https://github.com/seeraven/gitcache.git
 # Initial clone
 gitcache_ok  git clone $REPO ${TMP_WORKDIR}/gitcache
 
+# Cleanup with 'git cleanup' outside the cleanup time
+gitcache_ok  git cleanup
+assert_db_field mirror-updates of $REPO is 0
+
 # Cleanup with 'git cleanup'
 export GITCACHE_CLEANUP_AFTER=1
 sleep 2s

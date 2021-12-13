@@ -39,6 +39,11 @@ gitcache_ok  git update-mirrors
 assert_db_field mirror-updates of $REPO is 3
 export GITCACHE_UPDATE_INTERVAL=0
 
+# Failed update
+git -C ${GITCACHE_DIR}/mirrors/github.com/seeraven/gitcache/git remote set-url origin https://github.com/seeraven/gatcache.git
+gitcache_error  git update-mirrors
+assert_db_field mirror-updates of $REPO is 3
+
 
 # -----------------------------------------------------------------------------
 # EOF

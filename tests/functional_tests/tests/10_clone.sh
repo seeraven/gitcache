@@ -17,6 +17,9 @@ source $TEST_BASE_DIR/helpers/test_helpers.sh
 
 REPO=https://github.com/seeraven/gitcache.git
 
+# Command without arguments yields an error (error code 129)
+run_gitcache 129  git clone
+
 # Initial clone
 gitcache_ok  git -C ${TMP_WORKDIR} clone $REPO
 assert_db_field mirror-updates of $REPO is 0

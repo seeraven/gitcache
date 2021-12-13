@@ -52,6 +52,14 @@ git -C ${TMP_WORKDIR}/gitcache5 remote set-url origin $REPO
 gitcache_ok  git -C ${TMP_WORKDIR}/gitcache5 fetch
 assert_db_field clones of ${TMP_WORKDIR}/gitcache is ''
 
+# Fetch from within directory
+pushd ${TMP_WORKDIR}/gitcache
+gitcache_ok  git fetch
+assert_db_field mirror-updates of $REPO is 4
+assert_db_field clones of $REPO is 1
+assert_db_field updates of $REPO is 5
+popd
+
 
 # -----------------------------------------------------------------------------
 # EOF
