@@ -54,6 +54,7 @@ If called with the first argument 'git' or when called as 'git' using a symlink,
 it acts as a wrapper for the git command and intercepts the commands required
 for the mirror handling.
 """
+GITCACHE_VERSION = "1.0.6"
 
 
 # -----------------------------------------------------------------------------
@@ -104,7 +105,7 @@ def git_cache():
     success = True
 
     if args.version:
-        print("gitcache v1.0.6")
+        print(f"gitcache v{GITCACHE_VERSION}")
         return True
 
     if args.cleanup:
