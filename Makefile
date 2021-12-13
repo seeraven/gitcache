@@ -45,7 +45,7 @@ endif
 #  DEFAULT TARGETS
 # ----------------------------------------------------------------------------
 
-.PHONY: help system-setup venv-bash run check-style pylint pycodestyle flake8 tests tests-coverage unittests unittests-coverage functional-tests functional-tests-coverage apidoc doc man pyinstaller clean
+.PHONY: help system-setup venv-bash run check-style pylint pycodestyle flake8 tests tests-coverage unittests unittests-coverage functional-tests functional-tests-coverage test-no-git-lfs test-no-git-lfs-install test-latest-git apidoc doc man pyinstaller clean
 
 all:	check-style.venv tests-coverage.venv doc.venv man.venv
 
@@ -250,6 +250,32 @@ functional-tests-coverage:
 
 
 # ----------------------------------------------------------------------------
+#  SYSTEM TESTS
+# ----------------------------------------------------------------------------
+
+test-no-git-lfs:
+	@docker run --rm \
+	-e TGTUID=$(shell id -u) -e TGTGID=$(shell id -g) \
+	-v $(PWD):/workdir \
+	ubuntu:20.04 \
+	/workdir/build_in_docker/ubuntu_latest_git.sh --no-lfs
+
+test-no-git-lfs-install:
+	@docker run --rm \
+	-e TGTUID=$(shell id -u) -e TGTGID=$(shell id -g) \
+	-v $(PWD):/workdir \
+	ubuntu:20.04 \
+	/workdir/build_in_docker/ubuntu_latest_git.sh --no-lfs-install
+
+test-latest-git:
+	@docker run --rm \
+	-e TGTUID=$(shell id -u) -e TGTGID=$(shell id -g) \
+	-v $(PWD):/workdir \
+	ubuntu:20.04 \
+	/workdir/build_in_docker/ubuntu_latest_git.sh --latest --pyinstaller
+
+
+# ----------------------------------------------------------------------------
 #  DOCUMENTATION
 # ----------------------------------------------------------------------------
 
@@ -304,13 +330,6 @@ releases/gitcache_v$(CURRENT_VERSION)_Ubuntu21.04_amd64:
 	ubuntu:21.04 \
 	/workdir/build_in_docker/ubuntu.sh
 	@mv releases/gitcache_Ubuntu21.04_amd64 releases/gitcache_v$(CURRENT_VERSION)_Ubuntu21.04_amd64
-
-test-latest-git:
-	@docker run --rm \
-	-e TGTUID=$(shell id -u) -e TGTGID=$(shell id -g) \
-	-v $(PWD):/workdir \
-	ubuntu:20.04 \
-	/workdir/build_in_docker/ubuntu_latest_git.sh
 
 
 # ----------------------------------------------------------------------------
