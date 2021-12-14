@@ -108,6 +108,12 @@ export GITCACHE_DIR=$(mktemp --directory)
 export GITCACHE_REAL_GIT=/usr/bin/git
 export GITCACHE_LOGFORMAT='%(message)s'
 
+if git-lfs version &> /dev/null; then
+    export HAS_GIT_LFS=1
+else
+    export HAS_GIT_LFS=0
+fi
+
 
 # -----------------------------------------------------------------------------
 # RUN TESTS

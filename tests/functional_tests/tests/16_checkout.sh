@@ -20,7 +20,9 @@ REPO=https://github.com/seeraven/lfs-example.git
 # Initial clone
 gitcache_ok  git -C ${TMP_WORKDIR} clone ${REPO}
 assert_db_field mirror-updates of $REPO is 0
-assert_db_field lfs-updates of $REPO is 1
+if [ $HAS_GIT_LFS -eq 1 ]; then
+    assert_db_field lfs-updates of $REPO is 1
+fi
 
 # Modify a file and perform checkout call to restore it
 rm -f ${TMP_WORKDIR}/lfs-example/README.md
@@ -30,14 +32,16 @@ assert_file_exists ${TMP_WORKDIR}/lfs-example/README.md "previously deleted"
 # Checkout command using the branch specified
 gitcache_ok  git -C ${TMP_WORKDIR}/lfs-example checkout main
 
-LFS_OBJ_FILE=${GITCACHE_DIR}/mirrors/github.com/seeraven/lfs-example/lfs/objects/c0/c9/c0c955aa4aa976424645d86e82ba4452bb715364171e7db3bf715214b2cfb99d
-
 # gitcache checkout command using a new branch should fetch additional files
 gitcache_ok  git -C ${TMP_WORKDIR}/lfs-example checkout extra_branch
 
-if [ ! -e ${LFS_OBJ_FILE} ]; then
-    echo "ERROR: git-lfs file on extra branch should be fetched by gitcache checkout!"
-    exit 10
+if [ $HAS_GIT_LFS -eq 1 ]; then
+    LFS_OBJ_FILE=${GITCACHE_DIR}/mirrors/github.com/seeraven/lfs-example/lfs/objects/c0/c9/c0c955aa4aa976424645d86e82ba4452bb715364171e7db3bf715214b2cfb99d
+
+    if [ ! -e ${LFS_OBJ_FILE} ]; then
+        echo "ERROR: git-lfs file on extra branch should be fetched by gitcache checkout!"
+        exit 10
+    fi
 fi
 
 

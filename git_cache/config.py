@@ -23,6 +23,7 @@ import re
 
 import pytimeparse
 
+from .command_execution import getstatusoutput
 from .global_settings import GITCACHE_DIR
 
 
@@ -51,6 +52,18 @@ def str_to_seconds(string):
         except ValueError:
             seconds = 0
     return seconds
+
+
+def has_git_lfs_cmd():
+    """Check whether this host has the git-lfs command available.
+
+    Return:
+        Returns True if the git-lfs command is available.
+    """
+    if not hasattr(has_git_lfs_cmd, "has_git_lfs"):
+        retval, _ = getstatusoutput('git-lfs version 2>/dev/null')
+        has_git_lfs_cmd.has_git_lfs = (retval == 0)
+    return has_git_lfs_cmd.has_git_lfs
 
 
 # -----------------------------------------------------------------------------

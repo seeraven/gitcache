@@ -37,7 +37,11 @@ assert_gitcache_db_exists
 assert_db_field clones of $REPO is 1
 
 # After clone statistics returned by 'gitcache -s'
-capture_output_success clone_stats -s
+if [ $HAS_GIT_LFS -eq 1 ]; then
+    capture_output_success clone_stats -s
+else
+    capture_output_success clone_stats_no_lfs -s
+fi
 
 # Zero statistics with 'gitcache -z' and check empty statistics returned by 'gitcache -s'
 gitcache_ok  -z

@@ -15,6 +15,12 @@ source $TEST_BASE_DIR/helpers/output_helpers.sh
 source $TEST_BASE_DIR/helpers/test_helpers.sh
 
 
+if [ $HAS_GIT_LFS -eq 0 ]; then
+    echo "WARNING: Skipping ${EXPECTED_OUTPUT_PREFIX} as there is no git-lfs support on this host!"
+    exit 0
+fi
+
+
 # -----------------------------------------------------------------------------
 # Tests of git lfs fetch:
 # -----------------------------------------------------------------------------

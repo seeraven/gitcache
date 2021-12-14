@@ -23,7 +23,7 @@ import shutil
 import portalocker
 
 from .command_execution import getstatusoutput, pretty_call_command_retry
-from .config import Config
+from .config import Config, has_git_lfs_cmd
 from .database import Database
 from .global_settings import GITCACHE_DIR
 
@@ -166,15 +166,19 @@ class GitMirror:
         Return:
             Returns True if the lfs fetch was successful.
         """
-        try:
-            with Locker(f"Mirror {self.path}", self.lockfile, self.config):
-                return self._fetch_lfs(ref, options)
-        except portalocker.exceptions.LockException:
-            if ref is not None:
-                LOG.error("LFS fetch of %s timed out due to locked mirror.", ref)
-            else:
-                LOG.error("LFS fetch of default ref timed out due to locked mirror.")
-            return False
+        if has_git_lfs_cmd():
+            try:
+                with Locker(f"Mirror {self.path}", self.lockfile, self.config):
+                    return self._fetch_lfs(ref, options)
+            except portalocker.exceptions.LockException:
+                if ref is not None:
+                    LOG.error("LFS fetch of %s timed out due to locked mirror.", ref)
+                else:
+                    LOG.error("LFS fetch of default ref timed out due to locked mirror.")
+                return False
+            return True
+
+        LOG.warning("LFS fetch skipped as git-lfs is not available on this system!")
         return True
 
     def cleanup(self):
@@ -379,6 +383,10 @@ class GitMirror:
         Return:
             Returns True if the lfs fetch was successful.
         """
+        if not has_git_lfs_cmd():
+            LOG.warning("LFS fetch skipped as git-lfs is not available on this system!")
+            return True
+
         git_options = ""
         if self.config.get('LFS', 'PerMirrorStorage'):
             git_options = f"-c lfs.storage={self.git_lfs_dir}"

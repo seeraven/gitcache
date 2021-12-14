@@ -257,14 +257,14 @@ test-no-git-lfs:
 	@docker run --rm \
 	-e TGTUID=$(shell id -u) -e TGTGID=$(shell id -g) \
 	-v $(PWD):/workdir \
-	ubuntu:20.04 \
+	ubuntu:21.04 \
 	/workdir/build_in_docker/ubuntu_latest_git.sh --no-lfs
 
 test-no-git-lfs-install:
 	@docker run --rm \
 	-e TGTUID=$(shell id -u) -e TGTGID=$(shell id -g) \
 	-v $(PWD):/workdir \
-	ubuntu:20.04 \
+	ubuntu:21.04 \
 	/workdir/build_in_docker/ubuntu_latest_git.sh --no-lfs-install
 
 test-latest-git:
