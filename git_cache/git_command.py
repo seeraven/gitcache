@@ -26,6 +26,7 @@ from .commands.clone import git_clone
 from .commands.delete import git_delete_mirror
 from .commands.fetch import git_fetch
 from .commands.lfs_fetch import git_lfs_fetch
+from .commands.lfs_pull import git_lfs_pull
 from .commands.ls_remote import git_ls_remote
 from .commands.pull import git_pull
 from .commands.submodule_init import git_submodule_init
@@ -95,6 +96,9 @@ def handle_git_command(called_as, args):
 
     elif git_options.get_command() == 'lfs_fetch':
         sys.exit(git_lfs_fetch(git_options))
+
+    elif git_options.get_command() == 'lfs_pull':
+        sys.exit(git_lfs_pull(git_options))
 
     elif git_options.get_command() == 'pull':
         sys.exit(git_pull(git_options))

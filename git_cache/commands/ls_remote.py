@@ -67,7 +67,6 @@ def git_ls_remote(git_options):
         database = Database()
         mirror = GitMirror(url=mirror_url, database=database)
         mirror.update()
-        database.increment_counter(mirror.path, "updates")
         new_args = git_options.global_options
         new_args += [git_options.command]
         new_args += git_options.command_options

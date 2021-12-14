@@ -1,6 +1,6 @@
 #!/bin/bash -e
 #
-# Build gitcache on Ubuntu 16.04, 18.04 and 20.04
+# Build gitcache on Ubuntu 18.04, 20.04 and 21.04
 #
 
 export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true
@@ -14,7 +14,7 @@ debconf-set-selections /tmp/tzdata_preseed
 apt-get update
 apt-get -y dist-upgrade
 
-apt-get -y install lsb-release make python3-dev python3-venv binutils git git-lfs
+apt-get -y install lsb-release make python3-dev python3-venv binutils git git-lfs jq
 
 ln -sf bash /bin/sh
 

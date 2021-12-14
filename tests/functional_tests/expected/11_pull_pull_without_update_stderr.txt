@@ -1,3 +1,0 @@
-Update time of mirror GITCACHE_DIR/mirrors/github.com/seeraven/gitcache not reached yet.
-Starting Update from mirror GITCACHE_DIR/mirrors/github.com/seeraven/gitcache.
-Update from mirror GITCACHE_DIR/mirrors/github.com/seeraven/gitcache was successfully completed within TIME.

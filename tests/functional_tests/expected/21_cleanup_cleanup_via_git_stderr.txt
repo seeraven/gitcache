@@ -1,3 +1,0 @@
-Starting cleanup of mirrors.
-Removed mirror GITCACHE_DIR/mirrors/github.com/seeraven/gitcache.
-Removed 1 mirrors.

@@ -27,6 +27,9 @@ SOURCES            := $(SCRIPTS_ABS) $(MODULES_ABS)
 UNITTEST_DIR       := tests/unittests
 UNITTEST_FILES     := $(shell find $(UNITTEST_DIR) -name '*.py')
 
+# Keep this version in sync with GITCACHE_VERSION in git_cache/git_cache_command.py
+CURRENT_VERSION    := 1.0.6
+
 
 # ----------------------------------------------------------------------------
 #  HANDLE TARGET 'run'
@@ -42,7 +45,7 @@ endif
 #  DEFAULT TARGETS
 # ----------------------------------------------------------------------------
 
-.PHONY: help system-setup venv-bash run check-style pylint pycodestyle flake8 tests tests-coverage unittests unittests-coverage functional-tests functional-tests-coverage apidoc doc man pyinstaller clean
+.PHONY: help system-setup venv-bash run check-style pylint pycodestyle flake8 tests tests-coverage unittests unittests-coverage functional-tests functional-tests-coverage test-no-git-lfs test-no-git-lfs-install test-latest-git apidoc doc man pyinstaller clean
 
 all:	check-style.venv tests-coverage.venv doc.venv man.venv
 
@@ -87,8 +90,8 @@ help:
 	@echo " pyinstaller               : Generate dist/gitcache distributable."
 	@echo " pyinstaller-test          : Test the dist/gitcache distributable"
 	@echo "                             using the functional tests."
-	@echo " build-release             : Build the distributables for Ubuntu 16.04,"
-	@echo "                             18.04 and 20.04 in the releases dir."
+	@echo " build-release             : Build the distributables for Ubuntu 18.04,"
+	@echo "                             20.04 and 21.04 in the releases dir."
 	@echo
 	@echo "Target for Execution from the sources:"
 	@echo " run                       : Run 'gitcache' with the correct"
@@ -247,6 +250,32 @@ functional-tests-coverage:
 
 
 # ----------------------------------------------------------------------------
+#  SYSTEM TESTS
+# ----------------------------------------------------------------------------
+
+test-no-git-lfs:
+	@docker run --rm \
+	-e TGTUID=$(shell id -u) -e TGTGID=$(shell id -g) \
+	-v $(PWD):/workdir \
+	ubuntu:21.04 \
+	/workdir/build_in_docker/ubuntu_latest_git.sh --no-lfs
+
+test-no-git-lfs-install:
+	@docker run --rm \
+	-e TGTUID=$(shell id -u) -e TGTGID=$(shell id -g) \
+	-v $(PWD):/workdir \
+	ubuntu:21.04 \
+	/workdir/build_in_docker/ubuntu_latest_git.sh --no-lfs-install
+
+test-latest-git:
+	@docker run --rm \
+	-e TGTUID=$(shell id -u) -e TGTGID=$(shell id -g) \
+	-v $(PWD):/workdir \
+	ubuntu:20.04 \
+	/workdir/build_in_docker/ubuntu_latest_git.sh --latest --pyinstaller
+
+
+# ----------------------------------------------------------------------------
 #  DOCUMENTATION
 # ----------------------------------------------------------------------------
 
@@ -273,38 +302,34 @@ dist/gitcache:
 pyinstaller-test: dist/gitcache
 	@tests/functional_tests/run_tests.sh -p
 
-build-release: releases/gitcache_Ubuntu18.04_amd64 releases/gitcache_Ubuntu20.04_amd64 releases/gitcache_Ubuntu21.04_amd64
+build-release: releases/gitcache_v$(CURRENT_VERSION)_Ubuntu18.04_amd64 releases/gitcache_v$(CURRENT_VERSION)_Ubuntu20.04_amd64 releases/gitcache_v$(CURRENT_VERSION)_Ubuntu21.04_amd64
 
-releases/gitcache_Ubuntu18.04_amd64:
+releases/gitcache_v$(CURRENT_VERSION)_Ubuntu18.04_amd64:
 	@mkdir -p releases
 	@docker run --rm \
 	-e TGTUID=$(shell id -u) -e TGTGID=$(shell id -g) \
 	-v $(PWD):/workdir \
 	ubuntu:18.04 \
 	/workdir/build_in_docker/ubuntu.sh
+	@mv releases/gitcache_Ubuntu18.04_amd64 releases/gitcache_v$(CURRENT_VERSION)_Ubuntu18.04_amd64
 
-releases/gitcache_Ubuntu20.04_amd64:
+releases/gitcache_v$(CURRENT_VERSION)_Ubuntu20.04_amd64:
 	@mkdir -p releases
 	@docker run --rm \
 	-e TGTUID=$(shell id -u) -e TGTGID=$(shell id -g) \
 	-v $(PWD):/workdir \
 	ubuntu:20.04 \
 	/workdir/build_in_docker/ubuntu.sh
+	@mv releases/gitcache_Ubuntu20.04_amd64 releases/gitcache_v$(CURRENT_VERSION)_Ubuntu20.04_amd64
 
-releases/gitcache_Ubuntu21.04_amd64:
+releases/gitcache_v$(CURRENT_VERSION)_Ubuntu21.04_amd64:
 	@mkdir -p releases
 	@docker run --rm \
 	-e TGTUID=$(shell id -u) -e TGTGID=$(shell id -g) \
 	-v $(PWD):/workdir \
 	ubuntu:21.04 \
 	/workdir/build_in_docker/ubuntu.sh
-
-test-latest-git:
-	@docker run --rm \
-	-e TGTUID=$(shell id -u) -e TGTGID=$(shell id -g) \
-	-v $(PWD):/workdir \
-	ubuntu:20.04 \
-	/workdir/build_in_docker/ubuntu_latest_git.sh
+	@mv releases/gitcache_Ubuntu21.04_amd64 releases/gitcache_v$(CURRENT_VERSION)_Ubuntu21.04_amd64
 
 
 # ----------------------------------------------------------------------------

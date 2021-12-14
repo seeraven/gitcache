@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Handler for the git checkout command.
+Handler for the git lfs pull command.
 
 Copyright:
-    2020 by Clemens Rabe <clemens.rabe@clemensrabe.de>
+    2021 by Clemens Rabe <clemens.rabe@clemensrabe.de>
 
     All rights reserved.
 
@@ -18,8 +18,8 @@ Copyright:
 # -----------------------------------------------------------------------------
 import logging
 
-from .helpers import get_mirror_url
-from ..command_execution import getstatusoutput, simple_call_command
+from .helpers import get_current_ref, get_mirror_url
+from ..command_execution import simple_call_command
 from ..database import Database
 from ..git_mirror import GitMirror
 
@@ -33,9 +33,8 @@ LOG = logging.getLogger(__name__)
 # -----------------------------------------------------------------------------
 # Function Definitions
 # -----------------------------------------------------------------------------
-# pylint: disable=too-many-locals
-def git_checkout(git_options):
-    """Handle a git checkout command.
+def git_lfs_pull(git_options):
+    """Handle a git lfs pull command.
 
     Args:
         git_options (obj):     The GitOptions object.
@@ -44,25 +43,29 @@ def git_checkout(git_options):
         Returns 0 on success, otherwise the return code of the last failed
         command.
     """
-    command_with_options = git_options.get_real_git_with_options()
+    # git lfs pull [options] [remote]
+    #  No Mirror Update: git lfs pull (as it was already updated by other calls)
+    #  No Mirror Update: git lfs pull origin
+    #  No Mirror Update: git lfs pull <other origin>
+    #  Mirror Update:    git lfs pull <options> ... (as the options might include
+    #                                                not-fetched elements)
+    #  Mirror Update     git lfs pull origin ref...
+    mirror_url = get_mirror_url(git_options)
+    if mirror_url:
+        repository = 'origin'
+        if git_options.command_args:
+            repository = git_options.command_args[0]
 
-    # Collect all refs for an lfs fetch
-    ref_candidates = [x for x in git_options.command_args
-                      if not x.startswith('-') and not x.startswith(':')]
-    lfs_fetch_refs = []
-    for ref in ref_candidates:
-        command = f"{command_with_options} show-ref {ref} | grep -q remotes"
-        retval, _ = getstatusoutput(command)
-        if retval == 0:
-            lfs_fetch_refs.append(ref)
+        if repository == 'origin' and git_options.command_options:
+            refs = []
+            ref = get_current_ref(git_options)
+            if ref:
+                refs.append(ref)
 
-    if lfs_fetch_refs:
-        mirror_url = get_mirror_url(git_options)
-        if mirror_url:
             database = Database()
             mirror = GitMirror(url=mirror_url, database=database)
-            for ref in lfs_fetch_refs:
-                mirror.fetch_lfs(ref)
+            for ref in refs:
+                mirror.fetch_lfs(ref, git_options.command_options)
 
     return simple_call_command(git_options.get_real_git_all_args())
 

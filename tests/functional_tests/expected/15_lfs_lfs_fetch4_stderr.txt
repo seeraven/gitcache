@@ -1,2 +1,0 @@
-Starting LFS fetch of ref main from https://github.com/seeraven/lfs-example.git into GITCACHE_DIR/mirrors/github.com/seeraven/lfs-example.
-LFS fetch of ref main from https://github.com/seeraven/lfs-example.git into GITCACHE_DIR/mirrors/github.com/seeraven/lfs-example was successfully completed within TIME.

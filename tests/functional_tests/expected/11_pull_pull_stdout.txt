@@ -1,3 +1,0 @@
-Fetching origin
-Fetching master
-Already up to date.

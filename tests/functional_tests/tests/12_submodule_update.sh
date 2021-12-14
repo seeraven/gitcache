@@ -12,17 +12,10 @@
 
 EXPECTED_OUTPUT_PREFIX=$(basename $0 .sh)
 source $TEST_BASE_DIR/helpers/output_helpers.sh
+source $TEST_BASE_DIR/helpers/test_helpers.sh
 
 
-if [ $(lsb_release -r -s) == "16.04" ]; then
-    echo "Skipped on 16.04 due to different git output on stdout/stderr."
-    exit 0
-fi
-
-
-# -----------------------------------------------------------------------------
-# Tests
-# -----------------------------------------------------------------------------
+REPO=https://github.com/seeraven/submodule-example
 
 # test_variation <prefix> <working dir> <relative path prefix> <git_c_options>
 function test_variation() {
@@ -36,35 +29,62 @@ function test_variation() {
     rm -rf ${GITCACHE_DIR}
     rm -rf ${TMP_WORKDIR}/*
 
-    capture_output_success ${PREFIX}_clone       git clone https://github.com/seeraven/submodule-example ${TMP_WORKDIR}/submodules
-    capture_output_success ${PREFIX}_clone_stats -s
+    # Initial clone
+    gitcache_ok  git clone $REPO ${TMP_WORKDIR}/submodules
+    assert_db_field mirror-updates of $REPO is 0
+    assert_db_field clones of $REPO is 1
+    assert_db_field updates of $REPO is 0
 
     pushd $WDIR
-    capture_output_success ${PREFIX}_submodule_init       git $@ submodule init
-    capture_output_success ${PREFIX}_submodule_init_stats -s
-    
-    capture_output_success ${PREFIX}_submodule_update       git $@ submodule update
-    capture_output_success ${PREFIX}_submodule_update_stats -s
+    # Submodule init does not update the mirror nor does it perform any clones
+    gitcache_ok  git $@ submodule init
+    assert_db_field mirror-updates of $REPO is 0
+    assert_db_field clones of $REPO is 1
+    assert_db_field updates of $REPO is 0
+    assert_db_field mirror-updates of https://github.com/seeraven/dmdcache is ''
+    assert_db_field mirror-updates of https://github.com/seeraven/gitcache is ''
 
-    capture_output_success ${PREFIX}_submodule_update_again       git $@ submodule update
-    capture_output_success ${PREFIX}_submodule_update_again_stats -s
+    # Submodule update does not update the mirror of this repo ...
+    gitcache_ok  git $@ submodule update
+    assert_db_field mirror-updates of $REPO is 0
+    assert_db_field clones of $REPO is 1
+    assert_db_field updates of $REPO is 0
+
+    # ... but it clones the submodule repos
+    assert_db_field clones of https://github.com/seeraven/dmdcache is 1
+    assert_db_field clones of https://github.com/seeraven/gitcache is 1
+
+    # Another submodule update updates the mirrors
+    gitcache_ok  git $@ submodule update
+    assert_db_field mirror-updates of https://github.com/seeraven/dmdcache is 1
+    assert_db_field mirror-updates of https://github.com/seeraven/gitcache is 1
+    assert_db_field updates of https://github.com/seeraven/dmdcache is 1
+    assert_db_field updates of https://github.com/seeraven/gitcache is 1
     popd
 
     rm -rf ${GITCACHE_DIR}
     rm -rf ${TMP_WORKDIR}/*
 
-    capture_output_success ${PREFIX}_clone2       git clone https://github.com/seeraven/submodule-example ${TMP_WORKDIR}/submodules
-    capture_output_success ${PREFIX}_clone2_stats -s
+    # Initial clone
+    gitcache_ok  git clone $REPO ${TMP_WORKDIR}/submodules
 
     pushd $WDIR
-    capture_output_success ${PREFIX}_submodule_init_dmdcache       git $@ submodule init ${SUBPATH}dmdcache
-    capture_output_success ${PREFIX}_submodule_init_dmdcache_stats -s
+    # Submodule init does not update the mirror nor does it perform any clones
+    gitcache_ok  git $@ submodule init ${SUBPATH}dmdcache
+    assert_db_field mirror-updates of $REPO is 0
+    assert_db_field clones of $REPO is 1
+    assert_db_field updates of $REPO is 0
+    assert_db_field mirror-updates of https://github.com/seeraven/dmdcache is ''
+    assert_db_field mirror-updates of https://github.com/seeraven/gitcache is ''
 
-    capture_output_success ${PREFIX}_submodule_update_dmdcache       git $@ submodule update ${SUBPATH}dmdcache
-    capture_output_success ${PREFIX}_submodule_update_dmdcache_stats -s
+    # Submodule update with a path updates only that path
+    gitcache_ok  git $@ submodule update ${SUBPATH}dmdcache
+    assert_db_field clones of https://github.com/seeraven/dmdcache is 1
+    assert_db_field clones of https://github.com/seeraven/gitcache is ''
 
-    capture_output_success ${PREFIX}_submodule_update_gitcache       git $@ submodule update --init ${SUBPATH}gitcache
-    capture_output_success ${PREFIX}_submodule_update_gitcache_stats -s
+    # Submodule update with --init option also initializes the reference
+    gitcache_ok  git $@ submodule update --init ${SUBPATH}gitcache
+    assert_db_field clones of https://github.com/seeraven/gitcache is 1
     popd
 }
 

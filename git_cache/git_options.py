@@ -168,6 +168,12 @@ LFS_FETCH_OPTIONS = [Option(short_name='I', long_name='include'),
                      Option(short_name='a', long_name='all',    has_arg=False),
                      Option(short_name='p', long_name='prune',  has_arg=False)]
 
+# LFS pull options taken from
+# https://github.com/git-lfs/git-lfs/blob/main/commands/command_pull.go
+# Only options with arguments and boolean options of interest are listed here.
+LFS_PULL_OPTIONS = [Option(short_name='I', long_name='include'),
+                    Option(short_name='X', long_name='exclude')]
+
 # Pull options taken from https://github.com/git/git/blob/master/builtin/pull.c
 # Only options with arguments and boolean options of interest are listed here.
 # (Look for OPT_STRING, OPT_INTEGER, OPT_CALLBACK_F, OPT_STRING_LIST)
@@ -225,6 +231,7 @@ COMMAND_OPTIONS = {'lfs':              [],   # Options between 'lfs' and the sub
                    'checkout':         CHECKOUT_OPTIONS,
                    'clone':            CLONE_OPTIONS,
                    'lfs_fetch':        LFS_FETCH_OPTIONS,
+                   'lfs_pull':         LFS_PULL_OPTIONS,
                    'pull':             PULL_OPTIONS,
                    'fetch':            FETCH_OPTIONS,
                    'submodule_init':   SUBMODULE_INIT_OPTIONS,

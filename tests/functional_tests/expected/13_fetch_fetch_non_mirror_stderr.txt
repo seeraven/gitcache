@@ -1,2 +1,0 @@
-Starting Fetch.
-Fetch was successfully completed within TIME.

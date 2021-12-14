@@ -1,4 +1,4 @@
-usage: gitcache [-h] [-c] [-u] [-d MIRROR] [-s] [-z]
+usage: gitcache [-h] [--version] [-c] [-u] [-d MIRROR] [-s] [-z]
 
 gitcache
 ========
@@ -16,6 +16,7 @@ for the mirror handling.
 
 optional arguments:
   -h, --help            show this help message and exit
+  --version             Print the version of gitcache.
   -c, --cleanup         Remove all outdated repositories.
   -u, --update-all      Update all mirrors.
   -d MIRROR, --delete MIRROR

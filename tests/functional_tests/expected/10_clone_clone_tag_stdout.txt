@@ -1,2 +1,0 @@
-Fetching origin
-Fetching 1.0-scm1.60

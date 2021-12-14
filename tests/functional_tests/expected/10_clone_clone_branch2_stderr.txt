@@ -1,9 +1,0 @@
-Starting Update of GITCACHE_DIR/mirrors/github.com/seeraven/scm-autologin-plugin.
-Update of GITCACHE_DIR/mirrors/github.com/seeraven/scm-autologin-plugin was successfully completed within TIME.
-Starting LFS fetch of ref feature_ownUserType from https://github.com/seeraven/scm-autologin-plugin into GITCACHE_DIR/mirrors/github.com/seeraven/scm-autologin-plugin.
-LFS fetch of ref feature_ownUserType from https://github.com/seeraven/scm-autologin-plugin into GITCACHE_DIR/mirrors/github.com/seeraven/scm-autologin-plugin was successfully completed within TIME.
-Starting Clone from mirror GITCACHE_DIR/mirrors/github.com/seeraven/scm-autologin-plugin.
-Cloning into 'TMP_WORKDIR/scm-autologin-plugin3'...
-done.
-Clone from mirror GITCACHE_DIR/mirrors/github.com/seeraven/scm-autologin-plugin was successfully completed within TIME.
-Setting push URL to https://github.com/seeraven/scm-autologin-plugin and configure LFS.

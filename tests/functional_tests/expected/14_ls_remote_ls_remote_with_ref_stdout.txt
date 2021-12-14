@@ -1,5 +1,0 @@
-Fetching origin
-Fetching main
-c949e5cc8c6eb7b4e26915eeb5e6767d3b648108	HEAD
-c949e5cc8c6eb7b4e26915eeb5e6767d3b648108	refs/heads/main
-c949e5cc8c6eb7b4e26915eeb5e6767d3b648108	refs/tags/v1.0.0

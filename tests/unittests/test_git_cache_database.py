@@ -102,6 +102,8 @@ class GitCacheDatabaseTest(TestCase):
         self.assertEqual(None, database.get("dummy-dir"))
         self.assertEqual(0.0, database.get_time_since_last_update("dummy-dir"))
 
+        self.assertEqual(None, database.get_url_for_path("dummy-dir"))
+
     # @mockenv(GITCACHE_DIR="/tmp",
     #          GITCACHE_UPDATE_INTERVAL="-1")
     # def test_negative_update_interval(self):

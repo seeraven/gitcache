@@ -54,6 +54,7 @@ If called with the first argument 'git' or when called as 'git' using a symlink,
 it acts as a wrapper for the git command and intercepts the commands required
 for the mirror handling.
 """
+GITCACHE_VERSION = "1.0.6"
 
 
 # -----------------------------------------------------------------------------
@@ -64,6 +65,10 @@ def get_parser():
     parser = argparse.ArgumentParser(description=DESCRIPTION,
                                      formatter_class=argparse.RawTextHelpFormatter)
 
+    parser.add_argument("--version",
+                        help="Print the version of gitcache.",
+                        action="store_true",
+                        default=False)
     parser.add_argument("-c", "--cleanup",
                         help="Remove all outdated repositories.",
                         action="store_true",
@@ -99,6 +104,10 @@ def git_cache():
     args = parser.parse_args()
     success = True
 
+    if args.version:
+        print(f"gitcache v{GITCACHE_VERSION}")
+        return True
+
     if args.cleanup:
         success = git_cleanup() == 0
 
@@ -117,23 +126,27 @@ def git_cache():
     if args.show_statistics:
         all_records = Database().get_all()
         total_mirror_updates = 0
+        total_mirror_lfs_updates = 0
         total_clones = 0
         total_updates = 0
 
         for path in sorted(all_records):
             print(f"Mirror of {all_records[path]['url']}:")
-            print(f"  Mirror Updates:      {all_records[path]['mirror-updates']}")
-            print(f"  Clones from Mirror:  {all_records[path]['clones']}")
-            print(f"  Updates from Mirror: {all_records[path]['updates']}")
+            print(f"  Mirror Updates:       {all_records[path]['mirror-updates']}")
+            print(f"  Mirror Updates (LFS): {all_records[path]['lfs-updates']}")
+            print(f"  Clones from Mirror:   {all_records[path]['clones']}")
+            print(f"  Updates from Mirror:  {all_records[path]['updates']}")
             print()
             total_mirror_updates += all_records[path]["mirror-updates"]
+            total_mirror_lfs_updates += all_records[path]['lfs-updates']
             total_clones += all_records[path]["clones"]
             total_updates += all_records[path]["updates"]
 
         print("Total:")
-        print(f"  Mirror Updates:      {total_mirror_updates}")
-        print(f"  Clones from Mirror:  {total_clones}")
-        print(f"  Updates from Mirror: {total_updates}")
+        print(f"  Mirror Updates:       {total_mirror_updates}")
+        print(f"  Mirror Updates (LFS): {total_mirror_lfs_updates}")
+        print(f"  Clones from Mirror:   {total_clones}")
+        print(f"  Updates from Mirror:  {total_updates}")
         print()
 
     elif not (args.cleanup or args.update_all or args.delete or args.zero_statistics):
