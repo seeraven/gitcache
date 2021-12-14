@@ -28,18 +28,18 @@ function run_gitcache()
 
     if [ $RETVAL != $EXPECTED_RETVAL ]; then
         echo "ERROR: Command gitcache $@ gave unexpected return value $RETVAL (expected ${EXPECTED_RETVAL})"
-        echo "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
-        echo "Stdout:"
-        cat ${STDOUT_FILE}
-        echo "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
-        echo "Stderr:"
-        cat ${STDERR_FILE}
-        echo "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
         RETVAL=10
     else
         echo "INFO:  Command return code: $RETVAL (as expected)"
         RETVAL=0
     fi
+    echo "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
+    echo "Stdout:"
+    cat ${STDOUT_FILE}
+    echo "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
+    echo "Stderr:"
+    cat ${STDERR_FILE}
+    echo "- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -"
 
     rm -f $STDOUT_FILE $STDERR_FILE
     echo "---------------------------------------------------------------------"
