@@ -57,8 +57,11 @@ def git_submodule_update(called_as, git_options):
     update_paths = git_options.command_args
 
     # If the --init option is specified, we call 'submodule init' first and
-    # remove the option for the following commands
-    if 'init' in git_options.command_group_values:
+    # remove the option for the following commands. This is exactly the same
+    # behaviour as found in https://github.com/git/git/blob/master/git-submodule.sh.
+    has_init = 'init' in git_options.command_group_values
+    has_recursive = 'recursive' in git_options.command_group_values
+    if has_init:
         update_paths_str = ' '.join([f"'{i}'" for i in update_paths])
         command = f'{called_as_str} {global_options_str} submodule init {update_paths_str}'
         return_value = os.system(command)
@@ -73,8 +76,6 @@ def git_submodule_update(called_as, git_options):
         # pylint: disable=no-value-for-parameter
         update_paths = [os.path.relpath(path, os.path.join(*cd_paths)) for path in update_paths]
 
-    # Bugs of the current implementation:
-    #  - Relative target URL is not handled correctly in clone.
     call_real_git = git_options.get_real_git_with_options()
     command = f"{call_real_git} config -f .gitmodules -l "
     command += "| awk -F '=' '{print $1}' | grep '^submodule' | grep '.url$'"
@@ -116,6 +117,12 @@ def git_submodule_update(called_as, git_options):
                 command = f"{called_as_str} {global_options_str} clone {tgt_url} {tgt_path}"
 
             os.system(command)
+
+            if has_recursive and os.path.exists(os.path.join(abs_tgt_path, '.gitmodules')):
+                command = f"cd {abs_tgt_path}; {called_as_str} submodule update --recursive"
+                if has_init:
+                    command += " --init"
+                os.system(command)
 
     return simple_call_command(git_options.get_real_git_all_args())
 

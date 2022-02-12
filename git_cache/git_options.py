@@ -218,6 +218,7 @@ SUBMODULE_INIT_OPTIONS = []
 # Submodule update options taken from https://github.com/git/git/blob/master/git-submodule.sh
 # Only options with arguments and boolean options of interest are listed here.
 SUBMODULE_UPDATE_OPTIONS = [Option(group='init', long_name='init', has_arg=False),
+                            Option(group='recursive', long_name='recursive', has_arg=False),
                             Option(long_name='reference'),
                             Option(long_name='depth'),
                             Option(short_name='j', long_name='jobs')]
