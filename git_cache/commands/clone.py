@@ -18,6 +18,7 @@ Copyright:
 # -----------------------------------------------------------------------------
 import logging
 
+from .helpers import use_mirror_for_remote_url
 from ..command_execution import simple_call_command
 from ..git_mirror import GitMirror
 
@@ -47,10 +48,14 @@ def git_clone(git_options):
 
     supported_prefixes = ['http://', 'https://', 'ssh://']
     if remote_url and any(remote_url.startswith(prefix) for prefix in supported_prefixes):
-        mirror = GitMirror(url=remote_url)
-        return mirror.clone_from_mirror(git_options)
+        if use_mirror_for_remote_url(remote_url):
+            mirror = GitMirror(url=remote_url)
+            return mirror.clone_from_mirror(git_options)
 
-    LOG.debug("No remote URL found. Falling back to orginal git command.")
+        LOG.debug("Remote URL does not match the UrlPatterns. Using original git command.")
+    else:
+        LOG.debug("No remote URL found. Falling back to orginal git command.")
+
     return simple_call_command(git_options.get_real_git_all_args())
 
 

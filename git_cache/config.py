@@ -36,6 +36,13 @@ LOG = logging.getLogger(__name__)
 # -----------------------------------------------------------------------------
 # Functions
 # -----------------------------------------------------------------------------
+def str_to_regex(string):
+    """Convert a string to a regex pattern with special treatment of an empty string."""
+    if string:
+        return string
+    return "a^"         # This pattern should never match
+
+
 def str_to_bool(string):
     """Convert a string to a boolean value."""
     if string.upper() in ["1", "ON", "TRUE", "YES"]:
@@ -172,6 +179,9 @@ class Config:
                                      env='GITCACHE_UPDATE_INTERVAL'))
         self.items.append(ConfigItem('MirrorHandling', 'CleanupAfter', '14 days',
                                      env='GITCACHE_CLEANUP_AFTER'))
+
+        self.items.append(ConfigItem('UrlPatterns', 'IncludeRegex', '.*', converter=str_to_regex))
+        self.items.append(ConfigItem('UrlPatterns', 'ExcludeRegex', '', converter=str_to_regex))
 
         self.items.append(ConfigItem('Command', 'WarnIfLockedFor', '10 seconds'))
         self.items.append(ConfigItem('Command', 'CheckInterval', '2 seconds'))

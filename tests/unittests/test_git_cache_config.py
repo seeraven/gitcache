@@ -146,6 +146,10 @@ Update:
  commandtimeout       = 1 hour               (GITCACHE_UPDATE_COMMAND_TIMEOUT)
  outputtimeout        = 5 minutes            (GITCACHE_UPDATE_OUTPUT_TIMEOUT)
  retries              = 3                    (GITCACHE_UPDATE_RETRIES)
+
+UrlPatterns:
+ excluderegex         =                      (GITCACHE_URLPATTERNS_EXCLUDE_REGEX)
+ includeregex         = .*                   (GITCACHE_URLPATTERNS_INCLUDE_REGEX)
 """
         self.assertEqual(str(config), expected_config_str)
 
