@@ -18,7 +18,7 @@ Copyright:
 # -----------------------------------------------------------------------------
 import logging
 
-from .helpers import get_mirror_url
+from .helpers import get_mirror_url, use_mirror_for_remote_url
 from ..command_execution import simple_call_command
 from ..config import Config
 from ..database import Database
@@ -61,7 +61,8 @@ def git_ls_remote(git_options):
 
     supported_prefixes = ['http://', 'https://', 'ssh://']
     if repository and any(repository.startswith(prefix) for prefix in supported_prefixes):
-        mirror_url = repository
+        if use_mirror_for_remote_url(repository):
+            mirror_url = repository
 
     if mirror_url:
         database = Database()

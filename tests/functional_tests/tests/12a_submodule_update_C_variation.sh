@@ -93,37 +93,6 @@ test_variation multi_C  $PWD ${TMP_WORKDIR}/submodules/ -C ${TMP_WORKDIR} -C sub
 test_variation no_C     ${TMP_WORKDIR}/submodules ""
 
 
-REPO=https://github.com/aws/aws-sdk-cpp
-rm -rf ${GITCACHE_DIR}
-rm -rf ${TMP_WORKDIR}/*
-
-# Initial clone
-gitcache_ok  git clone $REPO ${TMP_WORKDIR}/aws-sdk-cpp --single-branch --branch 1.9.188
-assert_db_field mirror-updates of $REPO is 0
-assert_db_field clones of $REPO is 1
-assert_db_field updates of $REPO is 0
-
-pushd ${TMP_WORKDIR}/aws-sdk-cpp
-gitcache_ok  git submodule update --recursive --init
-assert_db_field clones of https://github.com/awslabs/aws-crt-cpp.git is 1
-assert_db_field clones of https://github.com/awslabs/aws-c-common.git is 1
-assert_db_field clones of https://github.com/awslabs/aws-c-io.git is 1
-assert_db_field clones of https://github.com/awslabs/aws-c-compression.git is 1
-assert_db_field clones of https://github.com/awslabs/aws-c-cal.git is 1
-assert_db_field clones of https://github.com/awslabs/aws-c-auth.git is 1
-assert_db_field clones of https://github.com/awslabs/aws-c-http.git is 1
-assert_db_field clones of https://github.com/awslabs/aws-c-mqtt.git is 1
-assert_db_field clones of https://github.com/awslabs/s2n.git is 1
-assert_db_field clones of https://github.com/awslabs/aws-checksums.git is 1
-assert_db_field clones of https://github.com/awslabs/aws-c-event-stream.git is 1
-assert_db_field clones of https://github.com/awslabs/aws-c-s3.git is 1
-assert_db_field clones of https://github.com/awslabs/aws-lc.git is 1
-assert_db_field clones of https://github.com/awslabs/aws-templates-for-cbmc-proofs.git is 2
-popd
-
-
 # -----------------------------------------------------------------------------
 # EOF
 # -----------------------------------------------------------------------------
-
-

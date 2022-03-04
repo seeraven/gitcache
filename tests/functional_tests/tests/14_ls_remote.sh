@@ -52,6 +52,22 @@ git -C ${TMP_WORKDIR}/submodule-example5 remote set-url origin $REPO
 gitcache_ok  git -C ${TMP_WORKDIR}/submodule-example5 ls-remote
 assert_db_field clones of ${TMP_WORKDIR}/submodule-example is ''
 
+# Explicit exclude of the fetch URL
+export GITCACHE_URLPATTERNS_INCLUDE_REGEX='.*'
+export GITCACHE_URLPATTERNS_EXCLUDE_REGEX='.*/github\.com/.*'
+gitcache_ok  git -C ${TMP_WORKDIR}/submodule-example ls-remote $REPO
+assert_db_field mirror-updates of $REPO is 3
+assert_db_field clones of $REPO is 1
+assert_db_field updates of $REPO is 0
+
+# Explicit include of the fetch URL
+export GITCACHE_URLPATTERNS_INCLUDE_REGEX='.*/github\.com/.*'
+export GITCACHE_URLPATTERNS_EXCLUDE_REGEX=''
+gitcache_ok  git -C ${TMP_WORKDIR}/submodule-example ls-remote $REPO
+assert_db_field mirror-updates of $REPO is 4
+assert_db_field clones of $REPO is 1
+assert_db_field updates of $REPO is 0
+
 
 # -----------------------------------------------------------------------------
 # EOF
