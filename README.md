@@ -113,6 +113,94 @@ The current configuration can be shown by calling
 For every item, you'll see a corresponding environment variable that
 can be used to overwrite the setting of the configuration file.
 
+The configuration options are:
+
+| Category       | Config Item      | Default Value   | Environment Variable                  |
+|----------------|------------------|-----------------|---------------------------------------|
+| System         | realgit          | `/usr/bin/git`  | `GITCACHE_REAL_GIT`                   |
+| MirrorHandling | updateinterval   | `0 s`           | `GITCACHE_UPDATE_INTERVAL`            |
+| MirrorHandling | cleanupafter     | `14 days`       | `GITCACHE_CLEANUP_AFTER`              |
+| Command        | checkinterval    | `2 s`           | `GITCACHE_COMMAND_CHECK_INTERVAL`     |
+| Command        | locktimeout      | `1 h`           | `GITCACHE_COMMAND_LOCK_TIMEOUT`       |
+| Command        | warniflockedfor  | `10 s`          | `GITCACHE_COMMAND_WARN_IF_LOCKED_FOR` |
+| GC             | commandtimeout   | `1 h`           | `GITCACHE_GC_COMMAND_TIMEOUT`         |
+| GC             | outputtimeout    | `5 m`           | `GITCACHE_GC_OUTPUT_TIMEOUT`          |
+| GC             | retries          | `3`             | `GITCACHE_GC_RETRIES`                 |
+| LFS            | commandtimeout   | `1 h`           | `GITCACHE_LFS_COMMAND_TIMEOUT`        |
+| LFS            | outputtimeout    | `5 m`           | `GITCACHE_LFS_OUTPUT_TIMEOUT`         |
+| LFS            | permirrorstorage | `True`          | `GITCACHE_LFS_PER_MIRROR_STORAGE`     |
+| LFS            | retries          | `3`             | `GITCACHE_LFS_RETRIES`                |
+| Clone          | commandtimeout   | `1 h`           | `GITCACHE_CLONE_COMMAND_TIMEOUT`      |
+| Clone          | outputtimeout    | `5 m`           | `GITCACHE_CLONE_OUTPUT_TIMEOUT`       |
+| Clone          | retries          | `3`             | `GITCACHE_CLONE_RETRIES`              |
+| Update         | commandtimeout   | `1 h`           | `GITCACHE_UPDATE_COMMAND_TIMEOUT`     |
+| Update         | outputtimeout    | `5 m`           | `GITCACHE_UPDATE_OUTPUT_TIMEOUT`      |
+| Update         | retries          | `3`             | `GITCACHE_UPDATE_RETRIES`             |
+| UrlPatterns    | includeregex     | `.*`            | `GITCACHE_URLPATTERNS_INCLUDE_REGEX`  |
+| UrlPatterns    | excluderegex     | (empty)         | `GITCACHE_URLPATTERNS_EXCLUDE_REGEX`  |
+
+Configuration items that expect a time support the following values:
+
+  - Suffix `w`, `wks` or `weeks` to give the time in weeks.
+  - Suffix `d`, `dys` or `days` to give the time in days.
+  - Suffix `h`, `hrs` or `hours` to give the time in hours.
+  - Suffix `m`, `mins` or `minutes` to give the time in minutes.
+  - Suffix `s`, `secs` or `seconds` to give the time in seconds.
+  - Numbers can be integer or float, e.g, `1.5 weeks`.
+
+The following list gives a description of the configuration options:
+
+  - _System/realgit_ (`GITCACHE_REAL_GIT`) specifies the real git command. This
+    is usually `/usr/bin/git` but can be changed as you like.
+  - _MirrorHandling/updateinterval_ (`GITCACHE_UPDATE_INTERVAL`) gives the
+    minimum time between two mirror updates. If this is set to 0, the mirror is
+    updated always when needed. If you set this to something like `10 minutes`
+    then the mirror is updated only if the last update was at least 10 minutes
+    ago.
+  - _MirrorHandling/cleanupafter_ (`GITCACHE_CLEANUP_AFTER`) specifies how old
+    mirrors are detected. This is relevant for the `gitcache -c` resp.
+    `git cleanup` command which removes all old mirrors. The time given here
+    specifies the time since the last update of the mirror.
+  - To ensure only one command acts on the mirror, a locking mechanism is
+    used that is finetuned by the settings of the _Command_ category. The
+    _Command/checkinterval_ (`GITCACHE_COMMAND_CHECK_INTERVAL`) option specifies
+    at what time interval a locked mirror is checked again. The option
+    _Command/locktimeout_ specifies the total timeout after which to give up.
+    Finally, the _Command/warniflockedfor_ gives the time after which the user
+    is warned when the mirror is locked.
+  - git commands initiated by gitcache that might take a long time are monitored
+    to detect stalled executions. The monitoring is implemented by looking at
+    the stdout/stderr output and the command is assumed to be stalled when there
+    was no output received within a certain time. This timeout is given in the
+    configuration options _GC/outputtimeout_ (`GITCACHE_GC_COMMAND_TIMEOUT`),
+    _LFS/outputtimeout_ (`outputtimeout`), _Clone/outputtimeout_
+    (`GITCACHE_CLONE_OUTPUT_TIMEOUT`) and _Update/outputtimeout_
+    (`GITCACHE_UPDATE_OUTPUT_TIMEOUT`) for the corresponding git operations
+    _garbage collection_, _lfs file retrieval_, _clone_ and _update_.
+
+    In addition, a total timeout for each of these groups is given by the
+    options _GC/commandtimeout_ (`GITCACHE_GC_COMMAND_TIMEOUT`),
+    _LFS/commandtimeout_ (`GITCACHE_LFS_COMMAND_TIMEOUT`),
+    _Clone/commandtimeout_ (`GITCACHE_CLONE_COMMAND_TIMEOUT`) and
+    _Update/commandtimeout_ (`GITCACHE_UPDATE_COMMAND_TIMEOUT`).
+
+    If an operation fails, it is retried before finally giving up. This is
+    configured by the _GC/retries_ (`GITCACHE_GC_RETRIES`),
+    _LFS/retries_ (`GITCACHE_LFS_RETRIES`), _Clone/retries_
+    (`GITCACHE_CLONE_RETRIES`) and _Update/retries_ (`GITCACHE_UPDATE_RETRIES`)
+    options.
+  - _LFS/permirrorstorage_ (`GITCACHE_LFS_PER_MIRROR_STORAGE`) is a boolean
+    flag that determines whether each mirror will have its own lfs storage
+    directory (`True`) or whether a shared directory is used (`False`).
+  - _UrlPatterns/includeregex_ (`GITCACHE_URLPATTERNS_INCLUDE_REGEX`) and
+    _UrlPatterns/excluderegex_ (`GITCACHE_URLPATTERNS_EXCLUDE_REGEX`) are
+    used to identify repositories to mirror. The patterns are checked against
+    the remote URL of a repository and it is only mirrored if the include
+    pattern matches and the exclude pattern does not. If the exclude pattern
+    is empty, it is internally converted into a regex that matches nothing
+    (as an empty string would actually match always which would exclude all
+    URLs).
+
 
 gitcache Command Usage
 ----------------------
