@@ -28,7 +28,7 @@ UNITTEST_DIR       := tests/unittests
 UNITTEST_FILES     := $(shell find $(UNITTEST_DIR) -name '*.py')
 
 # Keep this version in sync with GITCACHE_VERSION in git_cache/git_cache_command.py
-CURRENT_VERSION    := 1.0.7
+CURRENT_VERSION    := 1.0.8
 
 
 # ----------------------------------------------------------------------------
