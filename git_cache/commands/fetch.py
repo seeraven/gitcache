@@ -19,7 +19,7 @@ Copyright:
 import logging
 import os
 
-from .helpers import get_mirror_url
+from .helpers import get_mirror_url, use_mirror_for_remote_url
 from ..command_execution import pretty_call_command_retry
 from ..config import Config
 from ..database import Database
@@ -58,6 +58,8 @@ def git_fetch(git_options):
 
     if remote_url is None:
         remote_url = get_mirror_url(git_options)
+    elif not use_mirror_for_remote_url(remote_url):
+        remote_url = None
 
     if remote_url:
         database = Database()

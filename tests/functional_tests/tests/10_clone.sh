@@ -77,6 +77,22 @@ assert_db_field clones of $REPO is 3
 assert_remote_of_clone ${TMP_WORKDIR}/scm-autologin-plugin3
 assert_branch ${TMP_WORKDIR}/scm-autologin-plugin3 feature_ownUserType
 
+# Explicit exclude of the cloned URL
+export GITCACHE_URLPATTERNS_INCLUDE_REGEX='.*'
+export GITCACHE_URLPATTERNS_EXCLUDE_REGEX='.*/github\.com/seeraven/scm-.*'
+gitcache_ok  git clone $REPO ${TMP_WORKDIR}/scm-autologin-plugin4
+assert_db_field mirror-updates of $REPO is 2
+assert_db_field clones of $REPO is 3
+assert_original_remote_of_clone ${TMP_WORKDIR}/scm-autologin-plugin4
+
+# Explicit include of the cloned URL
+export GITCACHE_URLPATTERNS_INCLUDE_REGEX='.*/github\.com/seeraven/scm-.*'
+export GITCACHE_URLPATTERNS_EXCLUDE_REGEX=''
+gitcache_ok  git clone $REPO ${TMP_WORKDIR}/scm-autologin-plugin5
+assert_db_field mirror-updates of $REPO is 3
+assert_db_field clones of $REPO is 4
+assert_remote_of_clone ${TMP_WORKDIR}/scm-autologin-plugin5
+
 
 # -----------------------------------------------------------------------------
 # EOF

@@ -60,6 +60,22 @@ assert_db_field clones of $REPO is 1
 assert_db_field updates of $REPO is 5
 popd
 
+# Explicit exclude of the fetch URL
+export GITCACHE_URLPATTERNS_INCLUDE_REGEX='.*'
+export GITCACHE_URLPATTERNS_EXCLUDE_REGEX='.*/github\.com/.*'
+gitcache_ok  git -C ${TMP_WORKDIR}/gitcache fetch $REPO
+assert_db_field mirror-updates of $REPO is 4
+assert_db_field clones of $REPO is 1
+assert_db_field updates of $REPO is 5
+
+# Explicit include of the fetch URL
+export GITCACHE_URLPATTERNS_INCLUDE_REGEX='.*/github\.com/.*'
+export GITCACHE_URLPATTERNS_EXCLUDE_REGEX=''
+gitcache_ok  git -C ${TMP_WORKDIR}/gitcache fetch $REPO
+assert_db_field mirror-updates of $REPO is 5
+assert_db_field clones of $REPO is 1
+assert_db_field updates of $REPO is 6
+
 
 # -----------------------------------------------------------------------------
 # EOF

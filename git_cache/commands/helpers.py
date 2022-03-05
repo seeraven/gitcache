@@ -17,8 +17,10 @@ Copyright:
 # Module Import
 # -----------------------------------------------------------------------------
 import logging
+import re
 
 from ..command_execution import getstatusoutput
+from ..config import Config
 from ..global_settings import GITCACHE_DIR
 
 
@@ -87,6 +89,23 @@ def get_current_ref(git_options):
     if retval == 0:
         return ref
     return None
+
+
+def use_mirror_for_remote_url(remote_url):
+    """Check the given remote URL against the UrlPattern configuration options.
+
+    Args:
+        remote_url (str): The remote URL to check.
+
+    Return:
+        Returns True if the remote URL should be mirrored.
+    """
+    config = Config()
+    include_re = re.compile(config.get('UrlPatterns', 'IncludeRegex'))
+    exclude_re = re.compile(config.get('UrlPatterns', 'ExcludeRegex'))
+    included = include_re.match(remote_url) is not None
+    excluded = exclude_re.match(remote_url) is not None
+    return included and not excluded
 
 
 # -----------------------------------------------------------------------------

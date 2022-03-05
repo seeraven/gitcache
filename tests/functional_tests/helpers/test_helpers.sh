@@ -140,6 +140,21 @@ function assert_remote_of_clone()
     return $RETVAL
 }
 
+# Usage: assert_original_remote_of_clone <dir>
+function assert_original_remote_of_clone()
+{
+    FETCH_URL=$(git -C "$1" remote get-url origin)
+    RETVAL=0
+
+    if [[ ${FETCH_URL} == ${GITCACHE_DIR}/* ]]; then
+        echo "ERROR: Fetch URL of clone $1 does point to gitcache dir!"
+        echo "       Fetch URL is ${FETCH_URL}"
+        RETVAL=10
+    fi
+
+    return $RETVAL
+}
+
 # Usage: assert_branch <dir> <branch>
 function assert_branch()
 {

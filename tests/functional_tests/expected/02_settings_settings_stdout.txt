@@ -39,3 +39,7 @@ Update:
  outputtimeout        = 5 minutes            (GITCACHE_UPDATE_OUTPUT_TIMEOUT)
  retries              = 3                    (GITCACHE_UPDATE_RETRIES)
 
+UrlPatterns:
+ excluderegex         =                      (GITCACHE_URLPATTERNS_EXCLUDE_REGEX)
+ includeregex         = .*                   (GITCACHE_URLPATTERNS_INCLUDE_REGEX)
+
