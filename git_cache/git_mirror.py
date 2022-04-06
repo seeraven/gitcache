@@ -22,7 +22,7 @@ import shutil
 
 import portalocker
 
-from .command_execution import getstatusoutput, pretty_call_command_retry
+from .command_execution import getstatusoutput, pretty_call_command_retry, simple_call_command
 from .config import Config, has_git_lfs_cmd
 from .database import Database
 from .global_settings import GITCACHE_DIR
@@ -192,6 +192,48 @@ class GitMirror:
             return self.delete()
         return False
 
+    @classmethod
+    def _rmtree(cls, name, ignore_errors=False):
+        """Delete a directory tree.
+
+        Method borrowed from https://github.com/python/cpython/blob/main/Lib/tempfile.py.
+
+        Args:
+            cls (class):          The class.
+            name (str):           The path to delete.
+            ignore_errors (bool): If set to True, ignore errors, otherwise raise them.
+        """
+        # pylint: disable=unused-argument
+        def onerror(func, path, exc_info):
+            if issubclass(exc_info[0], PermissionError):
+                def resetperms(path):
+                    try:
+                        os.chflags(path, 0)
+                    except AttributeError:
+                        pass
+                    os.chmod(path, 0o700)
+
+                try:
+                    if path != name:
+                        resetperms(os.path.dirname(path))
+                    resetperms(path)
+
+                    try:
+                        os.unlink(path)
+                    # PermissionError is raised on FreeBSD for directories
+                    except (IsADirectoryError, PermissionError):
+                        cls._rmtree(path, ignore_errors=ignore_errors)
+                except FileNotFoundError:
+                    pass
+            elif issubclass(exc_info[0], FileNotFoundError):
+                pass
+            else:
+                if not ignore_errors:
+                    # pylint: disable=misplaced-bare-raise
+                    raise
+
+        shutil.rmtree(name, onerror=onerror)
+
     def delete(self):
         """Delete the mirror.
 
@@ -201,8 +243,12 @@ class GitMirror:
         try:
             with Locker(f"Mirror {self.path}", self.lockfile, self.config):
                 LOG.debug("Deleting mirror %s", self.path)
-                shutil.rmtree(self.path, ignore_errors=True)
                 self.database.remove(self.path)
+                self._rmtree(self.path, ignore_errors=True)
+
+            # Delete again outside lock to ensure lock file and directory are removed
+            if os.path.exists(self.path):
+                self._rmtree(self.path, ignore_errors=False)
         except portalocker.exceptions.LockException:
             LOG.error("Delete timed out due to locked mirror.")
             return False
@@ -244,7 +290,7 @@ class GitMirror:
         return_code, _, _ = pretty_call_command_retry(
             f'Clone from mirror {self.path}',
             '',
-            ' '.join([f"'{i}'" for i in new_args]),
+            new_args,
             num_retries=self.config.get("Clone", "Retries"),
             command_timeout=self.config.get("Clone", "CommandTimeout"),
             output_timeout=self.config.get("Clone", "OutputTimeout"),
@@ -257,15 +303,19 @@ class GitMirror:
 
         LOG.info("Setting push URL to %s and configure LFS.", self.url)
         paths = git_options.get_global_group_values('run_path') + [target_dir]
-        command = ';'.join([f'cd "{x}"' for x in paths])
-        command += f";{real_git} remote set-url --push origin {self.url}"
-        command += f";{real_git} config --local lfs.url {git_lfs_url}"
+        cwd = os.path.abspath(os.path.join(*paths))
+        commands = [[real_git, "remote", "set-url", "--push", "origin", self.url],
+                    [real_git, "config", "--local", "lfs.url", git_lfs_url]]
         if self.config.get('LFS', 'PerMirrorStorage'):
-            command += f";{real_git} config --local lfs.storage {self.git_lfs_dir}"
+            commands.append([real_git, "config", "--local", "lfs.storage", self.git_lfs_dir])
 
-        retval = os.system(command)
-        if retval != 0:
-            LOG.error("Command '%s' gave return code of %d!", command, retval)
+        retval = 0
+        for command in commands:
+            cmd_retval = simple_call_command(command, cwd=cwd)
+            if cmd_retval != 0:
+                LOG.error("Command '%s' with working directory %s gave return code of %d!",
+                          command, cwd, cmd_retval)
+                retval = cmd_retval
         return retval
 
     def _update_time_reached(self):
@@ -299,8 +349,8 @@ class GitMirror:
         Return:
             Returns True on success.
         """
-        real_git = self.config.get("System", "RealGit")
-        command = f"{real_git} clone --progress --mirror {self.url} {self.git_dir}"
+        command = [self.config.get("System", "RealGit"),
+                   'clone', '--progress', '--mirror', self.url, self.git_dir]
         return_code, _, _ = pretty_call_command_retry(
             f'Initial clone of {self.url} into {self.path}',
             '',
@@ -329,13 +379,14 @@ class GitMirror:
         Return:
             Returns True on success.
         """
-        real_git = self.config.get("System", "RealGit")
-        command = f"cd {self.git_dir}; {real_git} remote update --prune"
+        command = [self.config.get("System", "RealGit"),
+                   'remote', 'update', '--prune']
         return_code, stdout_buffer, stderr_buffer = pretty_call_command_retry(
             f'Update of {self.path}',
             'garbage collection error',
             command,
             num_retries=self.config.get("Update", "Retries"),
+            cwd=self.git_dir,
             command_timeout=self.config.get("Update", "CommandTimeout"),
             output_timeout=self.config.get("Update", "OutputTimeout"),
             abort_on_pattern=b'remove gc.log' if handle_gc_error else None)
@@ -360,15 +411,20 @@ class GitMirror:
         Return:
             Returns True on success.
         """
-        real_git = self.config.get("System", "RealGit")
-        command = f"cd {self.git_dir}; {real_git} gc && rm -f gc.log"
+        command = [self.config.get("System", "RealGit"), 'gc']
         return_code, _, _ = pretty_call_command_retry(
             f'Garbage collection on {self.path}',
             '',
             command,
             num_retries=self.config.get("GC", "Retries"),
+            cwd=self.git_dir,
             command_timeout=self.config.get("GC", "CommandTimeout"),
             output_timeout=self.config.get("GC", "OutputTimeout"))
+
+        if return_code == 0:
+            gc_log_file = os.path.join(self.git_dir, 'gc.log')
+            if os.path.exists(gc_log_file):
+                os.unlink(gc_log_file)
 
         return return_code == 0
 
@@ -387,24 +443,25 @@ class GitMirror:
             LOG.warning("LFS fetch skipped as git-lfs is not available on this system!")
             return True
 
-        git_options = ""
+        git_options = []
         if self.config.get('LFS', 'PerMirrorStorage'):
-            git_options = f"-c lfs.storage={self.git_lfs_dir}"
+            git_options = ["-c", f"lfs.storage={self.git_lfs_dir}"]
+
         if ref is None:
             ref = self.get_default_ref()
             if ref is None:
                 LOG.error("Can't determine default ref of git repository!")
                 return 1
 
-        real_git = self.config.get("System", "RealGit")
-        command = f"cd {self.git_dir}; "
-        command += f"{real_git} {git_options} lfs fetch {self.escape_options(options)} origin {ref}"
+        command = [self.config.get("System", "RealGit")] + git_options
+        command += ["lfs", "fetch"] + (options if options else []) + ["origin", ref]
 
         return_code, _, _ = pretty_call_command_retry(
             f'LFS fetch of ref {ref} from {self.url} into {self.path}',
             '',
             command,
             num_retries=self.config.get("LFS", "Retries"),
+            cwd=self.git_dir,
             command_timeout=self.config.get("LFS", "CommandTimeout"),
             output_timeout=self.config.get("LFS", "OutputTimeout"))
 
@@ -420,8 +477,8 @@ class GitMirror:
             Returns the default ref.
         """
         real_git = self.config.get("System", "RealGit")
-        command = f"cd {self.git_dir}; {real_git} symbolic-ref --short HEAD"
-        return_code, ref = getstatusoutput(command)
+        command = [real_git, "symbolic-ref", "--short", "HEAD"]
+        return_code, ref = getstatusoutput(command, cwd=self.git_dir)
         if return_code == 0:
             return ref.strip()
         return None
@@ -446,6 +503,8 @@ class GitMirror:
                 sub_dir = sub_dir[:-4]
             if sub_dir.endswith('/'):
                 sub_dir = sub_dir[:-1]
+            if os.path.sep != '/':
+                sub_dir = sub_dir.replace('/', os.path.sep)
             return os.path.join(GITCACHE_DIR, "mirrors", sub_dir)
 
         # URL is already a path

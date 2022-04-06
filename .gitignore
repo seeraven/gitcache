@@ -41,8 +41,6 @@ pip-delete-this-directory.txt
 htmlcov/
 .tox/
 .nox/
-.coverage
-.coverage.*
 .cache
 nosetests.xml
 coverage.xml
@@ -132,7 +130,8 @@ dmypy.json
 *~
 *.bak
 
-.coverage-combined
+.coverage-*
+.vagrant/
 doc/combined-coverage/
 doc/functional-tests-coverage/
 doc/source/apidoc/

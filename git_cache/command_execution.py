@@ -3,7 +3,7 @@
 Module for command execution functions.
 
 Copyright:
-    2020 by Clemens Rabe <clemens.rabe@clemensrabe.de>
+    2022 by Clemens Rabe <clemens.rabe@clemensrabe.de>
 
     All rights reserved.
 
@@ -16,15 +16,19 @@ Copyright:
 # -----------------------------------------------------------------------------
 # Module Import
 # -----------------------------------------------------------------------------
-import errno
 import logging
-import os
-import pty
-import select
+import platform
 import shutil
 import subprocess
-import sys
 import time
+
+
+if platform.system().lower().startswith('win'):
+    # pylint: disable=import-error
+    from .command_execution_win import call_command
+else:
+    # pylint: disable=import-error
+    from .command_execution_unix import call_command
 
 
 # -----------------------------------------------------------------------------
@@ -36,111 +40,9 @@ LOG = logging.getLogger(__name__)
 # -----------------------------------------------------------------------------
 # Exported Functions
 # -----------------------------------------------------------------------------
-# pylint: disable=too-many-locals,too-many-statements
-def call_command(command, command_timeout=None, output_timeout=None):
-    """Call the given command with optional timeouts.
-
-    This function calls the given command in a shell environment and applies a
-    timeout on the whole command as well as a timeout on the stdout/stderr
-    streams.
-
-    The function returns the tuple (return code, stdout, stderr) with stdout
-    and stderr as the byte buffers. To convert them to strings, use the
-    'decode(encoding="utf-8", errors="ignore")' function.
-    The return code will be -1000 for a command timeout and -2000 for
-    a stdout timeout.
-
-    Args:
-        command (str):           The command to execute.
-        command_timeout (float): The timeout of the whole command execution in seconds.
-        output_timeout (float):  The timeout of stdout/stderr outputs.
-
-    Returns:
-        The tuple (return_code, stdout_buffer, stderr_buffer) with the return code
-        of the command (or -1000 on a command timeout resp. -2000 on a stdout timeout)
-        and the stdout/stderr buffers as byte arrays.
-    """
-    LOG.debug("Execute command '%s' in shell environment with command timeout of %s seconds and "
-              "output timeout of %s seconds.", command, command_timeout, output_timeout)
-
-    stdout_r, stdout_w = pty.openpty()
-    stderr_r, stderr_w = pty.openpty()
-
-    return_code = -1
-    stdout_buffer = b''
-    stderr_buffer = b''
-    with subprocess.Popen(command,
-                          bufsize=0,
-                          shell=True,
-                          stdout=stdout_w,
-                          stderr=stderr_w) as proc:
-        os.close(stdout_w)
-        os.close(stderr_w)
-
-        output_start_time = time.time()
-        command_start_time = output_start_time
-        command_timeout_occured = False
-        output_timeout_occured = False
-        buffer_size = 1024
-
-        def read_buffer(read_fd, output_stream):
-            buffer = b''
-            try:
-                buffer = os.read(read_fd, buffer_size)
-            except OSError as exception:
-                if exception.errno != errno.EIO:
-                    raise
-            else:
-                output_stream.buffer.write(buffer)
-                output_stream.buffer.flush()
-            return buffer
-
-        while proc.poll() is None:
-            # Since the select call can't detect whether the process exited, we use a
-            # small timeout on the select call (one second) and check afterwards for
-            # a timeout on the stdout/stderr streams
-            streams_ready = select.select([stdout_r, stderr_r], [], [], 1.0)[0]
-            if streams_ready:
-                if stdout_r in streams_ready:
-                    stdout_buffer += read_buffer(stdout_r, sys.stdout)
-                if stderr_r in streams_ready:
-                    stderr_buffer += read_buffer(stderr_r, sys.stderr)
-                output_start_time = time.time()
-
-            elif proc.poll() is None:
-                if output_timeout and ((time.time() - output_start_time) >= output_timeout):
-                    LOG.debug("No stdout/stderr output received within %d seconds!",
-                              (time.time() - output_start_time))
-                    output_timeout_occured = True
-                    proc.kill()
-                    break
-
-                if command_timeout and ((time.time() - command_start_time) >= command_timeout):
-                    LOG.debug("Timeout occured after %d seconds!",
-                              (time.time() - command_start_time))
-                    command_timeout_occured = True
-                    proc.kill()
-                    break
-
-        # To cleanup any pending resources
-        proc.wait()
-        os.close(stdout_r)
-        os.close(stderr_r)
-        sys.stdout.buffer.flush()
-        sys.stderr.buffer.flush()
-
-        return_code = proc.returncode
-        if command_timeout_occured:
-            return_code = -1000
-        elif output_timeout_occured:
-            return_code = -2000
-
-        LOG.debug("Command '%s' finished with return code %d.", command, return_code)
-    return (return_code, stdout_buffer, stderr_buffer)
-
-
 # pylint: disable=too-many-arguments
-def call_command_retry(command, num_retries, command_timeout=None, output_timeout=None,
+def call_command_retry(command, num_retries, cwd=None, shell=False,
+                       command_timeout=None, output_timeout=None,
                        remove_dir=None, abort_on_pattern=None):
     """Call the given command with automatic retries on error.
 
@@ -148,8 +50,14 @@ def call_command_retry(command, num_retries, command_timeout=None, output_timeou
     again as long as the return code of the command is not zero.
 
     Args:
-        command (str):           The command to execute.
+        command (list):          The command to execute as a list of command line
+                                 arguments.
         num_retries (int):       Maximum number of retries of the call.
+        cwd (str):               If given, the working directory. Otherwise the
+                                 current working directory is used.
+        shell (bool):            Should be set to False. If set to True, the command
+                                 should be given as a string and is interpreted by
+                                 a shell.
         command_timeout (float): The timeout of the whole command execution in seconds.
         output_timeout (float):  The timeout of stdout/stderr outputs.
         remove_dir (str):        If given, remove the directory on error.
@@ -163,10 +71,16 @@ def call_command_retry(command, num_retries, command_timeout=None, output_timeou
         -2000 on a stdout timeout or -3000 if the abort pattern was found) and the
         stdout/stderr buffers as byte arrays.
     """
-    LOG.debug("Retry to execute command '%s' up to %d times.", command, num_retries)
+    if isinstance(command, str):
+        command_str = command
+    else:
+        command_str = ' '.join(command)
+
+    LOG.debug("Retry to execute command '%s' up to %d times.", command_str, num_retries)
     for retry in range(num_retries + 1):
-        return_code, stdout_buffer, stderr_buffer = call_command(command, command_timeout,
-                                                                 output_timeout)
+        return_code, stdout_buffer, stderr_buffer = call_command(command, cwd=cwd, shell=shell,
+                                                                 command_timeout=command_timeout,
+                                                                 output_timeout=output_timeout)
         if return_code == 0:
             break
 
@@ -181,8 +95,8 @@ def call_command_retry(command, num_retries, command_timeout=None, output_timeou
             LOG.debug("Abort pattern '%s' not found in stdout/stderr.", abort_on_pattern)
 
         if retry != num_retries:
-            LOG.warning("Command '%s' failed. Starting retry %d of %d.",
-                        command, retry + 1, num_retries)
+            LOG.warning("Command '%s' failed with return code %d. Starting retry %d of %d.",
+                        command_str, return_code, retry + 1, num_retries)
 
     return return_code, stdout_buffer, stderr_buffer
 
@@ -198,9 +112,11 @@ def pretty_call_command_retry(action, pattern_cause, command, num_retries, **kwa
                              like 'action timed out' or
                              'action was successfully completed'.
         pattern_cause (str): The cause when the abort_on_pattern key is used.
-        command (str):       The command to execute.
+        command (list):      The command to execute as a list of command line
+                             arguments.
         num_retries (int):   Maximum number of retries of the call.
-        kwargs:              The arguments to call_command_retry().
+        kwargs:              The arguments to call_command_retry() besides
+                             command and num_retries.
 
     Returns:
         The tuple (return_code, stdout_buffer, stderr_buffer) with the return code
@@ -228,42 +144,53 @@ def pretty_call_command_retry(action, pattern_cause, command, num_retries, **kwa
     return return_code, stdout_buffer, stderr_buffer
 
 
-def simple_call_command(args):
+def simple_call_command(cmd, shell=False, cwd=None):
     """Execute the command directly using a list of arguments.
 
     Args:
-        args (list): List of arguments.
+        cmd (list):   The command to execute as a list of arguments.
+        shell (bool): If set to True the command is executed in a shell.
+                      Only use this option if absolutely necessary!
+        cwd (str):    The working directory. If not specified, the current
+                      working directory is used.
 
     Return:
         Returns the return code of the command.
     """
-    command = ' '.join([f"'{i}'" for i in args])
-    ret_code = os.WEXITSTATUS(os.system(command))
-    return ret_code
+    try:
+        # pylint: disable=subprocess-run-check
+        result = subprocess.run(cmd, shell=shell, cwd=cwd)
+    except FileNotFoundError:
+        return 127
+
+    return result.returncode
 
 
-def getstatusoutput(cmd):
+def getstatusoutput(cmd, shell=False, cwd=None):
     """Call the given command like the good old commands.getstatusoutput.
 
+    Executes the command and capture the stdout. The stderr is ignored by
+    piping it to a null device.
+
     Args:
-        cmd (str): The command to execute.
+        cmd (list):   The command to execute as a list of arguments.
+        shell (bool): If set to True the command is executed in a shell.
+                      Only use this option if absolutely necessary!
+        cwd (str):    The working directory. If not specified, the current
+                      working directory is used.
 
     Return:
-        Returns the tuple (return_code, output).
+        Returns the tuple (return_code, output). If the command was not found
+        the return code is 127 (with shell=True this might differ).
     """
-    ret_val = 0
-    cmd_output = None
     try:
-        cmd_output = subprocess.check_output(cmd, shell=True)
-    except subprocess.CalledProcessError as exception:
-        cmd_output = b''
-        if exception.output:
-            cmd_output += exception.output
-        if exception.stderr:
-            cmd_output += exception.stderr
-        ret_val = exception.returncode
+        # pylint: disable=subprocess-run-check
+        result = subprocess.run(cmd, shell=shell, cwd=cwd,
+                                stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+    except FileNotFoundError:
+        return (127, "")
 
-    return (ret_val, cmd_output.decode(encoding="utf-8", errors="ignore").strip())
+    return (result.returncode, result.stdout.decode(encoding="utf-8", errors="ignore").strip())
 
 
 # -----------------------------------------------------------------------------

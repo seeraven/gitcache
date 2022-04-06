@@ -50,16 +50,20 @@ def git_submodule_init(git_options):
     if mirror_url:
         pull_url = get_pull_url(git_options)
 
-        command_with_options = git_options.get_real_git_with_options()
-        command = f"{command_with_options} remote set-url origin {mirror_url}"
+        command = git_options.get_real_git_with_options()
+        command += ["remote", "set-url", "origin", mirror_url]
         retval, _ = getstatusoutput(command)
         if retval == 0:
             retval = simple_call_command(git_options.get_real_git_all_args())
         else:
             LOG.warning("Can't restore original pull URL of the repository!")
 
-        command = f"{command_with_options} remote set-url origin {pull_url};"
-        command += f"{command_with_options} remote set-url --push origin {mirror_url}"
+        command = git_options.get_real_git_with_options()
+        command += ["remote", "set-url", "origin", pull_url]
+        _, _ = getstatusoutput(command)
+
+        command = git_options.get_real_git_with_options()
+        command += ["remote", "set-url", "--push", "origin", mirror_url]
         _, _ = getstatusoutput(command)
         return retval
 

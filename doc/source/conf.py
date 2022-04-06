@@ -13,13 +13,19 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 import os
+import platform
 import sys
 
+if platform.system().lower().startswith('win'):
+    autodoc_mock_imports = ["git_cache.command_execution_unix"]
+else:
+    autodoc_mock_imports = ["git_cache.command_execution_win"]
+suppress_warnings = ["autodoc"]
 
 # -- Project information -----------------------------------------------------
 
 project = u'gitcache'
-copyright = u'2020, Clemens Rabe'
+copyright = u'2022, Clemens Rabe'
 author = u'Clemens Rabe'
 
 # The short X.Y version

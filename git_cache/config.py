@@ -19,6 +19,7 @@ Copyright:
 import configparser
 import logging
 import os
+import platform
 import re
 
 import pytimeparse
@@ -68,9 +69,29 @@ def has_git_lfs_cmd():
         Returns True if the git-lfs command is available.
     """
     if not hasattr(has_git_lfs_cmd, "has_git_lfs"):
-        retval, _ = getstatusoutput('git-lfs version 2>/dev/null')
+        retval, _ = getstatusoutput(['git-lfs', 'version'])
         has_git_lfs_cmd.has_git_lfs = (retval == 0)
     return has_git_lfs_cmd.has_git_lfs
+
+
+def find_git():
+    """Locate the real git command.
+
+    Return:
+        Returns the full path to the real git command. If the command is not
+        found, return the platform dependend default value and log a warning.
+    """
+    path = os.getenv('PATH')
+    on_windows = platform.system().lower().startswith('win')
+    cmd = "git.exe" if on_windows else "git"
+    for candidate in path.split(os.path.pathsep):
+        candidate = os.path.join(candidate, cmd)
+        if os.path.exists(candidate) and os.access(candidate, os.X_OK):
+            if not os.path.islink(candidate):
+                return candidate
+
+    LOG.warning("Can't find git command! Please specify manually in the config file!")
+    return "/usr/bin/git"
 
 
 # -----------------------------------------------------------------------------
@@ -171,7 +192,7 @@ class Config:
         loading the global configuration file.
         """
         self.items = []
-        self.items.append(ConfigItem('System', 'RealGit', '/usr/bin/git',
+        self.items.append(ConfigItem('System', 'RealGit', find_git(),
                                      converter=str,
                                      env='GITCACHE_REAL_GIT'))
 

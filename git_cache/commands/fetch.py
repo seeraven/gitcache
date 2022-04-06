@@ -17,10 +17,9 @@ Copyright:
 # Module Import
 # -----------------------------------------------------------------------------
 import logging
-import os
 
 from .helpers import get_mirror_url, use_mirror_for_remote_url
-from ..command_execution import pretty_call_command_retry
+from ..command_execution import pretty_call_command_retry, simple_call_command
 from ..config import Config
 from ..database import Database
 from ..git_mirror import GitMirror
@@ -73,13 +72,12 @@ def git_fetch(git_options):
         # We configure the LFS storage here to support the Jenkins way
         # of cloning git repositories.
         LOG.info("Configuring LFS.")
-        command = git_options.get_run_path_cd_commands()
-        if command != '':
-            command += ';'
-        command += f"{real_git} config --local lfs.url {mirror.url}/info/lfs"
+        command = [real_git, "config", "--local", "lfs.url", f"{mirror.url}/info/lfs"]
+        simple_call_command(command, cwd=git_options.get_run_path())
+
         if config.get('LFS', 'PerMirrorStorage'):
-            command += f";{real_git} config --local lfs.storage {mirror.git_lfs_dir}"
-        os.system(command)
+            command = [real_git, "config", "--local", "lfs.storage", mirror.git_lfs_dir]
+            simple_call_command(command, cwd=git_options.get_run_path())
     else:
         action = "Fetch"
         new_args = git_options.all_args
@@ -89,7 +87,7 @@ def git_fetch(git_options):
     return_code, _, _ = pretty_call_command_retry(
         action,
         '',
-        ' '.join([f"'{i}'" for i in original_command_args]),
+        original_command_args,
         num_retries=config.get("Update", "Retries"),
         command_timeout=config.get("Update", "CommandTimeout"),
         output_timeout=config.get("Update", "OutputTimeout"))

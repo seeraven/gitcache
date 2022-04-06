@@ -75,12 +75,10 @@ def git_pull(git_options):
         config = mirror.config
         action = f"Update from mirror {mirror.path}"
 
-    original_command_str = ' '.join([f"'{i}'" for i in git_options.get_real_git_all_args()])
-
     return_code, _, _ = pretty_call_command_retry(
         action,
         '',
-        original_command_str,
+        git_options.get_real_git_all_args(),
         num_retries=config.get("Update", "Retries"),
         command_timeout=config.get("Update", "CommandTimeout"),
         output_timeout=config.get("Update", "OutputTimeout"))

@@ -12,9 +12,9 @@ Clone:
  retries              = 3                    (GITCACHE_CLONE_RETRIES)
 
 Command:
- checkinterval        = TIME            (GITCACHE_COMMAND_CHECK_INTERVAL)
+ checkinterval        = 2 seconds            (GITCACHE_COMMAND_CHECK_INTERVAL)
  locktimeout          = 1 hour               (GITCACHE_COMMAND_LOCK_TIMEOUT)
- warniflockedfor      = TIME           (GITCACHE_COMMAND_WARN_IF_LOCKED_FOR)
+ warniflockedfor      = 10 seconds           (GITCACHE_COMMAND_WARN_IF_LOCKED_FOR)
 
 GC:
  commandtimeout       = 1 hour               (GITCACHE_GC_COMMAND_TIMEOUT)
@@ -29,10 +29,10 @@ LFS:
 
 MirrorHandling:
  cleanupafter         = 14 days              (GITCACHE_CLEANUP_AFTER)
- updateinterval       = TIME            (GITCACHE_UPDATE_INTERVAL)
+ updateinterval       = 0 seconds            (GITCACHE_UPDATE_INTERVAL)
 
 System:
- realgit              = /usr/bin/git         (GITCACHE_REAL_GIT)
+ realgit              = REAL_GIT_CMD (GITCACHE_REAL_GIT)
 
 Update:
  commandtimeout       = 1 hour               (GITCACHE_UPDATE_COMMAND_TIMEOUT)

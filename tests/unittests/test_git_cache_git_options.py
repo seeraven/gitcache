@@ -12,6 +12,8 @@
 # -----------------------------------------------------------------------------
 # Module Import
 # -----------------------------------------------------------------------------
+import os
+import platform
 from unittest import TestCase
 
 import git_cache.git_options
@@ -55,8 +57,14 @@ class GitCacheGitOptionsTest(TestCase):
         """git_cache.git_options.GitOptions: Test real git command setup."""
         args = ['-C', '1', '-c', 'user.email=something', '--git-dir=here']
         git_options = git_cache.git_options.GitOptions(args)
-        self.assertEqual("/usr/bin/git '-C' '1' '-c' 'user.email=something' '--git-dir=here'",
-                         git_options.get_real_git_with_options())
+        if platform.system().lower().startswith('win'):
+            self.assertListEqual(["C:\\Program Files\\Git\\cmd\\git.exe", "-C", "1", "-c",
+                                  "user.email=something", "--git-dir=here"],
+                                 git_options.get_real_git_with_options())
+        else:
+            self.assertListEqual(["/usr/bin/git", "-C", "1", "-c",
+                                  "user.email=something", "--git-dir=here"],
+                                 git_options.get_real_git_with_options())
 
     def test_run_path(self):
         """git_cache.git_options.GitOptions: Test run_path extraction."""
@@ -66,13 +74,14 @@ class GitCacheGitOptionsTest(TestCase):
         self.assertEqual(2,  len(run_path_list))
         self.assertEqual('1', run_path_list[0])
         self.assertEqual('2', run_path_list[1])
-        run_path_cd_commands = git_options.get_run_path_cd_commands()
-        self.assertEqual('cd "1";cd "2"', run_path_cd_commands)
+
+        abs_run_path = git_options.get_run_path()
+        self.assertEqual(os.path.abspath(os.path.join("1", "2")), abs_run_path)
 
         args = ['fetch']
         git_options = git_cache.git_options.GitOptions(args)
-        run_path_cd_commands = git_options.get_run_path_cd_commands()
-        self.assertEqual('', run_path_cd_commands)
+        abs_run_path = git_options.get_run_path()
+        self.assertEqual(os.path.abspath(os.path.curdir), abs_run_path)
 
     def test_parse(self):
         """git_cache.git_options.GitOptions: Test parsing commands."""

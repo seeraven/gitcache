@@ -1,0 +1,23 @@
+# Vagrant configuration to start a windows vm to build and test gitcache
+#
+# Set the environment variable VAGRANT_VAGRANTFILE=Vagrantfile.win to
+# use this file:
+#     VAGRANT_VAGRANTFILE=Vagrantfile.win vagrant box update
+#     VAGRANT_VAGRANTFILE=Vagrantfile.win vagrant up
+#     VAGRANT_VAGRANTFILE=Vagrantfile.win vagrant ssh -- make -C C:\\vagrant help
+Vagrant.configure("2") do |config|
+  config.vm.box = "gusztavvargadr/windows-10"
+
+  config.vm.provider "virtualbox" do |v|
+    v.gui = true
+  end
+
+  config.vm.provision "shell", inline: "choco install -y make git.install python"
+  config.vm.provision "shell", inline: "refreshenv"
+
+  config.vm.provision :shell do |shell|
+    shell.privileged = true
+    shell.inline = 'echo rebooting'
+    shell.reboot = true
+  end
+end
