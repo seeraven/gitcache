@@ -42,8 +42,8 @@ def get_pull_url(git_options):
     Return:
         Returns the pull url or None on error.
     """
-    command_with_options = git_options.get_real_git_with_options()
-    command = f"{command_with_options} remote get-url origin"
+    command = git_options.get_real_git_with_options()
+    command += ["remote", "get-url", "origin"]
     retval, pull_url = getstatusoutput(command)
     if retval == 0:
         return pull_url
@@ -62,8 +62,8 @@ def get_mirror_url(git_options):
     """
     pull_url = get_pull_url(git_options)
     if pull_url and pull_url.startswith(GITCACHE_DIR):
-        command_with_options = git_options.get_real_git_with_options()
-        command = f"{command_with_options} remote get-url --push origin"
+        command = git_options.get_real_git_with_options()
+        command += ["remote", "get-url", "--push", "origin"]
         retval, push_url = getstatusoutput(command)
         if retval == 0:
             return push_url
@@ -83,8 +83,8 @@ def get_current_ref(git_options):
     Return:
         Returns the current ref.
     """
-    command_with_options = git_options.get_real_git_with_options()
-    command = f"{command_with_options} rev-parse --abbrev-ref HEAD"
+    command = git_options.get_real_git_with_options()
+    command += ["rev-parse", "--abbrev-ref", "HEAD"]
     retval, ref = getstatusoutput(command)
     if retval == 0:
         return ref

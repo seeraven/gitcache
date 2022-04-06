@@ -19,7 +19,7 @@ import sys
 # -- Project information -----------------------------------------------------
 
 project = u'gitcache'
-copyright = u'2020, Clemens Rabe <clemens.rabe@clemensrabe.de>'
+copyright = u'2022, Clemens Rabe <clemens.rabe@clemensrabe.de>'
 author = u'Clemens Rabe'
 
 # The short X.Y version

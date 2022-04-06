@@ -18,6 +18,7 @@ Copyright:
 # -----------------------------------------------------------------------------
 import logging
 import os
+import posixpath
 
 from .helpers import get_mirror_url, get_pull_url
 from ..command_execution import getstatusoutput, simple_call_command
@@ -50,9 +51,6 @@ def git_submodule_update(called_as, git_options):
         Returns 0 on success, otherwise the return code of the last failed
         command.
     """
-    called_as_str = ' '.join(called_as)
-    global_options_str = ' '.join([f"'{i}'" for i in git_options.global_options])
-
     cd_paths = git_options.get_global_group_values('run_path')
     update_paths = git_options.command_args
 
@@ -62,9 +60,9 @@ def git_submodule_update(called_as, git_options):
     has_init = 'init' in git_options.command_group_values
     has_recursive = 'recursive' in git_options.command_group_values
     if has_init:
-        update_paths_str = ' '.join([f"'{i}'" for i in update_paths])
-        command = f'{called_as_str} {global_options_str} submodule init {update_paths_str}'
-        return_value = os.system(command)
+        command = called_as + git_options.global_options
+        command += ["submodule", "init"] + update_paths
+        return_value = simple_call_command(command)
         if return_value != 0:
             LOG.error("Initializing submodule with the command %s failed.", command)
             return return_value
@@ -76,24 +74,28 @@ def git_submodule_update(called_as, git_options):
         # pylint: disable=no-value-for-parameter
         update_paths = [os.path.relpath(path, os.path.join(*cd_paths)) for path in update_paths]
 
-    call_real_git = git_options.get_real_git_with_options()
-    command = f"{call_real_git} config -f .gitmodules -l "
-    command += "| awk -F '=' '{print $1}' | grep '^submodule' | grep '.url$'"
+    command = git_options.get_real_git_with_options()
+    command += ["config", "-f", ".gitmodules", "-l"]
     retval, output = getstatusoutput(command)
     if retval == 0:
         pull_url = get_mirror_url(git_options)
         if not pull_url:
             pull_url = get_pull_url(git_options)
 
-        for tgt_url_key in output.split():
-            command = f"{call_real_git} config -f .gitmodules --get {tgt_url_key}"
+        all_keys = [line.split('=')[0] for line in output.split() if '=' in line]
+        tgt_url_keys = [key for key in all_keys
+                        if key.startswith('submodule') and key.endswith('.url')]
+        for tgt_url_key in tgt_url_keys:
+            command = git_options.get_real_git_with_options()
+            command += ["config", "-f", ".gitmodules", "--get", tgt_url_key]
             retval, tgt_url = getstatusoutput(command)
 
             if retval != 0:
                 continue
 
             tgt_path_key = tgt_url_key.replace('.url', '.path')
-            command = f"{call_real_git} config -f .gitmodules --get {tgt_path_key}"
+            command = git_options.get_real_git_with_options()
+            command += ["config", "-f", ".gitmodules", "--get", tgt_path_key]
             retval, tgt_path = getstatusoutput(command)
 
             if retval != 0:
@@ -103,26 +105,34 @@ def git_submodule_update(called_as, git_options):
             if update_paths and tgt_path not in update_paths:
                 continue
 
+            # Note: Relative submodules use a path-like join, not a relative
+            #       URL join. So to refer to 'foo.git' located right next to
+            #       'bar.git', one has to specify '../foo.git'.
+            #       This means we can't use urllib.parse.urljoin but the path
+            #       joining used on non-windows systems.
             if tgt_url.startswith('.') or tgt_url.startswith('/'):
                 url_parts = pull_url.split('//')
-                url_parts[1] = os.path.normpath(os.path.join(url_parts[1], tgt_url))
+                url_parts[1] = posixpath.normpath(posixpath.join(url_parts[1], tgt_url))
                 tgt_url = '//'.join(url_parts)
 
             abs_tgt_path = os.path.join(*cd_paths, tgt_path)
             if os.path.exists(os.path.join(abs_tgt_path, '.git')):
                 # Perform a git fetch in the directory...
-                command = f"cd {abs_tgt_path}; {called_as_str} fetch"
+                command = called_as + ["fetch"]
+                cwd = abs_tgt_path
             else:
                 # Perform a git clone into the directory...
-                command = f"{called_as_str} {global_options_str} clone {tgt_url} {tgt_path}"
+                command = called_as + git_options.global_options
+                command += ["clone", tgt_url, tgt_path]
+                cwd = None
 
-            os.system(command)
+            simple_call_command(command, cwd=cwd)
 
             if has_recursive and os.path.exists(os.path.join(abs_tgt_path, '.gitmodules')):
-                command = f"cd {abs_tgt_path}; {called_as_str} submodule update --recursive"
+                command = called_as + ["submodule", "update", "--recursive"]
                 if has_init:
-                    command += " --init"
-                os.system(command)
+                    command.append("--init")
+                simple_call_command(command, cwd=abs_tgt_path)
 
     return simple_call_command(git_options.get_real_git_all_args())
 

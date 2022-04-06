@@ -14,6 +14,7 @@
 # -----------------------------------------------------------------------------
 import importlib
 import os
+import time
 from unittest import TestCase
 
 import git_cache.database
@@ -89,7 +90,9 @@ class GitCacheDatabaseTest(TestCase):
         self.assertEqual(0, database.get("dummy-dir")["updates"])
 
         old_update_time = database.get("dummy-dir")["last-update-time"]
+        time.sleep(0.1)
         database.save_update_time("dummy-dir")
+        time.sleep(0.1)
         self.assertNotEqual(old_update_time, database.get("dummy-dir")["last-update-time"])
         self.assertTrue(database.get_time_since_last_update("dummy-dir") < 10.0)
         self.assertNotEqual(0.0, database.get_time_since_last_update("dummy-dir"))

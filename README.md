@@ -75,15 +75,15 @@ of the mirrors are only performed if explicitly requested by a
 network usage even further.
 
 
-Installation
-------------
+Installation on Linux
+---------------------
 
 gitcache is distributed as a single executable packaged using [pyInstaller].
 So all you have to do is to download the latest executable and copy it to a
 location of your choice, for example `~/bin`:
 
-    wget https://github.com/seeraven/gitcache/releases/download/v1.0.8/gitcache_v1.0.8_Ubuntu18.04_amd64
-    mv gitcache_v1.0.8_Ubuntu18.04_amd64 ~/bin/gitcache
+    wget https://github.com/seeraven/gitcache/releases/download/v1.0.9/gitcache_v1.0.9_Ubuntu18.04_amd64
+    mv gitcache_v1.0.9_Ubuntu18.04_amd64 ~/bin/gitcache
     chmod +x ~/bin/gitcache
 
 gitcache can be used as a stand-alone command, but it is much easier to use
@@ -96,6 +96,22 @@ adjust the `PATH` variable so that the wrapper is found before the real
 
 The `export` statement should be added to your `~/.bashrc` file to set
 it permanently.
+
+
+Installation on Windows
+-----------------------
+
+Download the latest executable for Windows from the release page
+https://github.com/seeraven/gitcache/releases. Rename the executable to
+`gitcache.exe` and put it into a directory in your PATH, e.g., into
+`C:\Windows`. Then create a symlink to `git.exe` by opening a console and
+executing:
+
+    cd C:\Windows
+    mklink git.exe gitcache.exe
+
+Please note that the directory you are putting the symlink into should be
+stated before the real git command directory in your PATH variable!
 
 
 Configuration

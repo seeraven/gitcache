@@ -17,6 +17,7 @@ Copyright:
 # Module Import
 # -----------------------------------------------------------------------------
 import logging
+import os
 
 from .config import Config
 
@@ -280,16 +281,14 @@ class GitOptions:
         return self.command
 
     def get_real_git_with_options(self):
-        """Get a command string consisting of the real git command and all global options.
+        """Get a command line list consisting of the real git command and all global options.
 
         Return:
-            Returns a command string consisting of the real git command and
-            all global options.
+            Returns a list of the real git command and all global options.
         """
         config = Config()
         real_git = config.get("System", "RealGit")
-        global_options_str = ' '.join([f"'{i}'" for i in self.global_options])
-        return f"{real_git} {global_options_str}"
+        return [real_git] + self.global_options
 
     def get_real_git_all_args(self):
         """Get a list of command line arguments to call the real git command.
@@ -302,14 +301,17 @@ class GitOptions:
         real_git = config.get("System", "RealGit")
         return [real_git] + self.all_args
 
-    def get_run_path_cd_commands(self):
-        """Get a command string performing 'cd' commands matching the '-C' global options.
+    def get_run_path(self):
+        """Get a path that results after applying all the '-C' global options.
 
         Return:
-            Returns a command string performing all 'cd' commands to
-            enter the directory similar to git.
+            Returns a path that corresponds to the result when applying all the '-C'
+            global options.
         """
-        return ';'.join([f'cd "{x}"' for x in self.get_global_group_values('run_path')])
+        paths = self.get_global_group_values('run_path')
+        if paths:
+            return os.path.abspath(os.path.join(*paths))
+        return os.path.abspath(os.path.curdir)
 
     def get_global_group_values(self, group):
         """Get a list of values in the global options of the specified group.

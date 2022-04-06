@@ -44,16 +44,15 @@ def git_checkout(git_options):
         Returns 0 on success, otherwise the return code of the last failed
         command.
     """
-    command_with_options = git_options.get_real_git_with_options()
-
     # Collect all refs for an lfs fetch
     ref_candidates = [x for x in git_options.command_args
                       if not x.startswith('-') and not x.startswith(':')]
     lfs_fetch_refs = []
     for ref in ref_candidates:
-        command = f"{command_with_options} show-ref {ref} | grep -q remotes"
-        retval, _ = getstatusoutput(command)
-        if retval == 0:
+        command = git_options.get_real_git_with_options()
+        command += ["show-ref", ref]
+        retval, output = getstatusoutput(command)
+        if retval == 0 and 'remotes' in output:
             lfs_fetch_refs.append(ref)
 
     if lfs_fetch_refs:
