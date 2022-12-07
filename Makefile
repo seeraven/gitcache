@@ -32,7 +32,11 @@ rwildcard = $(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(
 # ----------------------------------------------------------------------------
 
 # Keep this version in sync with GITCACHE_VERSION in git_cache/git_cache_command.py
-CURRENT_VERSION     := 1.0.9
+CURRENT_VERSION     := 1.0.10
+
+UBUNTU_DIST_VERSIONS   := 18.04 20.04 22.04
+UBUNTU_RELEASE_TARGETS := $(addprefix releases/gitcache_v$(CURRENT_VERSION)_Ubuntu,$(addsuffix _amd64,$(UBUNTU_DIST_VERSIONS)))
+UBUNTU_PIPDEPS_TARGETS := $(addprefix pip-deps-upgrade-Ubuntu,$(addsuffix _amd64,$(UBUNTU_DIST_VERSIONS)))
 
 ifeq ($(ON_WINDOWS),1)
     PWD             := $(CURDIR)
@@ -56,24 +60,69 @@ FUNCTIONAL_TEST_FILES := $(call rwildcard,$(FUNCTIONAL_TEST_DIR),*.py)
 
 ifeq ($(ON_WINDOWS),1)
     PYTHON := python
-    VENV_ACTIVATE := venv\Scripts\activate.bat
+    WIN_PLATFORM_STRING := $(shell python -c "import platform;print(f'win{platform.release()}_{platform.architecture()[0]}',end='')")
+    VENV_DIR := venv_$(WIN_PLATFORM_STRING)
+    VENV_ACTIVATE := $(VENV_DIR)\Scripts\activate.bat
     VENV_ACTIVATE_PLUS := $(VENV_ACTIVATE) &
+    VENV_SHELL := cmd.exe /K $(VENV_ACTIVATE)
     SET_PYTHONPATH := set PYTHONPATH=$(PYTHONPATH) &
     COVERAGERC_UNITTESTS := .coveragerc-unittests-windows
     COVERAGERC_FUNCTIONAL_TESTS := .coveragerc-functional-windows
     FUNCTIONAL_TEST_RUNNER := python tests\functional_tests\run_tests.py
     DIST_GITCACHE := dist/gitcache.exe
-    WIN_PLATFORM_STRING := $(shell python -c "import platform;print(f'win{platform.release()}_{platform.architecture()[0]}',end='')")
+    FIX_PATH = $(subst /,\\,$1)
+    RMDIR    = rmdir /S /Q $(call FIX_PATH,$1) 2>nul || ver >nul
+    RMDIRR   = for /d /r %%i in (*$1*) do @rmdir /s /q "%%i"
+    RMFILE   = del /Q $(call FIX_PATH,$1) 2>nul || ver >nul
+    RMFILER  = del /Q /S $(call FIX_PATH,$1) 2>nul || ver >nul
+    MKDIR    = mkdir $(call FIX_PATH,$1) || ver >nul
+    COPY     = copy $(call FIX_PATH,$1) $(call FIX_PATH,$2)
 else
     PYTHON := python3
-    VENV_ACTIVATE := source venv/bin/activate
+    ifeq (, $(shell which lsb_release))
+        VENV_DIR := venv
+    else
+        VENV_DIR := venv_$(shell lsb_release -i -s)$(shell lsb_release -r -s)
+    endif
+    VENV_ACTIVATE := source $(VENV_DIR)/bin/activate
     VENV_ACTIVATE_PLUS := $(VENV_ACTIVATE);
+    VENV_SHELL := $(VENV_ACTIVATE_PLUS) /bin/bash
     SET_PYTHONPATH := PYTHONPATH=$(PYTHONPATH)
     COVERAGERC_UNITTESTS := .coveragerc-unittests-linux
     COVERAGERC_FUNCTIONAL_TESTS := .coveragerc-functional-linux
     FUNCTIONAL_TEST_RUNNER := tests/functional_tests/run_tests.py
     DIST_GITCACHE := dist/gitcache
+    RMDIR    = rm -rf $1
+    RMDIRR   = find . -name "$1" -exec rm -rf {} \; 2>/dev/null || true
+    RMFILE   = rm -f $1
+    RMFILER  = find . -iname "$1" -exec rm -f {} \;
+    MKDIR    = mkdir -p $1
+    COPY     = cp -a $1 $2
 endif
+
+PYTHON_MINOR := $(shell $(PYTHON) -c "import sys;print(sys.version_info[1],end='')")
+
+ifeq ($(PYTHON_MINOR),6)
+  ifeq ($(ON_WINDOWS),0)
+    ifneq (,$(shell which python3.8))
+      PYTHON := python3.8
+      PYTHON_MINOR := $(shell $(PYTHON) -c "import sys;print(sys.version_info[1],end='')")
+    endif
+  endif
+endif
+
+ifeq ($(PYTHON_MINOR),6)
+  $(warning Old python 3.6 detected. Please install at least python 3.8!)
+  ifeq ($(ON_WINDOWS),0)
+    $(info On Ubuntu 18.04, you can install python 3.8 in parallel by calling the following commands:)
+    $(info $A  sudo apt-get install python3.8-dev python3.8-venv)
+  endif
+  $(error Python version not supported)
+endif
+
+PIP_ENV_ID           := $(shell $(PYTHON) -c "import sys;print(f'{sys.platform}-py{sys.version_info[0]}.{sys.version_info[1]}.{sys.version_info[2]}',end='')")
+PIP_REQUIREMENTS     := pip_deps/requirements-$(PIP_ENV_ID).txt
+PIP_DEV_REQUIREMENTS := pip_deps/dev_requirements-$(PIP_ENV_ID).txt
 
 
 # ----------------------------------------------------------------------------
@@ -98,9 +147,22 @@ endif
 #  DEFAULT TARGETS
 # ----------------------------------------------------------------------------
 
-.PHONY: help system-setup venv-bash run check-style pylint pycodestyle flake8 tests tests-coverage unittests unittests-coverage print-functional-tests functional-tests functional-tests-coverage test-no-git-lfs test-no-git-lfs-install test-latest-git apidoc doc man pyinstaller clean start-windows-vm stop-windows-vm build-in-windows-vm
+.PHONY: help \
+        pip-deps-upgrade pip-deps-upgrade-all pip-deps-upgrade-windows \
+        pip-setup pip-install-dev pip-upgrade-stuff system-setup \
+	venv venv-bash \
+	run \
+	check-style pylint pycodestyle flake8 mypy \
+	tests tests-coverage \
+	unittests unittests-coverage \
+	print-functional-tests functional-tests functional-tests-coverage \
+	test-no-git-lfs test-no-git-lfs-install test-latest-git \
+	apidoc doc man \
+	pyinstaller \
+	start-windows-vm stop-windows-vm destroy-windows-vm build-in-windows-vm update-windows-vm-box \
+	distclean clean
 
-all:	check-style.venv tests-coverage.venv doc.venv man.venv
+all:	check-style.venv mypy.venv tests-coverage.venv doc.venv man.venv
 
 
 # ----------------------------------------------------------------------------
@@ -114,44 +176,53 @@ help:
 	@echo "      by using the '.venv' suffix."
 	@echo "      For example, use the target 'check-style.venv' to perform"
 	@echo "      the style checking in a virtual environment."
+	@echo "      In the following, the targets are specified with the recommended"
+	@echo "      environment."
 	@echo ""
 	@echo "Targets for Style Checking:"
-	@echo " check-style               : Call pylint, pycodestyle and flake8"
-	@echo " pylint                    : Call pylint on the source files."
-	@echo " pycodestyle               : Call pycodestyle on the source files."
-	@echo " flake8                    : Call flake8 on the source files."
+	@echo " check-style.venv          : Call pylint, pycodestyle and flake8"
+	@echo " pylint.venv               : Call pylint on the source files."
+	@echo " pycodestyle.venv          : Call pycodestyle on the source files."
+	@echo " flake8.venv               : Call flake8 on the source files."
+	@echo " mypy.venv                 : Call mypy on the source files."
 	@echo ""
 	@echo "Targets for Testing:"
-	@echo " tests                     : Execute unittests and functional tests."
-	@echo " tests-coverage            : Determine code coverage of all tests."
-	@echo " unittests                 : Execute unittests."
-	@echo " unittests-coverage        : Determine unittest code coverage."
-	@echo " print-functional-tests    : Print all available functional tests."
-	@echo " functional-tests          : Execute functional tests."
-	@echo "                             Tests can be selected by using the TEST_SELECTION"
-	@echo "                             variable, e.g.,"
-	@echo "                             'TEST_SELECTION=01_usage make functional-tests.venv'."
-	@echo "                             To see a list of available tests, call"
-	@echo "                             'make print-functional-tests.venv'."
-	@echo " functional-tests-coverage : Determine functional tests code coverage."
+	@echo " tests.venv                     : Execute all tests (currently only unittests)."
+	@echo " tests-coverage.venv            : Determine code coverage of all tests."
+	@echo " unittests.venv                 : Execute unittests."
+	@echo " unittests-coverage.venv        : Determine unittest code coverage."
+	@echo " print-functional-tests.venv    : Print all available functional tests."
+	@echo " functional-tests.venv          : Execute functional tests."
+	@echo "                                  Tests can be selected by using the TEST_SELECTION"
+	@echo "                                  variable, e.g.,"
+	@echo "                                  'TEST_SELECTION=01_usage make functional-tests.venv'."
+	@echo "                                  To see a list of available tests, call"
+	@echo "                                  'make print-functional-tests.venv'."
+	@echo " functional-tests-coverage.venv : Determine functional tests code coverage."
 	@echo ""
 	@echo "Targets for Functional Test Development:"
-	@echo " functional-tests-debug       : Like 'functional-tests' but be more verbose."
-	@echo " functional-tests-save-output : Like 'functional-tests' but save the output"
-	@echo "                                as the reference for the expected output."
+	@echo " functional-tests-debug.venv       : Like 'functional-tests' but be more verbose."
+	@echo " functional-tests-save-output.venv : Like 'functional-tests' but save the output"
+	@echo "                                     as the reference for the expected output."
 	@echo ""
 	@echo "Targets for Distribution:"
-	@echo " pyinstaller               : Generate dist/gitcache distributable."
+	@echo " pyinstaller.venv          : Generate dist/gitcache distributable."
 	@echo " pyinstaller-test          : Test the dist/gitcache distributable"
 	@echo "                             using the functional tests."
 ifeq ($(ON_WINDOWS),1)
 	@echo " build-release             : Build the distributables for the current"
 	@echo "                             Windows version."
 else
-	@echo " build-release             : Build the distributables for Ubuntu 18.04,"
-	@echo "                             20.04, 21.10 and 22.04 in the releases dir."
+	@echo " build-release             : Build the distributables for Ubuntu ($(UBUNTU_DIST_VERSIONS))"
+	@echo "                             in the releases dir."
 	@echo " build-in-windows-vm       : Build the distributable for Windows in a"
 	@echo "                             virtual machine."
+	@echo ""
+	@echo "Targets for Windows VM Management:"
+	@echo " start-windows-vm          : Start the Windows virtual machine."
+	@echo " stop-windows-vm           : Stop the Windows virtual machine."
+	@echo " destroy-windows-vm        : Destroy the Windows virtual machine."
+	@echo " update-windows-vm-box     : Update the Windows virtual machine box image."
 endif
 	@echo ""
 	@echo "Target for Execution from the sources:"
@@ -166,9 +237,17 @@ endif
 	@echo " venv                      : Create the venv."
 	@echo " venv-bash                 : Start a new shell in the venv for debugging."
 	@echo ""
+	@echo "PIP dependency handling:"
+	@echo " pip-deps-upgrade.venv     : Upgrade the pip-dependencies for the current environment."
+	@echo " pip-deps-upgrade-all      : Upgrade the pip-dependencies for all platforms."
+	@echo ""
 	@echo "Misc Targets:"
 	@echo " system-setup              : Install all dependencies in the currently"
 	@echo "                             active environment (system or venv)."
+	@echo " pip-setup                 : Part of system-setup to install latest pip and pip-tools."
+	@echo " pip-install-dev           : Part of system-setup to install the pip dev requirements."
+	@echo " pip-upgrade-stuff         : Part of system-setup to upgrade setuptools and wheel pip packages."
+	@echo " distclean                 : Remove releases and all temporary files."
 	@echo " clean                     : Remove all temporary files."
 	@echo ""
 	@echo "Development Information:"
@@ -181,32 +260,89 @@ endif
 
 
 # ----------------------------------------------------------------------------
+#  PIP REQUIREMENTS HANDLING
+# ----------------------------------------------------------------------------
+
+# Targets to generate pip_deps requirements-files if they do not exist
+$(PIP_REQUIREMENTS): requirements.in
+	@echo "-------------------------------------------------------------"
+	@echo "Compile pip dependencies $(PIP_REQUIREMENTS)..."
+	@echo "-------------------------------------------------------------"
+	@pip-compile --resolver=backtracking requirements.in \
+	    --output-file=$(PIP_REQUIREMENTS) \
+	    --no-emit-trusted-host --no-emit-index-url --quiet
+
+$(PIP_DEV_REQUIREMENTS): requirements.in dev_requirements.in
+	@echo "-------------------------------------------------------------"
+	@echo "Compile pip dependencies $(PIP_DEV_REQUIREMENTS)..."
+	@echo "-------------------------------------------------------------"
+	@pip-compile --resolver=backtracking requirements.in dev_requirements.in \
+	    --output-file=$(PIP_DEV_REQUIREMENTS) \
+	    --no-emit-trusted-host --no-emit-index-url --quiet
+
+# Targets to upgrade/generate pip_deps requirements-files whether they exist or not
+pip-deps-upgrade:
+	@echo "-------------------------------------------------------------"
+	@echo "Upgrade pip dependencies $(PIP_REQUIREMENTS) and $(PIP_DEV_REQUIREMENTS)..."
+	@echo "-------------------------------------------------------------"
+	@pip-compile --resolver=backtracking requirements.in \
+	    --output-file=$(PIP_REQUIREMENTS) \
+	    --no-emit-trusted-host --no-emit-index-url --quiet --upgrade
+	@pip-compile --resolver=backtracking requirements.in dev_requirements.in \
+	    --output-file=$(PIP_DEV_REQUIREMENTS) \
+	    --no-emit-trusted-host --no-emit-index-url --quiet --upgrade
+
+pip-deps-upgrade-all: pip-deps-upgrade.venv $(UBUNTU_PIPDEPS_TARGETS) pip-deps-upgrade-windows
+
+$(UBUNTU_PIPDEPS_TARGETS): pip-deps-upgrade-Ubuntu%_amd64:
+	@docker run --rm \
+	-e TGTUID=$(shell id -u) -e TGTGID=$(shell id -g) \
+	-v $(PWD):/workdir \
+	ubuntu:$* \
+	/workdir/build_in_docker/pip-deps-upgrade.sh
+
+pip-deps-upgrade-windows: clean
+	@VAGRANT_VAGRANTFILE=Vagrantfile.win vagrant up
+	@VAGRANT_VAGRANTFILE=Vagrantfile.win vagrant ssh -- make -C C:\\vagrant pip-deps-upgrade.venv clean
+	@VAGRANT_VAGRANTFILE=Vagrantfile.win vagrant halt
+
+
+# ----------------------------------------------------------------------------
 #  SYSTEM SETUP
 # ----------------------------------------------------------------------------
 
-system-setup:
+pip-setup:
 	@echo "-------------------------------------------------------------"
 	@echo "Installing pip..."
 	@echo "-------------------------------------------------------------"
 # Note: pip install -U pip had problems running on Windows, so we use now:
 	@$(PYTHON) -m pip install --upgrade pip
 	@echo "-------------------------------------------------------------"
-	@echo "Installing package requirements..."
+	@echo "Installing pip-tools..."
 	@echo "-------------------------------------------------------------"
-	@pip install -r requirements.txt
+	@pip install pip-tools
+
+pip-install-dev: $(PIP_DEV_REQUIREMENTS)
 	@echo "-------------------------------------------------------------"
-	@echo "Installing package development requirements..."
+	@echo "Installing package requirements (development)..."
 	@echo "-------------------------------------------------------------"
-	@pip install -r dev_requirements.txt
-	@pip install -U setuptools wheel
+	@pip install -r $(PIP_DEV_REQUIREMENTS)
+
+pip-upgrade-stuff:
+	@echo "-------------------------------------------------------------"
+	@echo "Upgrade setuptools and wheel..."
+	@echo "-------------------------------------------------------------"
+	@pip install --upgrade setuptools wheel
+
+system-setup: pip-setup pip-install-dev pip-upgrade-stuff
 
 
 # ----------------------------------------------------------------------------
 #  VENV SUPPORT
 # ----------------------------------------------------------------------------
 
-venv:
-	@$(PYTHON) -m venv venv
+$(VENV_DIR):
+	@$(PYTHON) -m venv $(VENV_DIR)
 	@$(VENV_ACTIVATE_PLUS) make system-setup
 	@echo "-------------------------------------------------------------"
 	@echo "Virtualenv venv setup. Call"
@@ -214,14 +350,11 @@ venv:
 	@echo "to activate it."
 	@echo "-------------------------------------------------------------"
 
+venv: $(VENV_DIR)
 
 venv-bash: venv
 	@echo "Entering a new shell using the venv setup:"
-ifeq ($(ON_WINDOWS),1)
-	@cmd.exe /K $(VENV_ACTIVATE)
-else
-	@$(VENV_ACTIVATE_PLUS) /bin/bash
-endif
+	@$(VENV_SHELL)
 	@echo "Leaving sandbox shell."
 
 
@@ -234,8 +367,8 @@ endif
 # ----------------------------------------------------------------------------
 
 run:
-	@source venv/bin/activate; \
-	PYTHONPATH=$(PYTHONPATH) ./gitcache $(RUN_ARGS)
+	@$(VENV_ACTIVATE_PLUS) $(SET_PYTHONPATH) \
+	./gitcache $(RUN_ARGS)
 
 
 # ----------------------------------------------------------------------------
@@ -257,6 +390,9 @@ pycodestyle:
 flake8:
 	@flake8 $(SOURCES) $(UNITTEST_DIR) $(FUNCTIONAL_TEST_DIR)
 	@echo "flake8 found no errors."
+
+mypy:
+	@mypy $(SOURCES) $(UNITTEST_DIR) $(FUNCTIONAL_TEST_DIR)
 
 
 # ----------------------------------------------------------------------------
@@ -281,15 +417,9 @@ unittests:
 	@$(SET_PYTHONPATH) $(PYTHON) -m unittest discover --failfast -s $(UNITTEST_DIR)
 
 unittests-coverage:
-ifeq ($(ON_WINDOWS),1)
-	@rmdir /S /Q doc\coverage 2>nul || ver >nul
-	@del /Q .coverage 2>nul || ver >nul
-	@mkdir doc\coverage
-else
-	@rm -rf doc/coverage
-	@rm -f .coverage
-	@mkdir -p doc/coverage
-endif
+	@$(call RMFILE,.coverage)
+	@$(call RMDIR,doc/coverage)
+	@$(call MKDIR,doc/coverage)
 	@$(SET_PYTHONPATH) coverage run --rcfile=$(COVERAGERC_UNITTESTS) -m unittest discover -s $(UNITTEST_DIR)
 	@coverage report --rcfile=$(COVERAGERC_UNITTESTS)
 	@coverage html --rcfile=$(COVERAGERC_UNITTESTS)
@@ -313,11 +443,7 @@ functional-tests-save-output:
 	@$(SET_PYTHONPATH) $(FUNCTIONAL_TEST_RUNNER) -s $(TEST_SELECTION_ARGS)
 
 functional-tests-coverage:
-ifeq ($(ON_WINDOWS),1)
-	@del /Q .coverage-functional-tests 2>nul || ver >nul
-else
-	@rm -f .coverage-functional-tests
-endif
+	@$(call RMFILE,.coverage-functional-tests)
 	@$(SET_PYTHONPATH) $(FUNCTIONAL_TEST_RUNNER) -c
 	@echo "Functional Tests Code Coverage:"
 	@coverage report --rcfile=$(COVERAGERC_FUNCTIONAL_TESTS)
@@ -353,16 +479,13 @@ test-latest-git:
 
 endif
 
+
 # ----------------------------------------------------------------------------
 #  DOCUMENTATION
 # ----------------------------------------------------------------------------
 
 apidoc:
-ifeq ($(ON_WINDOWS),1)
-	@rmdir /S /Q doc\source\apidoc 2>nul || ver >nul
-else
-	@rm -rf doc/source/apidoc
-endif
+	@$(call RMDIR,doc/source/apidoc)
 	@$(SET_PYTHONPATH) sphinx-apidoc -f -M -T -o doc/source/apidoc $(MODULES)
 
 doc: apidoc
@@ -389,48 +512,20 @@ ifeq ($(ON_WINDOWS),1)
 build-release: releases/gitcache_v$(CURRENT_VERSION)_$(WIN_PLATFORM_STRING).exe
 
 releases/gitcache_v$(CURRENT_VERSION)_$(WIN_PLATFORM_STRING).exe: $(DIST_GITCACHE)
-	@mkdir releases 2>nul || ver >nul
-	@copy dist\gitcache.exe releases\gitcache_v$(CURRENT_VERSION)_$(WIN_PLATFORM_STRING).exe
+	@$(call MKDIR,releases)
+	@$(call COPY,$<,$@)
 
 else
 
-build-release: releases/gitcache_v$(CURRENT_VERSION)_Ubuntu18.04_amd64 releases/gitcache_v$(CURRENT_VERSION)_Ubuntu20.04_amd64 releases/gitcache_v$(CURRENT_VERSION)_Ubuntu21.10_amd64 releases/gitcache_v$(CURRENT_VERSION)_Ubuntu22.04_amd64
+build-release: $(UBUNTU_RELEASE_TARGETS)
 
-releases/gitcache_v$(CURRENT_VERSION)_Ubuntu18.04_amd64:
+$(UBUNTU_RELEASE_TARGETS): releases/gitcache_v$(CURRENT_VERSION)_Ubuntu%_amd64:
 	@mkdir -p releases
 	@docker run --rm \
 	-e TGTUID=$(shell id -u) -e TGTGID=$(shell id -g) \
 	-v $(PWD):/workdir \
-	ubuntu:18.04 \
-	/workdir/build_in_docker/ubuntu.sh
-	@mv releases/gitcache_Ubuntu18.04_amd64 releases/gitcache_v$(CURRENT_VERSION)_Ubuntu18.04_amd64
-
-releases/gitcache_v$(CURRENT_VERSION)_Ubuntu20.04_amd64:
-	@mkdir -p releases
-	@docker run --rm \
-	-e TGTUID=$(shell id -u) -e TGTGID=$(shell id -g) \
-	-v $(PWD):/workdir \
-	ubuntu:20.04 \
-	/workdir/build_in_docker/ubuntu.sh
-	@mv releases/gitcache_Ubuntu20.04_amd64 releases/gitcache_v$(CURRENT_VERSION)_Ubuntu20.04_amd64
-
-releases/gitcache_v$(CURRENT_VERSION)_Ubuntu21.10_amd64:
-	@mkdir -p releases
-	@docker run --rm \
-	-e TGTUID=$(shell id -u) -e TGTGID=$(shell id -g) \
-	-v $(PWD):/workdir \
-	ubuntu:21.10 \
-	/workdir/build_in_docker/ubuntu.sh
-	@mv releases/gitcache_Ubuntu21.10_amd64 releases/gitcache_v$(CURRENT_VERSION)_Ubuntu21.10_amd64
-
-releases/gitcache_v$(CURRENT_VERSION)_Ubuntu22.04_amd64:
-	@mkdir -p releases
-	@docker run --rm \
-	-e TGTUID=$(shell id -u) -e TGTGID=$(shell id -g) \
-	-v $(PWD):/workdir \
-	ubuntu:22.04 \
-	/workdir/build_in_docker/ubuntu.sh
-	@mv releases/gitcache_Ubuntu22.04_amd64 releases/gitcache_v$(CURRENT_VERSION)_Ubuntu22.04_amd64
+	ubuntu:$* \
+	/workdir/build_in_docker/ubuntu.sh $@
 
 endif
 
@@ -444,37 +539,34 @@ start-windows-vm:
 stop-windows-vm:
 	@VAGRANT_VAGRANTFILE=Vagrantfile.win vagrant halt
 
+destroy-windows-vm:
+	@VAGRANT_VAGRANTFILE=Vagrantfile.win vagrant destroy -f
+
 build-in-windows-vm: clean
 	@VAGRANT_VAGRANTFILE=Vagrantfile.win vagrant up
-# Note: Execution of unittests requires a stdin which is not possible to provide using the
-#       'vagrant ssh -- make ...' syntax. To execute everything as we do in the docker
-#       for ubuntu, call
-#           VAGRANT_VAGRANTFILE=Vagrantfile.win vagrant ssh
-#           make -C C:\\vagrant unittests.venv pyinstaller.venv pyinstaller-test
-#
 	@VAGRANT_VAGRANTFILE=Vagrantfile.win vagrant ssh -- make -C C:\\vagrant pyinstaller.venv pyinstaller-test build-release.venv
+	@VAGRANT_VAGRANTFILE=Vagrantfile.win vagrant ssh -- make -C C:\\vagrant clean
 	@VAGRANT_VAGRANTFILE=Vagrantfile.win vagrant halt
+
+update-windows-vm-box: destroy-windows-vm
+	@VAGRANT_VAGRANTFILE=Vagrantfile.win vagrant box update
+	@VAGRANT_VAGRANTFILE=Vagrantfile.win vagrant box prune --force --keep-active-boxes
 
 
 # ----------------------------------------------------------------------------
 #  MAINTENANCE TARGETS
 # ----------------------------------------------------------------------------
 
+distclean: clean
+	@$(call RMDIRR,releases)
+	@$(call RMDIRR,.mypy_cache)
+
 clean:
-ifeq ($(ON_WINDOWS),1)
-	@rmdir /S /Q venv dist build doc\build doc\*coverage doc\source\apidoc 2>nul || ver >nul
-	@del /Q .coverage     2>nul || ver >nul
-	@del /Q .coverage-*   2>nul || ver >nul
-	@del /Q *.spec        2>nul || ver >nul
-	@del /Q /S *~         2>nul || ver >nul
-	@del /Q /S *.pyc      2>nul || ver >nul
-else
-	@rm -rf venv doc/*coverage doc/build doc/source/apidoc .coverage .coverage-*
-	@rm -rf dist build *.spec
-	@find . -name "__pycache__" -exec rm -rf {} \; 2>/dev/null || true
-	@find . -iname "*~" -exec rm -f {} \;
-	@find . -iname "*.pyc" -exec rm -f {} \;
-endif
+	@$(call RMDIR,$(VENV_DIR) dist build doc/build doc/*coverage doc/source/apidoc)
+	@$(call RMFILE,.coverage .coverage-* *.spec)
+	@$(call RMDIRR,__pycache__)
+	@$(call RMFILER,*~)
+	@$(call RMFILER,*.pyc)
 
 
 # ----------------------------------------------------------------------------

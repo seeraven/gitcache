@@ -129,6 +129,12 @@ def git_submodule_update(called_as, git_options):
             simple_call_command(command, cwd=cwd)
 
             if has_recursive and os.path.exists(os.path.join(abs_tgt_path, '.gitmodules')):
+                # Before entering the recursive update we must ensure the checked out
+                # repository is on the desired commit.
+                command = git_options.get_real_git_with_options()
+                command += ["submodule", "update", "--", tgt_path]
+                simple_call_command(command, cwd=cwd)
+
                 command = called_as + ["submodule", "update", "--recursive"]
                 if has_init:
                     command.append("--init")

@@ -18,6 +18,7 @@ Copyright:
 # -----------------------------------------------------------------------------
 import logging
 import os
+from typing import List
 
 from .config import Config
 
@@ -214,7 +215,7 @@ FETCH_OPTIONS = [Option(long_name='upload-pack'),
 
 # Submodule init options taken from https://github.com/git/git/blob/master/git-submodule.sh
 # Only options with arguments and boolean options of interest are listed here.
-SUBMODULE_INIT_OPTIONS = []
+SUBMODULE_INIT_OPTIONS: List[Option] = []
 
 # Submodule update options taken from https://github.com/git/git/blob/master/git-submodule.sh
 # Only options with arguments and boolean options of interest are listed here.

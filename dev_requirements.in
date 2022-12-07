@@ -9,6 +9,7 @@ flake8-docstrings
 flake8-comprehensions
 nose
 mock
+types-mock
 coverage
 sphinx
 sphinx_rtd_theme

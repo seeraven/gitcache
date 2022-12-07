@@ -265,6 +265,7 @@ Assertion skipped: Can't compare outputs as we are saving the outputs to disc.\n
 Output of command "gitcache {' '.join(args)}" differs from expected output!
 
 """
+                # pylint: disable=consider-using-generator
                 left_size = max([len(line) for line in expected_stdout.split('\n')])
                 message += f"{'Expected Stdout'.ljust(left_size)} | Retrieved Stdout\n"
                 message += f"{'-'*(left_size*2+3)}\n"
