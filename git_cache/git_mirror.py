@@ -141,9 +141,11 @@ class GitMirror:
         Return:
             Returns True if the mirror was updated or False if the request timed out.
         """
+        mirror_exists = self.database.get(self.path) is not None
         try:
             with Locker(f"Mirror {self.path}", self.lockfile, self.config):
-                if not os.path.exists(self.git_dir):
+                if not mirror_exists:
+                    self._rmtree(self.path, ignore_errors=True)
                     return self._clone(ref)
 
                 if force or self._update_time_reached():

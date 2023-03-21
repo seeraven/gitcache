@@ -70,7 +70,7 @@ def has_git_lfs_cmd():
     """
     if not hasattr(has_git_lfs_cmd, "has_git_lfs"):
         retval, _ = getstatusoutput(['git-lfs', 'version'])
-        has_git_lfs_cmd.has_git_lfs = (retval == 0)
+        has_git_lfs_cmd.has_git_lfs = retval == 0
     return has_git_lfs_cmd.has_git_lfs
 
 
