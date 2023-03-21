@@ -18,8 +18,10 @@ Copyright:
 # -----------------------------------------------------------------------------
 import logging
 import os
+import signal
 import subprocess
 import textwrap
+import time
 from itertools import zip_longest
 
 from .test_workspace import TestWorkspace
@@ -148,6 +150,56 @@ Return code:      {result.returncode}
 
         return result
 
+    def _run_and_abort(self, timeout, args, cwd):
+        """Execute the gitcache command and abort it after the given time.
+
+        Args:
+            timeout (float): Time to wait after starting the 'gitcache' command
+                             before aborting it.
+            args (list):     Command line arguments to the 'gitcache' command.
+            cwd (str):       Directory where to execute the command. If set to None,
+                             the current working directory is used.
+        """
+        command = self._settings.gitcache_cmd + args
+        LOG.debug("Executing command %s", command)
+        with subprocess.Popen(command,
+                              stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                              shell=False,
+                              env=self._workspace.env,
+                              cwd=cwd) as process:
+            LOG.debug("Sleeping for %f seconds...", timeout)
+            time.sleep(timeout)
+            if self._settings.on_windows:
+                LOG.debug("Killing command with terminate...")
+                process.terminate()
+            else:
+                LOG.debug("Killing command with SIGINT...")
+                process.send_signal(signal.SIGINT)
+            stdout, stderr = process.communicate()
+            process.wait()
+            result = subprocess.CompletedProcess(process.args, process.returncode)
+            result.stdout = stdout
+            result.stderr = stderr
+
+        LOG.debug("Command returned return code %d", result.returncode)
+
+        stdout_details = f"""{'-'*30}> STDOUT <{'-'*30}
+{result.stdout.decode()}""" if result.stdout else ""
+        stderr_details = f"""{'-'*30}> STDERR <{'-'*30}
+{result.stderr.decode()}""" if result.stderr else ""
+        result.execution_details = f"""{'='*80}
+Scope:            {self._current_test_method}
+Executed command: {command}
+Return code:      {result.returncode}
+{stdout_details}{stderr_details}
+{'='*80}"""
+
+        if self._settings.print_output:
+            print()
+            print(result.execution_details)
+
+        return result
+
     def assert_equal(self, expected, measured, name="value"):
         """Assert that the expected value is identical to the measured one.
 
@@ -222,6 +274,31 @@ Assertion ok: gitcache command "gitcache {' '.join(args)}" fails correctly:
 """
         return result
 
+    def assert_gitcache_abort(self, args, cwd=None, killtime=0.1):
+        """Execute the gitcache command and abort it. Also ensure it returns a non-zero return code.
+
+        Args:
+            args (list): Command line arguments to the 'gitcache' command.
+            cwd (str):   Directory where to execute the command. If set to None,
+                         the current working directory is used.
+
+        Return:
+            Returns the result of the command execution.
+        """
+        result = self._run_and_abort(killtime, args, cwd)
+        if result.returncode == 0:
+            message = f"""\
+gitcache command "gitcache {' '.join(args)}" succeeded with return code {result.returncode}!
+
+{result.execution_details}
+"""
+            raise TestError(message)
+        self._history += f"""\
+Assertion ok: gitcache command "gitcache {' '.join(args)}" aborted correctly:
+{textwrap.indent(result.execution_details, ' '*4)}
+"""
+        return result
+
     # pylint: disable=too-many-locals
     def assert_gitcache_output(self, args, filename, cwd=None):
         """Execute the gitcache command and ensure it has the expected output.
@@ -258,7 +335,7 @@ Assertion skipped: Can't compare outputs as we are saving the outputs to disc.\n
             with open(stdout_filename, 'r', encoding='utf-8') as file_handle:
                 expected_stdout = file_handle.read()
 
-            stdout_differs = (expected_stdout != result_stdout)
+            stdout_differs = expected_stdout != result_stdout
 
             if stdout_differs:
                 message = f"""\

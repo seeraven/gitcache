@@ -149,6 +149,20 @@ class CloneTest(TestBase):
         self._workspace.del_env('GITCACHE_URLPATTERNS_INCLUDE_REGEX')
         self._workspace.del_env('GITCACHE_URLPATTERNS_EXCLUDE_REGEX')
 
+    def test_aborted_clone(self):
+        """Test aborting the first clone command and cloning again."""
+        repo = "https://github.com/seeraven/gitcache.git"
+        checkout = os.path.join(self._workspace.workspace_path, "gitcache")
+        self.assert_gitcache_abort(["git", "-C", self._workspace.workspace_path, "clone", repo])
+        self.assert_db_field('mirror-updates', repo, None)
+        self.assert_db_field('clones', repo, None)
+
+        self.assert_gitcache_ok(["git", "-C", self._workspace.workspace_path, "clone", repo])
+        self.assert_db_field('mirror-updates', repo, 0)
+        self.assert_db_field('clones', repo, 1)
+        self.assert_remote_of_clone(checkout)
+        self.assert_branch(checkout, "master")
+
 
 # -----------------------------------------------------------------------------
 # EOF

@@ -8,26 +8,28 @@ alabaster==0.7.13
     # via sphinx
 altgraph==0.17.3
     # via pyinstaller
-astroid==2.13.3
+astroid==2.15.0
     # via pylint
 attrs==22.2.0
     # via
     #   flake8-bugbear
     #   flake8-mypy
-babel==2.11.0
+babel==2.12.1
     # via sphinx
 certifi==2022.12.7
     # via requests
-charset-normalizer==3.0.1
+charset-normalizer==3.1.0
     # via requests
 coloredlogs==15.0.1
     # via -r requirements.in
-coverage==7.0.5
+coverage==7.2.2
     # via -r dev_requirements.in
 dill==0.3.6
     # via pylint
-docutils==0.19
-    # via sphinx
+docutils==0.18.1
+    # via
+    #   sphinx
+    #   sphinx-rtd-theme
 flake8==6.0.0
     # via
     #   -r dev_requirements.in
@@ -36,11 +38,11 @@ flake8==6.0.0
     #   flake8-docstrings
     #   flake8-mypy
     #   pep8-naming
-flake8-bugbear==23.1.20
+flake8-bugbear==23.3.12
     # via -r dev_requirements.in
-flake8-comprehensions==3.10.1
+flake8-comprehensions==3.11.0
     # via -r dev_requirements.in
-flake8-docstrings==1.6.0
+flake8-docstrings==1.7.0
     # via -r dev_requirements.in
 flake8-import-order==0.18.2
     # via -r dev_requirements.in
@@ -52,9 +54,9 @@ idna==3.4
     # via requests
 imagesize==1.4.1
     # via sphinx
-importlib-metadata==6.0.0
+importlib-metadata==6.1.0
     # via sphinx
-isort==5.11.4
+isort==5.12.0
     # via pylint
 jinja2==3.1.2
     # via sphinx
@@ -68,9 +70,9 @@ mccabe==0.7.0
     #   pylint
 mock==5.0.1
     # via -r dev_requirements.in
-mypy==0.991
+mypy==1.1.1
     # via flake8-mypy
-mypy-extensions==0.4.3
+mypy-extensions==1.0.0
     # via mypy
 nose==1.3.7
     # via -r dev_requirements.in
@@ -78,7 +80,7 @@ packaging==23.0
     # via sphinx
 pep8-naming==0.13.3
     # via -r dev_requirements.in
-platformdirs==2.6.2
+platformdirs==3.1.1
     # via pylint
 portalocker==2.7.0
     # via -r requirements.in
@@ -93,11 +95,11 @@ pyflakes==3.0.1
     # via flake8
 pygments==2.14.0
     # via sphinx
-pyinstaller==5.7.0
+pyinstaller==5.9.0
     # via -r dev_requirements.in
-pyinstaller-hooks-contrib==2022.15
+pyinstaller-hooks-contrib==2023.1
     # via pyinstaller
-pylint==2.15.10
+pylint==2.17.0
     # via -r dev_requirements.in
 pytimeparse==1.1.8
     # via -r requirements.in
@@ -113,14 +115,17 @@ sphinx==6.1.3
     # via
     #   -r dev_requirements.in
     #   sphinx-rtd-theme
-sphinx-rtd-theme==0.5.1
+    #   sphinxcontrib-jquery
+sphinx-rtd-theme==1.2.0
     # via -r dev_requirements.in
 sphinxcontrib-applehelp==1.0.4
     # via sphinx
 sphinxcontrib-devhelp==1.0.2
     # via sphinx
-sphinxcontrib-htmlhelp==2.0.0
+sphinxcontrib-htmlhelp==2.0.1
     # via sphinx
+sphinxcontrib-jquery==4.1
+    # via sphinx-rtd-theme
 sphinxcontrib-jsmath==1.0.1
     # via sphinx
 sphinxcontrib-qthelp==1.0.3
@@ -133,18 +138,18 @@ tomli==2.0.1
     #   pylint
 tomlkit==0.11.6
     # via pylint
-types-mock==5.0.0.2
+types-mock==5.0.0.5
     # via -r dev_requirements.in
-typing-extensions==4.4.0
+typing-extensions==4.5.0
     # via
     #   astroid
     #   mypy
     #   pylint
-urllib3==1.26.14
+urllib3==1.26.15
     # via requests
-wrapt==1.14.1
+wrapt==1.15.0
     # via astroid
-zipp==3.11.0
+zipp==3.15.0
     # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:

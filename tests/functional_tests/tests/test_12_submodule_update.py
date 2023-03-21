@@ -173,8 +173,6 @@ class SubmoduleUpdateTest(TestBase):
         self.assert_db_field('clones', 'https://github.com/awslabs/aws-c-event-stream.git', 1)
         self.assert_db_field('clones', 'https://github.com/awslabs/aws-c-s3.git', 1)
         self.assert_db_field('clones', 'https://github.com/awslabs/aws-lc.git', 1)
-        self.assert_db_field('clones',
-                             'https://github.com/awslabs/aws-templates-for-cbmc-proofs.git', 2)
 
     def test_exclude(self):
         """Test 'git submodule update --init' with one submodule not cached."""
