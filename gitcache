@@ -13,6 +13,7 @@
 # -----------------------------------------------------------------------------
 # Module Import
 # -----------------------------------------------------------------------------
+import logging
 import os
 import sys
 
@@ -36,9 +37,13 @@ if __name__ == "__main__":
                         level_styles=log_level_styles,
                         fmt=GITCACHE_LOGFORMAT)
 
-    if os.path.basename(sys.argv[0]) == 'git':
+    logger = logging.getLogger(__name__)
+    logger.debug("Called as %s", sys.argv)
+
+    if os.path.basename(sys.argv[0]) == 'git' or os.path.basename(sys.argv[0]) == 'git.exe':
         handle_git_command(sys.argv[0:1], sys.argv[1:])
-    elif len(sys.argv) > 1 and os.path.basename(sys.argv[1]) == 'git':
+    elif len(sys.argv) > 1 and (os.path.basename(sys.argv[1]) == 'git' or
+                                os.path.basename(sys.argv[1]) == 'git.exe'):
         handle_git_command(sys.argv[0:2], sys.argv[2:])
     else:
         sys.exit(0 if git_cache() else 1)

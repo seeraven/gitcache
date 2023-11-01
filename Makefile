@@ -32,7 +32,7 @@ rwildcard = $(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(
 # ----------------------------------------------------------------------------
 
 # Keep this version in sync with GITCACHE_VERSION in git_cache/git_cache_command.py
-CURRENT_VERSION     := 1.0.11
+CURRENT_VERSION     := 1.0.12
 
 UBUNTU_DIST_VERSIONS   := 18.04 20.04 22.04
 UBUNTU_RELEASE_TARGETS := $(addprefix releases/gitcache_v$(CURRENT_VERSION)_Ubuntu,$(addsuffix _amd64,$(UBUNTU_DIST_VERSIONS)))
