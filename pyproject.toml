@@ -1,0 +1,128 @@
+[build-system]
+requires = [
+    "setuptools",
+    "wheel",
+]
+build-backend = 'setuptools.build_meta'
+
+
+[project]
+name = "gitcache"
+version = "1.0.13"
+authors = [{name = "Clemens Rabe", email = "clemens.rabe@clemensrabe.de"}]
+description = "Local cache for git repositories to speed up working with large repositories and multiple clones."
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "portalocker",
+    "pytimeparse",
+    "coloredlogs",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ipython",
+
+    "black",
+
+    "flake8",
+    "flake8-black",
+    "flake8-bugbear",
+    "flake8-comprehensions",
+    "flake8-isort",
+    "flake8-pyproject",
+    "pep8-naming",
+
+    "isort",
+
+    "mypy",
+    "types-mock",
+
+    "pycodestyle",
+
+    "pylint",
+
+    "sphinx",
+    "sphinx_rtd_theme",
+    "sphinx-pyproject",
+
+    "pyinstaller",
+]
+test = [
+    "coverage[toml]",
+    "mock",
+    "pytest",
+    "pytest-cov",
+    "pytest-timeout"
+]
+
+
+[tool.black]
+line-length = 120
+
+
+[tool.isort]
+profile = "black"
+line_length = 120
+src_paths = ["src", "test"]
+
+
+[tool.flake8]
+max-line-length = 120
+
+
+[tool.pylint.main]
+py-version = "3.10"
+
+[tool.pylint.format]
+max-line-length = 120
+
+[tool.pylint.similarities]
+min-similarity-lines = 20
+
+
+[tool.mypy]
+show_error_codes = true
+
+[[tool.mypy.overrides]]
+module = [
+    "coloredlogs.*",
+    "pytimeparse.*",
+]
+ignore_missing_imports = true
+
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+pythonpath = ["src"]
+
+
+[tool.coverage.paths]
+source = ["src"]
+
+[tool.coverage.run]
+source = [
+    "src/git_cache",
+    "test",
+]
+data_file = ".coverage"
+branch = true
+parallel = true
+relative_files = true
+disable_warnings = ["no-data-collected"]
+
+[tool.coverage.report]
+show_missing = true
+precision = 2
+fail_under = 20
+
+[tool.coverage.html]
+directory = "doc/unittests-coverage"
+
+[tool.coverage.xml]
+output = "doc/unittests-coverage/coverage.xml"
+
+
+[tool.sphinx-pyproject]
+copyright = "2023, Clemens Rabe <clemens.rabe@clemensrabe.de>"
+release_url = "https://github.com/seeraven/gitcache/releases"

@@ -1,5 +1,5 @@
-Welcome to gitcache documentation!
-==================================
+Welcome to |project_name| documentation!
+========================================
 
 .. toctree::
    :maxdepth: 2

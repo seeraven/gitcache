@@ -1,0 +1,3 @@
+[submodule ".make4py"]
+	path = .make4py
+	url = https://github.com/seeraven/make4py

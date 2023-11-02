@@ -6,13 +6,13 @@ The following installation methods are provided:
 * a self-contained executable generated using PyInstaller_
 
 
-Installation as the Self-Contained Executable
----------------------------------------------
+Installation as the Self-Contained Executable on Linux
+------------------------------------------------------
 
-Installation of the self-contained executable allows you to install
-gitcache on systems even if they do not provide python themselfes.
-However, the usage of gitcache is limited to the command line tool
-itself, so the integration in other scripts won't be possible::
+|project_name| is distributed as a single executable packaged using PyInstaller_.
+So all you have to do is to download the latest executable from the release page
+|release_url| and copy it to a location of your choice, for example
+:code:`/usr/local/bin`.
 
     $ wget https://github.com/seeraven/gitcache/releases/download/v1.0.12/gitcache_v1.0.12_Ubuntu18.04_amd64
     $ mv gitcache_v1.0.12_Ubuntu18.04_amd64 /usr/local/bin/gitcache

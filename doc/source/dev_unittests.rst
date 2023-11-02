@@ -12,8 +12,7 @@ information about the internal structure of the components and are also called
 Writing Unit Tests
 ------------------
 
-The unit tests are executed using the nose_ framework and are located in the
-:code:`tests` directory.
+The unit tests are located in the :code:`tests/unittests` directory.
 
 To add more tests, all you have to do is to add a new python file containing
 your test case.
@@ -44,5 +43,3 @@ This shows you the coverage on the standard output an throws an error if the
 coverage is too low. It also generates an HTML report ``doc/coverage/index.html``
 that you can view using your favorite browser.
 
-
-.. _nose: https://nose.readthedocs.io/en/latest/
