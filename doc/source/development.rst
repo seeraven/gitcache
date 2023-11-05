@@ -14,7 +14,7 @@ Development Documentation
 Introduction
 ------------
 
-This section defines the general development guidelines of the gitcache
+This section defines the general development guidelines of the |project_name|
 package.
 
 To ensure a high quality software product, the following topics are covered
@@ -35,7 +35,7 @@ through various tools:
         $ make check-style.venv
       
   - Ensure the functionality of the individual components by performing
-    :doc:`dev_unittests` using nose_. To execute the tests, call::
+    :doc:`dev_unittests`. To execute the tests, call::
 
         $ make unittests.venv
       
@@ -84,4 +84,3 @@ environment::
 .. _pylint: https://www.pylint.org/
 .. _flake8: https://flake8.pycqa.org/en/latest/
 .. _sphinx: http://www.sphinx-doc.org/en/master/
-.. _nose: https://nose.readthedocs.io/en/latest/
