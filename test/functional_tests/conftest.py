@@ -53,6 +53,14 @@ def gitcache_ifc(executable: List[str], workspace: helpers.workspace.Workspace) 
     return helpers.gitcache_ifc.GitcacheIfc(executable, workspace)
 
 
+@pytest.fixture
+def git_exe(gitcache_ifc: helpers.gitcache_ifc.GitcacheIfc) -> str:
+    """Return 'git' or 'git.exe' depending on the current platform."""
+    if gitcache_ifc.on_windows:
+        return "git.exe"
+    return "git"
+
+
 # ----------------------------------------------------------------------------
 #  EOF
 # ----------------------------------------------------------------------------

@@ -312,7 +312,7 @@ class GitOptions:
             Returns a list of the real git command and all global options.
         """
         config = Config()
-        real_git = config.get("System", "RealGit")
+        real_git = str(config.get("System", "RealGit"))
         return [real_git] + self.global_options
 
     def get_real_git_all_args(self) -> List[str]:
@@ -323,7 +323,7 @@ class GitOptions:
             command with all the arguments given to the wrapper.
         """
         config = Config()
-        real_git = config.get("System", "RealGit")
+        real_git = str(config.get("System", "RealGit"))
         return [real_git] + self.all_args
 
     def get_run_path(self) -> str:

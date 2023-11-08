@@ -21,7 +21,9 @@ import logging
 import os
 import platform
 import re
-from typing import Any, Callable, Dict, List
+import sys
+from pathlib import Path
+from typing import Callable, Dict, List, Optional, Union
 
 import pytimeparse
 
@@ -35,29 +37,32 @@ LOG = logging.getLogger(__name__)
 
 
 # -----------------------------------------------------------------------------
-# Type Definitions
+# Type Aliases
 # -----------------------------------------------------------------------------
-ConverterType = Callable[[str], Any]
+ConfigItemValue = Union[str, int, bool]
+ConfigItemConverter = Callable[[str], ConfigItemValue]
+EnvMap = Dict[str, Dict[str, str]]
+ConverterMap = Dict[str, Dict[str, ConfigItemConverter]]
 
 
 # -----------------------------------------------------------------------------
-# Functions
+# Converter Functions
 # -----------------------------------------------------------------------------
-def str_to_regex(string: str) -> str:
+def _str_to_regex(string: str) -> str:
     """Convert a string to a regex pattern with special treatment of an empty string."""
     if string:
         return string
     return "a^"  # This pattern should never match
 
 
-def str_to_bool(string: str) -> bool:
+def _str_to_bool(string: str) -> bool:
     """Convert a string to a boolean value."""
     if string.upper() in ["1", "ON", "TRUE", "YES"]:
         return True
     return False
 
 
-def str_to_seconds(string: str) -> int:
+def _str_to_seconds(string: str) -> int:
     """Convert a string to a seconds value."""
     seconds = pytimeparse.parse(string)
     if seconds is None:
@@ -68,34 +73,53 @@ def str_to_seconds(string: str) -> int:
     return seconds
 
 
+# -----------------------------------------------------------------------------
+# Helper Functions
+# -----------------------------------------------------------------------------
 def has_git_lfs_cmd() -> bool:
     """Check whether this host has the git-lfs command available.
 
     Return:
         Returns True if the git-lfs command is available.
     """
-    if not hasattr(has_git_lfs_cmd, "has_git_lfs"):
+    attribute = "has_git_lfs"
+    if not hasattr(has_git_lfs_cmd, attribute):
         retval, _ = getstatusoutput(["git-lfs", "version"])
-        has_git_lfs_cmd.has_git_lfs = retval == 0  # type: ignore
-    return has_git_lfs_cmd.has_git_lfs  # type: ignore
+        setattr(has_git_lfs_cmd, attribute, retval == 0)
+    return getattr(has_git_lfs_cmd, attribute)
 
 
-def find_git() -> str:
+# -----------------------------------------------------------------------------
+# Default Functions
+# -----------------------------------------------------------------------------
+def _get_this_script_path() -> Path:
+    """Get the full path to the currently running gitcache resolving all symlinks."""
+    if getattr(sys, "frozen", False):
+        return Path(sys.executable).resolve()
+    return (Path(__file__).parent.parent / "gitcache").resolve()
+
+
+def _find_git() -> str:
     """Locate the real git command.
 
     Return:
         Returns the full path to the real git command. If the command is not
         found, return the platform dependend default value and log a warning.
     """
-    path = os.getenv("PATH")
-    if path is not None:
-        on_windows = platform.system().lower().startswith("win")
-        cmd = "git.exe" if on_windows else "git"
-        for candidate in path.split(os.path.pathsep):
-            candidate = os.path.join(candidate, cmd)
-            if os.path.exists(candidate) and os.access(candidate, os.X_OK):
-                if not os.path.islink(candidate):
-                    return candidate
+    path = os.getenv("PATH", "")
+    on_windows = platform.system().lower().startswith("win")
+    cmd = "git.exe" if on_windows else "git"
+    this_script = _get_this_script_path()
+    for candidate_path in path.split(os.path.pathsep):
+        candidate_exe = Path(candidate_path) / cmd
+        try:
+            resolved_exe = candidate_exe.resolve(strict=True)
+        except FileNotFoundError:
+            continue
+
+        if resolved_exe != this_script:
+            LOG.debug("Found real git command as %s (resolving to %s).", candidate_exe, resolved_exe)
+            return str(candidate_exe)
 
     LOG.warning("Can't find git command! Please specify manually in the config file!")
     return "/usr/bin/git"
@@ -119,7 +143,12 @@ class ConfigItem:
 
     # pylint: disable=too-many-arguments,too-many-positional-arguments
     def __init__(
-        self, section: str, option: str, default: Any, converter: ConverterType = str_to_seconds, env: str = "auto"
+        self,
+        section: str,
+        option: str,
+        default: ConfigItemValue,
+        converter: ConfigItemConverter = _str_to_seconds,
+        env: str = "auto",
     ) -> None:
         """Construct a configuration item.
 
@@ -165,7 +194,7 @@ class ConfigItem:
 
         config.set(self.section, self.option, str(self.default))
 
-    def add_to_env_keys(self, env_keys: Dict[str, Dict[str, str]]) -> None:
+    def add_to_env_keys(self, env_keys: EnvMap) -> None:
         """Add the configuration item to the env_keys map.
 
         Args:
@@ -178,7 +207,7 @@ class ConfigItem:
                 env_keys[env_section] = {}
             env_keys[env_section][env_option] = self.env
 
-    def add_to_converters(self, converters: Dict[str, Dict[str, ConverterType]]) -> None:
+    def add_to_converters(self, converters: ConverterMap) -> None:
         """Add the configuration item to the converters map.
 
         Args:
@@ -201,13 +230,13 @@ class Config:
         loading the global configuration file.
         """
         self.items: List[ConfigItem] = []
-        self.items.append(ConfigItem("System", "RealGit", find_git(), converter=str, env="GITCACHE_REAL_GIT"))
+        self.items.append(ConfigItem("System", "RealGit", _find_git(), converter=str, env="GITCACHE_REAL_GIT"))
 
         self.items.append(ConfigItem("MirrorHandling", "UpdateInterval", "0 seconds", env="GITCACHE_UPDATE_INTERVAL"))
         self.items.append(ConfigItem("MirrorHandling", "CleanupAfter", "14 days", env="GITCACHE_CLEANUP_AFTER"))
 
-        self.items.append(ConfigItem("UrlPatterns", "IncludeRegex", ".*", converter=str_to_regex))
-        self.items.append(ConfigItem("UrlPatterns", "ExcludeRegex", "", converter=str_to_regex))
+        self.items.append(ConfigItem("UrlPatterns", "IncludeRegex", ".*", converter=_str_to_regex))
+        self.items.append(ConfigItem("UrlPatterns", "ExcludeRegex", "", converter=_str_to_regex))
 
         self.items.append(ConfigItem("Command", "WarnIfLockedFor", "10 seconds"))
         self.items.append(ConfigItem("Command", "CheckInterval", "2 seconds"))
@@ -228,11 +257,11 @@ class Config:
         self.items.append(ConfigItem("LFS", "Retries", 3, converter=int))
         self.items.append(ConfigItem("LFS", "CommandTimeout", "1 hour"))
         self.items.append(ConfigItem("LFS", "OutputTimeout", "5 minutes"))
-        self.items.append(ConfigItem("LFS", "PerMirrorStorage", True, converter=str_to_bool))
+        self.items.append(ConfigItem("LFS", "PerMirrorStorage", True, converter=_str_to_bool))
 
         self.config = configparser.ConfigParser()
-        self.env_keys: Dict[str, Dict[str, str]] = {}
-        self.converters: Dict[str, Dict[str, ConverterType]] = {}
+        self.env_keys: EnvMap = {}
+        self.converters: ConverterMap = {}
         for item in self.items:
             item.add_to_configparser(self.config)
             item.add_to_env_keys(self.env_keys)
@@ -240,29 +269,56 @@ class Config:
 
         if not self.load(os.path.join(GITCACHE_DIR, "config")):
             self.save(os.path.join(GITCACHE_DIR, "config"))
+        else:
+            self._check_real_git()
 
-    def get(self, section: str, option: str) -> Any:
+    def _check_real_git(self) -> None:
+        """Check the configured real git command."""
+        try:
+            realgit = Path(str(self.get("System", "RealGit"))).resolve(strict=True)
+        except FileNotFoundError as exception:
+            LOG.error("Can't resolve configured path to the real git command!")
+            LOG.error("Configuration file:  %s", os.path.join(GITCACHE_DIR, "config"))
+            LOG.error("Configured real git: %s", self.get("System", "RealGit"))
+            LOG.error("Error:               %s", str(exception))
+            LOG.error(
+                "Required action:     Please change the entry in the configuration file "
+                "to point to the real git executable!"
+            )
+            sys.exit(1)
+
+        if _get_this_script_path() == realgit:
+            LOG.error("The configured real git command is actually this script!")
+            LOG.error("Configuration file:  %s", os.path.join(GITCACHE_DIR, "config"))
+            LOG.error("Configured real git: %s", self.get("System", "RealGit"))
+            LOG.error(
+                "Required action:     Please change the entry in the configuration file "
+                "to point to the real git executable!"
+            )
+            sys.exit(1)
+
+    def get(self, section: str, option: str) -> Optional[ConfigItemValue]:
         """Get a configuration value.
 
         Args:
             section (str): The section, e.g., 'Clone'.
             option (str):  The option, e.g., 'Retries'.
         Return:
-            Returns the current value of the specified option.
+            Returns the current value of the specified option or None if it is not found.
         """
-        value = None
+        str_value: Optional[str] = None
         env_key = self.env_keys.get(section.upper(), {}).get(option.upper())
         converter = self.converters.get(section.upper(), {}).get(option.upper())
 
         if env_key:
-            value = os.getenv(env_key, None)
-        if value is None:
-            value = self.config.get(section, option)
-
+            str_value = os.getenv(env_key, None)
+        if str_value is None:
+            str_value = self.config.get(section, option)
+        if str_value is None:
+            return None
         if converter:
-            value = converter(value)
-
-        return value
+            return converter(str_value)
+        return str_value
 
     def load(self, filename: str) -> bool:
         """Load the configuration file.
@@ -278,7 +334,7 @@ class Config:
                 self.config.read_file(file_handle, source=filename)
                 return True
 
-        LOG.debug("Can't load configuration file %s as it does not exist!", filename)
+        LOG.debug("Can't load configuration file %s as it does not exist yet!", filename)
         return False
 
     def save(self, filename: str) -> None:

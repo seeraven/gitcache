@@ -96,6 +96,10 @@ ignore_missing_imports = true
 [tool.pytest.ini_options]
 minversion = "6.0"
 pythonpath = ["src"]
+log_cli = false
+log_cli_level = "DEBUG"
+log_cli_format = "%(asctime)s %(levelname)s %(message)s"
+log_cli_date_format = "%Y-%m-%d %H:%M:%S"
 
 
 [tool.coverage.paths]

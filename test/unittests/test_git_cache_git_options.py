@@ -16,7 +16,7 @@ import os
 from unittest import TestCase
 
 import git_cache.git_options
-from git_cache.config import find_git
+from git_cache.config import _find_git
 
 
 # -----------------------------------------------------------------------------
@@ -58,7 +58,7 @@ class GitCacheGitOptionsTest(TestCase):
         args = ["-C", "1", "-c", "user.email=something", "--git-dir=here"]
         git_options = git_cache.git_options.GitOptions(args)
         self.assertListEqual(
-            [find_git(), "-C", "1", "-c", "user.email=something", "--git-dir=here"],
+            [_find_git(), "-C", "1", "-c", "user.email=something", "--git-dir=here"],
             git_options.get_real_git_with_options(),
         )
 

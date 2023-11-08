@@ -56,7 +56,9 @@ class GitCacheConfigTest(TestCase):
         importlib.reload(git_cache.config)
         config = git_cache.config.Config()
 
-        self.assertEqual(config.get("System", "RealGit"), git_cache.config.find_git())
+        expected_git_cmd = git_cache.config._find_git()  # pylint: disable=protected-access
+
+        self.assertEqual(config.get("System", "RealGit"), expected_git_cmd)
         self.assertEqual(config.get("MirrorHandling", "UpdateInterval"), 0)
         self.assertEqual(config.get("MirrorHandling", "CleanupAfter"), 14 * 24 * 60 * 60)
         self.assertEqual(config.get("LFS", "Retries"), 3)
@@ -107,7 +109,8 @@ permirrorstorage = false
         importlib.reload(git_cache.config)
         config = git_cache.config.Config()
 
-        expected_git_cmd = git_cache.config.find_git()
+        expected_git_cmd = git_cache.config._find_git()  # pylint: disable=protected-access
+
         expected_config_str = f"""Clone:
  commandtimeout       = 1 hour               (GITCACHE_CLONE_COMMAND_TIMEOUT)
  outputtimeout        = 5 minutes            (GITCACHE_CLONE_OUTPUT_TIMEOUT)

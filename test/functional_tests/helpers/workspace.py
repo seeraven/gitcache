@@ -54,16 +54,23 @@ class Workspace:
         self.env = copy.deepcopy(os.environ)
         self.env["GITCACHE_DIR"] = self.gitcache_dir_path
         self.env["GITCACHE_LOGLEVEL"] = "Debug"
-        self.env["GITCACHE_LOGFORMAT"] = "%(message)s"
+        self.env["GITCACHE_LOGFORMAT"] = "%(asctime)s %(message)s"
+        LOG.debug("Created workspace environment with:")
+        LOG.debug("  PATH=%s", self.env["PATH"])
+        for varname in self.env:
+            if varname.startswith("GITCACHE_"):
+                LOG.debug("  %s=%s", varname, self.env[varname])
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         """Exit the context."""
         if self._tmp_workspace_dir:
+            LOG.debug("Cleanup of workspace directory %s", self.workspace_path)
             self._tmp_workspace_dir.cleanup()
             self._tmp_workspace_dir = None
             self.workspace_path = None
         if self._tmp_gitcache_dir:
+            LOG.debug("Cleanup of gitcache directory %s", self.gitcache_dir_path)
             self._tmp_gitcache_dir.cleanup()
             self._tmp_gitcache_dir = None
             self.gitcache_dir_path = None
@@ -77,6 +84,7 @@ class Workspace:
             var (str):   Name of the environment variable.
             value (str): Value of the environment variable.
         """
+        LOG.debug("Set environment variable %s to value %s.", var, value)
         self.env[var] = value
 
     def del_env(self, var):
@@ -85,6 +93,7 @@ class Workspace:
         Args:
             var (str): Name of the environment variable.
         """
+        LOG.debug("Unset environment variable %s.", var)
         del self.env[var]
 
 
