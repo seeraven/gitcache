@@ -4,7 +4,9 @@
 #  MODULE IMPORTS
 # ----------------------------------------------------------------------------
 import os
+import platform
 
+import pytest
 from helpers.gitcache_ifc import GitcacheIfc
 
 
@@ -51,6 +53,47 @@ def test_fetch(gitcache_ifc: GitcacheIfc):
     assert 5 == gitcache_ifc.db_field("updates", repo)
 
 
+@pytest.mark.parametrize(
+    "remote_url,mirror_dir",
+    [
+        ("https://github.com/seeraven/gitcache.git", "github.com/seeraven/gitcache"),
+        ("https://github.com:443/seeraven/gitcache.git", "github.com_443/seeraven/gitcache"),
+    ],
+)
+def test_fetch_in_empty_repo(gitcache_ifc: GitcacheIfc, remote_url: str, mirror_dir: str):
+    """Test fetching in a newly initialized git repo."""
+    checkout = os.path.join(gitcache_ifc.workspace.workspace_path, "gitcache")
+    gitcache_ifc.run_ok(["git", "init", checkout])
+    gitcache_ifc.run_ok(["git", "-C", checkout, "fetch", remote_url])
+    assert 0 == gitcache_ifc.db_field("mirror-updates", remote_url)
+    assert 0 == gitcache_ifc.db_field("clones", remote_url)
+    assert 1 == gitcache_ifc.db_field("updates", remote_url)
+    assert mirror_dir in gitcache_ifc.db_field("mirror-dir", remote_url)
+
+
+@pytest.mark.skipif(platform.node() != "Workhorse", reason="Requires known ssh environment")
+@pytest.mark.parametrize(
+    "remote_url,mirror_dir",
+    [
+        ("git@github.com:seeraven/gitcache.git", "github.com/seeraven/gitcache"),
+        ("github.com:seeraven/gitcache.git", "github.com/seeraven/gitcache"),
+        ("ssh://git@github.com/seeraven/gitcache.git", "github.com/seeraven/gitcache"),
+        ("ssh://github.com/seeraven/gitcache.git", "github.com/seeraven/gitcache"),
+        ("ssh://git@github.com:22/seeraven/gitcache.git", "github.com_22/seeraven/gitcache"),
+        ("ssh://github.com:22/seeraven/gitcache.git", "github.com_22/seeraven/gitcache"),
+    ],
+)
+def test_fetch_in_empty_repo_on_workhorse(gitcache_ifc: GitcacheIfc, remote_url: str, mirror_dir: str):
+    """Test fetching in a newly initialized git repo."""
+    checkout = os.path.join(gitcache_ifc.workspace.workspace_path, "gitcache")
+    gitcache_ifc.run_ok(["git", "init", checkout])
+    gitcache_ifc.run_ok(["git", "-C", checkout, "fetch", remote_url])
+    assert 0 == gitcache_ifc.db_field("mirror-updates", remote_url)
+    assert 0 == gitcache_ifc.db_field("clones", remote_url)
+    assert 1 == gitcache_ifc.db_field("updates", remote_url)
+    assert mirror_dir in gitcache_ifc.db_field("mirror-dir", remote_url)
+
+
 def test_fetch_from_local_fs(gitcache_ifc: GitcacheIfc):
     """Test not caching fetches from local filesystem."""
     repo = "https://github.com/seeraven/gitcache.git"
@@ -63,6 +106,12 @@ def test_fetch_from_local_fs(gitcache_ifc: GitcacheIfc):
 
     gitcache_ifc.run_ok(["git", "-C", checkout2, "fetch"])
     assert gitcache_ifc.db_field("clones", checkout) is None
+
+    gitcache_ifc.run_ok(["git", "-C", checkout2, "fetch", checkout])
+    assert gitcache_ifc.db_field("clones", checkout) is None
+
+    gitcache_ifc.run_ok(["git", "-C", checkout2, "fetch", f"file://{checkout}"])
+    assert gitcache_ifc.db_field("clones", f"file://{checkout}") is None
 
 
 def test_exclude(gitcache_ifc: GitcacheIfc):

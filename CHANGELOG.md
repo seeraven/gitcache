@@ -6,6 +6,7 @@
 - Bugfix: Fixes functional tests on windows when using the python script (not the pyinstaller binary)
 - Removed support for Ubuntu 18.04.
 - Feature: Use make4py infrastructure.
+- Bugfix: Support all possible remote repository specifications.
 
 ## v1.0.12
 

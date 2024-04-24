@@ -42,18 +42,19 @@ def git_clone(git_options):
         command.
     """
     remote_url = None
+    mirror_path = None
     if git_options.command_args:
         remote_url = git_options.command_args[0]
+        mirror_path = GitMirror.get_mirror_path(remote_url)
 
-    supported_prefixes = ["http://", "https://", "ssh://"]
-    if remote_url and any(remote_url.startswith(prefix) for prefix in supported_prefixes):
+    if mirror_path:
         if use_mirror_for_remote_url(remote_url):
             mirror = GitMirror(url=remote_url)
             return mirror.clone_from_mirror(git_options)
 
         LOG.debug("Remote URL does not match the UrlPatterns. Using original git command.")
     else:
-        LOG.debug("No remote URL found. Falling back to orginal git command.")
+        LOG.debug("No (mirrorable) remote URL found. Falling back to orginal git command.")
 
     return simple_call_command(git_options.get_real_git_all_args())
 

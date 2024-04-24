@@ -48,9 +48,11 @@ def git_fetch(git_options):
     real_git = config.get("System", "RealGit")
 
     remote_url = None
+    mirror_path = None
     if git_options.command_args:
         for arg in git_options.command_args:
-            if arg.startswith("http://") or arg.startswith("https://") or arg.startswith("ssh://"):
+            mirror_path = GitMirror.get_mirror_path(arg)
+            if mirror_path:
                 remote_url = arg
                 break
 

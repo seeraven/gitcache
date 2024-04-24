@@ -18,7 +18,9 @@ Copyright:
 # -----------------------------------------------------------------------------
 import logging
 import os
+import re
 import shutil
+from typing import Optional
 
 import portalocker
 
@@ -31,6 +33,21 @@ from .global_settings import GITCACHE_DIR
 # Logger
 # -----------------------------------------------------------------------------
 LOG = logging.getLogger(__name__)
+
+
+# -----------------------------------------------------------------------------
+# Regular Expressions
+# -----------------------------------------------------------------------------
+
+# Pattern to match ssh, git, http[s] and ftp[s]:
+#                                <proto>      [user@]  <host>  [:port]   <path>
+RE_URL_WITH_PROTO = re.compile(r"[a-zA-Z]+://([^@]+@)?([^:/]+)(:[0-9]+)?/(.*)")
+
+# Pattern to match scp-like syntax:  [user@]  <host>  <path>
+RE_URL_WITHOUT_PROTO = re.compile(r"([^@]+@)?([^:/]+):(.*)")
+
+# Pattern to match file://<path>
+RE_URL_WITH_FILE = re.compile(r"file://(.*)")
 
 
 # -----------------------------------------------------------------------------
@@ -110,7 +127,7 @@ class GitMirror:
             self.database = Database()
 
         if self.url and self.path is None:
-            self.path = self.url_to_path(self.url)
+            self.path = self.get_mirror_path(self.url)
 
         if self.path and self.url is None:
             self.url = self.database.get_url_for_path(self.path)
@@ -491,34 +508,53 @@ class GitMirror:
         return None
 
     @staticmethod
-    def url_to_path(url):
+    def get_mirror_path(url) -> Optional[str]:
         """Convert an URL into a repository mirror path.
 
         Args:
             url (str): The URL of the repository.
 
         Return:
-            Returns the mirror path or None if the url can't be converted.
+            Returns the full path to the mirror directory. If the
+            given URL is a local path (which is not mirrored) the
+            empty string is returned. If the given URL can not be
+            parsed, None is returned.
         """
-        if url.startswith("http://") or url.startswith("https://") or url.startswith("ssh://"):
-            sub_dir = url.split("//")[1]
-            if "@" in sub_dir:
-                sub_dir = sub_dir.split("@")[1]
-            if ":" in sub_dir:
-                sub_dir = sub_dir.replace(":", "_")
-            if sub_dir.endswith(".git"):
-                sub_dir = sub_dir[:-4]
-            if sub_dir.endswith("/"):
-                sub_dir = sub_dir[:-1]
-            if os.path.sep != "/":
-                sub_dir = sub_dir.replace("/", os.path.sep)
-            return os.path.join(GITCACHE_DIR, "mirrors", sub_dir)
+        sub_dir = None
+        if match := RE_URL_WITH_FILE.match(url):
+            sub_dir = match.group(1)
+            if sub_dir.startswith(GITCACHE_DIR):
+                return sub_dir
+            return ""
 
-        # URL is already a path
-        if url.startswith(GITCACHE_DIR):
-            return url
+        if match := RE_URL_WITH_PROTO.match(url):
+            sub_dir = match.group(2)
+            port = match.group(3)
+            if port is not None:
+                sub_dir += port.replace(":", "_")
+            sub_dir += "/" + match.group(4)
 
-        return None
+        elif match := RE_URL_WITHOUT_PROTO.match(url):
+            sub_dir = match.group(2) + "/" + match.group(3)
+
+        elif os.path.exists(url):
+            if url.startswith(GITCACHE_DIR):
+                return url
+            return ""
+
+        else:
+            return None
+
+        sub_dir = sub_dir.replace("//", "/")
+        while sub_dir.startswith("/"):
+            sub_dir = sub_dir[1:]
+        while sub_dir.endswith("/"):
+            sub_dir = sub_dir[:-1]
+        if sub_dir.endswith(".git"):
+            sub_dir = sub_dir[:-4]
+        if os.path.sep != "/":
+            sub_dir = sub_dir.replace("/", os.path.sep)
+        return os.path.join(GITCACHE_DIR, "mirrors", sub_dir)
 
     @staticmethod
     def escape_options(options):
