@@ -1,4 +1,5 @@
 """Configuration of pytest for functional tests."""
+
 # pylint: disable=redefined-outer-name
 
 # ----------------------------------------------------------------------------
