@@ -4,7 +4,9 @@
 #  MODULE IMPORTS
 # ----------------------------------------------------------------------------
 import os
+import platform
 
+import pytest
 from helpers.gitcache_ifc import GitcacheIfc
 
 
@@ -51,6 +53,43 @@ def test_ls_remote(gitcache_ifc: GitcacheIfc):
     assert 0 == gitcache_ifc.db_field("updates", repo)
 
 
+@pytest.mark.parametrize(
+    "remote_url,mirror_dir",
+    [
+        ("https://github.com/seeraven/gitcache.git", "github.com/seeraven/gitcache"),
+        ("https://github.com:443/seeraven/gitcache.git", "github.com_443/seeraven/gitcache"),
+    ],
+)
+def test_ls_remote_without_initial_clone(gitcache_ifc: GitcacheIfc, remote_url: str, mirror_dir: str):
+    """Test the 'git ls-remote' command without an initial checkout."""
+    gitcache_ifc.run_ok(["git", "ls-remote", remote_url])
+    assert 0 == gitcache_ifc.db_field("mirror-updates", remote_url)
+    assert 0 == gitcache_ifc.db_field("clones", remote_url)
+    assert 0 == gitcache_ifc.db_field("updates", remote_url)
+    assert mirror_dir in gitcache_ifc.db_field("mirror-dir", remote_url)
+
+
+@pytest.mark.skipif(platform.node() != "Workhorse", reason="Requires known ssh environment")
+@pytest.mark.parametrize(
+    "remote_url,mirror_dir",
+    [
+        ("git@github.com:seeraven/gitcache.git", "github.com/seeraven/gitcache"),
+        ("github.com:seeraven/gitcache.git", "github.com/seeraven/gitcache"),
+        ("ssh://git@github.com/seeraven/gitcache.git", "github.com/seeraven/gitcache"),
+        ("ssh://github.com/seeraven/gitcache.git", "github.com/seeraven/gitcache"),
+        ("ssh://git@github.com:22/seeraven/gitcache.git", "github.com_22/seeraven/gitcache"),
+        ("ssh://github.com:22/seeraven/gitcache.git", "github.com_22/seeraven/gitcache"),
+    ],
+)
+def test_ls_remote_without_initial_clone_on_workhorse(gitcache_ifc: GitcacheIfc, remote_url: str, mirror_dir: str):
+    """Test the 'git ls-remote' command without an initial checkout."""
+    gitcache_ifc.run_ok(["git", "ls-remote", remote_url])
+    assert 0 == gitcache_ifc.db_field("mirror-updates", remote_url)
+    assert 0 == gitcache_ifc.db_field("clones", remote_url)
+    assert 0 == gitcache_ifc.db_field("updates", remote_url)
+    assert mirror_dir in gitcache_ifc.db_field("mirror-dir", remote_url)
+
+
 def test_ls_remote_from_local_fs(gitcache_ifc: GitcacheIfc):
     """Test not caching ls-remotes from local filesystem."""
     repo = "https://github.com/seeraven/gitcache.git"
@@ -67,6 +106,16 @@ def test_ls_remote_from_local_fs(gitcache_ifc: GitcacheIfc):
     gitcache_ifc.run_ok(["git", "-C", checkout2, "ls-remote"])
     assert 0 == gitcache_ifc.db_field("mirror-updates", repo)
     assert gitcache_ifc.db_field("mirror-updates", checkout) is None
+
+    # Same behaviour when using the origin as an argument
+    gitcache_ifc.run_ok(["git", "ls-remote", checkout2])
+    assert 0 == gitcache_ifc.db_field("mirror-updates", repo)
+    assert gitcache_ifc.db_field("mirror-updates", checkout2) is None
+
+    checkout2 = f"file://{checkout2}"
+    gitcache_ifc.run_ok(["git", "ls-remote", checkout2])
+    assert 0 == gitcache_ifc.db_field("mirror-updates", repo)
+    assert gitcache_ifc.db_field("mirror-updates", checkout2) is None
 
 
 def test_exclude(gitcache_ifc: GitcacheIfc):

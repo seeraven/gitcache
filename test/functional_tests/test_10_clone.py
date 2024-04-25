@@ -4,7 +4,9 @@
 #  MODULE IMPORTS
 # ----------------------------------------------------------------------------
 import os
+import platform
 
+import pytest
 from helpers.gitcache_ifc import GitcacheIfc
 
 
@@ -61,6 +63,11 @@ def test_clone_from_local_fs(gitcache_ifc: GitcacheIfc):
 
     repo = checkout
     checkout = os.path.join(gitcache_ifc.workspace.workspace_path, "gitcache2")
+    gitcache_ifc.run_ok(["git", "clone", repo, checkout])
+    assert gitcache_ifc.db_field("clones", repo) is None
+
+    repo = f"file://{checkout}"
+    checkout = os.path.join(gitcache_ifc.workspace.workspace_path, "gitcache3")
     gitcache_ifc.run_ok(["git", "clone", repo, checkout])
     assert gitcache_ifc.db_field("clones", repo) is None
 
@@ -134,6 +141,43 @@ def test_aborted_clone(gitcache_ifc: GitcacheIfc):
     assert 1 == gitcache_ifc.db_field("clones", repo)
     assert gitcache_ifc.remote_points_to_gitcache(checkout)
     assert "master" == gitcache_ifc.get_branch(checkout)
+
+
+def test_clone_with_port(gitcache_ifc: GitcacheIfc):
+    """Test clone with port specification."""
+    repo = "https://github.com:443/seeraven/gitcache.git"
+    gitcache_ifc.run_ok(["git", "-C", gitcache_ifc.workspace.workspace_path, "clone", repo])
+    assert "github.com_443" in gitcache_ifc.db_field("mirror-dir", repo)
+
+
+@pytest.mark.skipif(platform.node() != "Workhorse", reason="Requires known ssh environment")
+@pytest.mark.parametrize(
+    "remote_url",
+    [
+        "git@github.com:seeraven/gitcache.git",
+        "github.com:seeraven/gitcache.git",
+        "ssh://git@github.com/seeraven/gitcache.git",
+        "ssh://github.com/seeraven/gitcache.git",
+    ],
+)
+def test_clone_via_ssh(gitcache_ifc: GitcacheIfc, remote_url: str):
+    """Test clone via ssh URLs."""
+    gitcache_ifc.run_ok(["git", "-C", gitcache_ifc.workspace.workspace_path, "clone", remote_url])
+    assert "github.com/seeraven/gitcache" in gitcache_ifc.db_field("mirror-dir", remote_url)
+
+
+@pytest.mark.skipif(platform.node() != "Workhorse", reason="Requires known ssh environment")
+@pytest.mark.parametrize(
+    "remote_url",
+    [
+        "ssh://git@github.com:22/seeraven/gitcache.git",
+        "ssh://github.com:22/seeraven/gitcache.git",
+    ],
+)
+def test_clone_via_ssh_and_port(gitcache_ifc: GitcacheIfc, remote_url: str):
+    """Test clone via ssh URLs."""
+    gitcache_ifc.run_ok(["git", "-C", gitcache_ifc.workspace.workspace_path, "clone", remote_url])
+    assert "github.com_22/seeraven/gitcache" in gitcache_ifc.db_field("mirror-dir", remote_url)
 
 
 # ----------------------------------------------------------------------------
