@@ -2,6 +2,8 @@
 
 ## Upcoming Version
 
+## v1.0.13
+
 - Feature: Added `CHANGELOG.md` file.
 - Bugfix: Fixes functional tests on windows when using the python script (not the pyinstaller binary)
 - Removed support for Ubuntu 18.04.
