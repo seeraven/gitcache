@@ -132,9 +132,9 @@ def resolve_submodule_url(repo_url, submodule_url):
 
     while True:
         if submodule_url.startswith("./"):
-            submodule_url = submodule_url.removeprefix("./")
+            submodule_url = submodule_url[2:]
         elif submodule_url.startswith("../"):
-            submodule_url = submodule_url.removeprefix("../")
+            submodule_url = submodule_url[3:]
             last_idx = max(repo_url.rfind("/"), repo_url.rfind(":"))
             if last_idx > 2 and repo_url[last_idx-2:last_idx+1] == "://":
                 # Stop in case if we reached the protocol separator
