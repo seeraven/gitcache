@@ -69,7 +69,7 @@ src_paths = ["src", "test"]
 
 [tool.flake8]
 max-line-length = 120
-
+extend-ignore = ['E203', 'E701']
 
 [tool.pylint.main]
 py-version = "3.10"
