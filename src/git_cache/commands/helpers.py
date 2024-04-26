@@ -107,6 +107,56 @@ def use_mirror_for_remote_url(remote_url):
     return included and not excluded
 
 
+def resolve_submodule_url(repo_url, submodule_url):
+    """Resolve possibly relative submodule url to a full submodule git url.
+
+    Args:
+        repo_url (str): url of the repository holding a submodule.
+        submodule_url (str): url of the submodule.
+
+    Return:
+        A resolved/normalized git url of the submodule.
+    """
+    # Note: Relative submodules use git-specific method to join url
+    #       As per git documentation, relative url may only start with
+    #       './' or '../'. Since git urls are not exactly same as regular urls -
+    #       both urllib.parse.urljoin and posixpath.normpath do not perform well
+    #       when need to combine a relative git url with all of the allowed
+    #       absolute git urls.
+    #       This routine mimics how git would resolve submodule url.
+
+    if not submodule_url.startswith("./") and not submodule_url.startswith("../"):
+        return submodule_url
+
+    repo_url.rstrip("/")
+
+    while True:
+        if submodule_url.startswith("./"):
+            submodule_url = submodule_url.removeprefix("./")
+        elif submodule_url.startswith("../"):
+            submodule_url = submodule_url.removeprefix("../")
+            last_idx = max(repo_url.rfind("/"), repo_url.rfind(":"))
+            if last_idx > 2 and repo_url[last_idx-2:last_idx+1] == "://":
+                # Stop in case if we reached the protocol separator
+                continue
+            if last_idx != -1:
+                if repo_url[last_idx] == ":":
+                    # Don't ever go past ":" separator
+                    repo_url = repo_url[:last_idx+1]
+                    continue
+                repo_url = repo_url[:last_idx]
+        else:
+            break
+
+    # Add url separator, unless we've reached the ":",
+    # which is a separator on its own
+    if not repo_url.endswith(":"):
+        repo_url += "/"
+
+    return repo_url + submodule_url
+
+
+
 # -----------------------------------------------------------------------------
 # EOF
 # -----------------------------------------------------------------------------

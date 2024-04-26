@@ -18,10 +18,9 @@ Copyright:
 # -----------------------------------------------------------------------------
 import logging
 import os
-import posixpath
 
 from ..command_execution import getstatusoutput, simple_call_command
-from .helpers import get_mirror_url, get_pull_url
+from .helpers import get_mirror_url, get_pull_url, resolve_submodule_url
 
 # -----------------------------------------------------------------------------
 # Logger
@@ -104,15 +103,7 @@ def git_submodule_update(called_as, git_options):
             if update_paths and tgt_path not in update_paths:
                 continue
 
-            # Note: Relative submodules use a path-like join, not a relative
-            #       URL join. So to refer to 'foo.git' located right next to
-            #       'bar.git', one has to specify '../foo.git'.
-            #       This means we can't use urllib.parse.urljoin but the path
-            #       joining used on non-windows systems.
-            if tgt_url.startswith(".") or tgt_url.startswith("/"):
-                url_parts = pull_url.split("//")
-                url_parts[1] = posixpath.normpath(posixpath.join(url_parts[1], tgt_url))
-                tgt_url = "//".join(url_parts)
+            tgt_url = resolve_submodule_url(pull_url, tgt_url)
 
             abs_tgt_path = os.path.join(*cd_paths, tgt_path)
             if os.path.exists(os.path.join(abs_tgt_path, ".git")):
