@@ -44,8 +44,8 @@ LOG = logging.getLogger(__name__)
 #                                  <proto>      [user@]  <host>  [:port]   <path>
 RE_URL_WITH_PROTO = re.compile(r"([a-zA-Z]+)://([^@]+@)?([^:/]+)(:[0-9]+)?/(.*)")
 
-# Pattern to match scp-like syntax:  [user@]  <host>  <path>
-RE_URL_WITHOUT_PROTO = re.compile(r"([^@]+@)?([^:/]+):(.*)")
+# Pattern to match scp-like syntax:  [user@]  <host>       <path>
+RE_URL_WITHOUT_PROTO = re.compile(r"([^@]+@)?([^:/\\]{2,}):(.*)")
 
 # Pattern to match file://<path>
 RE_URL_WITH_FILE = re.compile(r"file://(.*)")
@@ -548,7 +548,7 @@ class GitMirror:
         return url
 
     @staticmethod
-    # pylint: disable=too-many-branches
+    # pylint: disable=too-many-branches,too-many-return-statements
     def get_mirror_path(url) -> Optional[str]:
         """Convert an URL into a repository mirror path.
 
@@ -564,8 +564,17 @@ class GitMirror:
         sub_dir = None
         if match := RE_URL_WITH_FILE.match(url):
             sub_dir = posixpath.normpath(match.group(1))
+            # On Windows you can user either posix paths or windows paths
+            if sub_dir.startswith(GITCACHE_DIR.replace("/", os.path.sep)):
+                return sub_dir
             if sub_dir.startswith(GITCACHE_DIR):
                 return sub_dir
+            return ""
+
+        if os.path.exists(os.path.normpath(url)):
+            url = os.path.normpath(url)
+            if url.startswith(GITCACHE_DIR):
+                return url
             return ""
 
         if match := RE_URL_WITH_PROTO.match(url):
@@ -583,12 +592,6 @@ class GitMirror:
             while path.startswith("../"):
                 path = path[3:]
             sub_dir = match.group(2) + "/" + path
-
-        elif os.path.exists(os.path.normpath(url)):
-            url = os.path.normpath(url)
-            if url.startswith(GITCACHE_DIR):
-                return url
-            return ""
 
         else:
             return None

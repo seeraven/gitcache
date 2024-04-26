@@ -30,7 +30,7 @@ class GitCacheGetMirrorPathTest(TestCase):
             for user in ["", "user@"]:
                 for port in ["", ":1234"]:
                     server = f"{proto}://{user}github.com{port}"
-                    mirror_base = os.path.join(GITCACHE_DIR, "mirrors", f"github.com{port}").replace(":", "_")
+                    mirror_base = os.path.join(GITCACHE_DIR, "mirrors", f"github.com{port}".replace(":", "_"))
                     for repo_url_suffix in ["", "/"]:
                         # trailing slash is stripped
                         path = GitMirror.get_mirror_path(f"{server}/repo{repo_url_suffix}")
@@ -73,13 +73,13 @@ class GitCacheGetMirrorPathTest(TestCase):
         path = GitMirror.get_mirror_path("file:///somewhere/a/file")
         self.assertEqual(path, "")
 
-        path = GitMirror.get_mirror_path(f"file://{GITCACHE_DIR.replace(os.path.sep,'/')}/file")
+        path = GitMirror.get_mirror_path(f"file://{GITCACHE_DIR}/file")
         self.assertEqual(path, f"{GITCACHE_DIR}/file")
 
-        path = GitMirror.get_mirror_path(f"file://{GITCACHE_DIR.replace(os.path.sep,'/')}/a/../file")
+        path = GitMirror.get_mirror_path(f"file://{GITCACHE_DIR}/a/../file")
         self.assertEqual(path, f"{GITCACHE_DIR}/file")
 
-        path = GitMirror.get_mirror_path(f"file://{GITCACHE_DIR.replace(os.path.sep,'/')}/../file")
+        path = GitMirror.get_mirror_path(f"file://{GITCACHE_DIR}/../file")
         self.assertEqual(path, "")
 
         # files

@@ -68,7 +68,7 @@ def test_fetch_in_empty_repo(gitcache_ifc: GitcacheIfc, remote_url: str, mirror_
     assert 0 == gitcache_ifc.db_field("mirror-updates", remote_url[:-4])
     assert 0 == gitcache_ifc.db_field("clones", remote_url[:-4])
     assert 1 == gitcache_ifc.db_field("updates", remote_url[:-4])
-    assert mirror_dir in gitcache_ifc.db_field("mirror-dir", remote_url[:-4])
+    assert mirror_dir.replace("/", os.path.sep) in gitcache_ifc.db_field("mirror-dir", remote_url[:-4])
 
 
 @pytest.mark.skipif(platform.node() != "Workhorse", reason="Requires known ssh environment")
@@ -91,7 +91,7 @@ def test_fetch_in_empty_repo_on_workhorse(gitcache_ifc: GitcacheIfc, remote_url:
     assert 0 == gitcache_ifc.db_field("mirror-updates", remote_url[:-4])
     assert 0 == gitcache_ifc.db_field("clones", remote_url[:-4])
     assert 1 == gitcache_ifc.db_field("updates", remote_url[:-4])
-    assert mirror_dir in gitcache_ifc.db_field("mirror-dir", remote_url[:-4])
+    assert mirror_dir.replace("/", os.path.sep) in gitcache_ifc.db_field("mirror-dir", remote_url[:-4])
 
 
 def test_fetch_from_local_fs(gitcache_ifc: GitcacheIfc):

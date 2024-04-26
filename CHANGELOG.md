@@ -2,6 +2,11 @@
 
 ## Upcoming Version
 
+- Bugfix: Fixed relative submodule URLs (thanks to Ihor Dutchak)
+- Bugfix: Normalize all URLs to prevent escape of `mirrors` directory and to maximize utilization of the cache
+- Note: Due to the new normalization is is recommended to clear the cache before using this new version!
+- Feature: Added support for Ubuntu 24.04
+
 ## v1.0.13
 
 - Feature: Added `CHANGELOG.md` file.
