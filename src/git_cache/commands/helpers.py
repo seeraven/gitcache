@@ -128,21 +128,22 @@ def resolve_submodule_url(repo_url, submodule_url):
     if not submodule_url.startswith("./") and not submodule_url.startswith("../"):
         return submodule_url
 
-    repo_url.rstrip("/")
+    repo_url = repo_url.rstrip("/")
 
     while True:
         if submodule_url.startswith("./"):
-            submodule_url = submodule_url.removeprefix("./")
+            submodule_url = submodule_url[2:]
         elif submodule_url.startswith("../"):
-            submodule_url = submodule_url.removeprefix("../")
+            submodule_url = submodule_url[3:]
             last_idx = max(repo_url.rfind("/"), repo_url.rfind(":"))
-            if last_idx > 2 and repo_url[last_idx-2:last_idx+1] == "://":
+
+            if last_idx > 2 and repo_url[last_idx - 2 : last_idx + 1] == "://":
                 # Stop in case if we reached the protocol separator
                 continue
             if last_idx != -1:
                 if repo_url[last_idx] == ":":
                     # Don't ever go past ":" separator
-                    repo_url = repo_url[:last_idx+1]
+                    repo_url = repo_url[: last_idx + 1]
                     continue
                 repo_url = repo_url[:last_idx]
         else:
@@ -154,7 +155,6 @@ def resolve_submodule_url(repo_url, submodule_url):
         repo_url += "/"
 
     return repo_url + submodule_url
-
 
 
 # -----------------------------------------------------------------------------
