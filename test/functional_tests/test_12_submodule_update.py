@@ -4,7 +4,9 @@
 #  MODULE IMPORTS
 # ----------------------------------------------------------------------------
 import os
+import platform
 
+import pytest
 from helpers.gitcache_ifc import GitcacheIfc
 
 
@@ -188,6 +190,228 @@ def test_include(gitcache_ifc: GitcacheIfc):
     gitcache_ifc.run_ok(["git", "-C", checkout, "submodule", "update", "--init"])
     assert 1 == gitcache_ifc.db_field("clones", repo_sub1)
     assert gitcache_ifc.db_field("clones", repo_sub2) is None
+
+
+@pytest.mark.parametrize(
+    "repo_url,submodule_url,final_submodule_url",
+    [
+        # Base URL "https://github.com/seeraven/submodule-example"
+        (
+            "https://github.com/seeraven/submodule-example",
+            "https://github.com/seeraven/dmdcache",
+            "https://github.com/seeraven/dmdcache",
+        ),
+        (
+            "https://github.com/seeraven/submodule-example",
+            "../dmdcache",
+            "https://github.com/seeraven/dmdcache",
+        ),
+        (
+            "https://github.com/seeraven/submodule-example",
+            "../something/../dmdcache",
+            "https://github.com/seeraven/dmdcache",
+        ),
+        (
+            "https://github.com/seeraven/submodule-example/",
+            "../dmdcache",
+            "https://github.com/seeraven/dmdcache",
+        ),
+        (
+            "https://github.com/seeraven/submodule-example/",
+            "../dmdcache/",
+            "https://github.com/seeraven/dmdcache",
+        ),
+        (
+            "https://github.com/seeraven",
+            "./dmdcache",
+            "https://github.com/seeraven/dmdcache",
+        ),
+        (
+            "https://github.com/seeraven/",
+            "./dmdcache",
+            "https://github.com/seeraven/dmdcache",
+        ),
+        (
+            "https://github.com/seeraven/",
+            "./dmdcache/",
+            "https://github.com/seeraven/dmdcache",
+        ),
+        (
+            "https://github.com/seeraven/submodule-example",
+            "../../seeraven/dmdcache",
+            "https://github.com/seeraven/dmdcache",
+        ),
+        (
+            "https://github.com/seeraven/submodule-example",
+            "https://github.com:443/seeraven/dmdcache",
+            "https://github.com:443/seeraven/dmdcache",
+        ),
+        # Base URL "https://github.com:443/seeraven/submodule-example"
+        (
+            "https://github.com:443/seeraven/submodule-example",
+            "https://github.com/seeraven/dmdcache",
+            "https://github.com/seeraven/dmdcache",
+        ),
+        (
+            "https://github.com:443/seeraven/submodule-example",
+            "../dmdcache",
+            "https://github.com:443/seeraven/dmdcache",
+        ),
+        (
+            "https://github.com:443/seeraven/submodule-example",
+            "../../seeraven/dmdcache",
+            "https://github.com:443/seeraven/dmdcache",
+        ),
+    ],
+)
+def test_relative_submodule_specs(
+    gitcache_ifc: GitcacheIfc, repo_url: str, final_submodule_url: str, submodule_url: str
+):
+    """Test 'git submodule update --init' with different relative repository specifications."""
+    checkout = os.path.join(gitcache_ifc.workspace.workspace_path, "submodules")
+    gitcache_ifc.run_ok(["git", "init", checkout])
+    gitcache_ifc.run_ok(["git", "-C", checkout, "remote", "add", "origin", repo_url])
+    with open(os.path.join(checkout, ".gitmodules"), "w", encoding="utf-8") as gitmodules:
+        gitmodules.write('[submodule "gitcache"]\n')
+        gitmodules.write("\tpath = gitcache\n")
+        gitmodules.write(f"\turl = {submodule_url}\n")
+    gitcache_ifc.run_ok(["git", "-C", checkout, "submodule", "update", "--init"])
+    assert 1 == gitcache_ifc.db_field("clones", final_submodule_url)
+
+
+@pytest.mark.skipif(platform.node() != "Workhorse", reason="Requires known ssh environment")
+@pytest.mark.parametrize(
+    "repo_url,submodule_url,final_submodule_url",
+    [
+        # Base URL "https://github.com/seeraven/submodule-example"
+        (
+            "https://github.com/seeraven/submodule-example",
+            "git@github.com:seeraven/dmdcache",
+            "git@github.com:seeraven/dmdcache",
+        ),
+        (
+            "https://github.com/seeraven/submodule-example",
+            "ssh://git@github.com/seeraven/dmdcache",
+            "ssh://git@github.com/seeraven/dmdcache",
+        ),
+        (
+            "https://github.com/seeraven/submodule-example",
+            "ssh://git@github.com:22/seeraven/dmdcache",
+            "ssh://git@github.com:22/seeraven/dmdcache",
+        ),
+        # Base URL "git@github.com:seeraven/submodule-example"
+        (
+            "git@github.com:seeraven/submodule-example",
+            "git@github.com:seeraven/dmdcache",
+            "git@github.com:seeraven/dmdcache",
+        ),
+        (
+            "git@github.com:seeraven/submodule-example",
+            "../dmdcache",
+            "git@github.com:seeraven/dmdcache",
+        ),
+        (
+            "git@github.com:seeraven/submodule-example",
+            "../something/../dmdcache",
+            "git@github.com:seeraven/dmdcache",
+        ),
+        (
+            "git@github.com:seeraven/submodule-example",
+            "../dmdcache/",
+            "git@github.com:seeraven/dmdcache",
+        ),
+        (
+            "git@github.com:seeraven/submodule-example/",
+            "../dmdcache",
+            "git@github.com:seeraven/dmdcache",
+        ),
+        (
+            "git@github.com:seeraven/submodule-example/",
+            "../dmdcache/",
+            "git@github.com:seeraven/dmdcache",
+        ),
+        (
+            "git@github.com:seeraven",
+            "./dmdcache",
+            "git@github.com:seeraven/dmdcache",
+        ),
+        (
+            "git@github.com:seeraven/",
+            "./dmdcache",
+            "git@github.com:seeraven/dmdcache",
+        ),
+        (
+            "git@github.com:seeraven",
+            "./dmdcache/",
+            "git@github.com:seeraven/dmdcache",
+        ),
+        (
+            "git@github.com:seeraven/",
+            "./dmdcache/",
+            "git@github.com:seeraven/dmdcache",
+        ),
+        (
+            "git@github.com:seeraven/submodule-example",
+            "../../seeraven/dmdcache",
+            "git@github.com:seeraven/dmdcache",
+        ),
+        # Base URL "ssh://git@github.com/seeraven/submodule-example"
+        (
+            "ssh://git@github.com/seeraven/submodule-example",
+            "ssh://git@github.com/seeraven/dmdcache",
+            "ssh://git@github.com/seeraven/dmdcache",
+        ),
+        (
+            "ssh://git@github.com/seeraven/submodule-example",
+            "../dmdcache",
+            "ssh://git@github.com/seeraven/dmdcache",
+        ),
+        (
+            "ssh://git@github.com/seeraven/submodule-example",
+            "../something/../dmdcache",
+            "ssh://git@github.com/seeraven/dmdcache",
+        ),
+        (
+            "ssh://git@github.com/seeraven/submodule-example",
+            "../../seeraven/dmdcache",
+            "ssh://git@github.com/seeraven/dmdcache",
+        ),
+        # Base URL "ssh://git@github.com:22/seeraven/submodule-example"
+        (
+            "ssh://git@github.com:22/seeraven/submodule-example",
+            "ssh://git@github.com:22/seeraven/dmdcache",
+            "ssh://git@github.com:22/seeraven/dmdcache",
+        ),
+        (
+            "ssh://git@github.com:22/seeraven/submodule-example",
+            "../dmdcache",
+            "ssh://git@github.com:22/seeraven/dmdcache",
+        ),
+        (
+            "ssh://git@github.com:22/seeraven/submodule-example",
+            "../something/../dmdcache",
+            "ssh://git@github.com:22/seeraven/dmdcache",
+        ),
+        (
+            "ssh://git@github.com:22/seeraven/submodule-example",
+            "../../seeraven/dmdcache",
+            "ssh://git@github.com:22/seeraven/dmdcache",
+        ),
+    ],
+)
+def test_relative_submodule_ssh_specs(
+    gitcache_ifc: GitcacheIfc, repo_url: str, final_submodule_url: str, submodule_url: str
+):
+    """Test 'git submodule update --init' with different relative repository specifications."""
+    checkout = os.path.join(gitcache_ifc.workspace.workspace_path, "submodules")
+    gitcache_ifc.run_ok(["git", "init", checkout])
+    gitcache_ifc.run_ok(["git", "-C", checkout, "remote", "add", "origin", repo_url])
+    with open(os.path.join(checkout, ".gitmodules"), "w", encoding="utf-8") as gitmodules:
+        gitmodules.write('[submodule "gitcache"]\n')
+        gitmodules.write("\tpath = gitcache\n")
+        gitmodules.write(f"\turl = {submodule_url}\n")
+    gitcache_ifc.run_ok(["git", "-C", checkout, "submodule", "update", "--init"])
+    assert 1 == gitcache_ifc.db_field("clones", final_submodule_url)
 
 
 # ----------------------------------------------------------------------------
