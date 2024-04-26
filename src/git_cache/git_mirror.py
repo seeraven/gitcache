@@ -257,6 +257,8 @@ class GitMirror:
                     # pylint: disable=misplaced-bare-raise
                     raise
 
+        # On newer python versions the onerror argument is deprecated:
+        # pylint: disable=deprecated-argument
         shutil.rmtree(name, onerror=onerror)
 
     def delete(self):
