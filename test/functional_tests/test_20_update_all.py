@@ -18,7 +18,7 @@ def test_update_all(gitcache_ifc: GitcacheIfc):
     gitcache_ifc.run_ok(["-u"])
 
     # Initial clone
-    repo = "https://github.com/seeraven/gitcache.git"
+    repo = "https://github.com/seeraven/gitcache"
     checkout = os.path.join(gitcache_ifc.workspace.workspace_path, "gitcache")
     gitcache_ifc.run_ok(["git", "clone", repo, checkout])
     assert 0 == gitcache_ifc.db_field("mirror-updates", repo)

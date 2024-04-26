@@ -15,7 +15,7 @@ from helpers.gitcache_ifc import GitcacheIfc
 def test_cleanup(gitcache_ifc: GitcacheIfc):
     """Test the 'git cleanup' command."""
     # Initial clone
-    repo = "https://github.com/seeraven/gitcache.git"
+    repo = "https://github.com/seeraven/gitcache"
     checkout = os.path.join(gitcache_ifc.workspace.workspace_path, "gitcache")
     mirror_dir = os.path.join(gitcache_ifc.workspace.gitcache_dir_path, "mirrors", "github.com", "seeraven", "gitcache")
     mirror_file = os.path.join(mirror_dir, "git", "config")

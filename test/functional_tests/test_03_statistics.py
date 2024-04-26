@@ -28,7 +28,7 @@ def test_initial_statistics_output(gitcache_ifc: GitcacheIfc):
 def test_statistics_output_after_clone(gitcache_ifc: GitcacheIfc):
     """Test the statistics output after a clone."""
     # Clone a repository
-    repo = "https://github.com/seeraven/gitcache.git"
+    repo = "https://github.com/seeraven/gitcache"
     tgt = os.path.join(gitcache_ifc.workspace.workspace_path, "gitcache")
     gitcache_ifc.run_ok(["git", "clone", repo, tgt])
     assert gitcache_ifc.config_exists()
@@ -37,7 +37,7 @@ def test_statistics_output_after_clone(gitcache_ifc: GitcacheIfc):
 
     # Statistics after the clone
     result = gitcache_ifc.run_ok(["-s"])
-    clone_stats_output = """Mirror of https://github.com/seeraven/gitcache.git:
+    clone_stats_output = """Mirror of https://github.com/seeraven/gitcache:
   Mirror Updates:       0
   Mirror Updates (LFS): 1
   Clones from Mirror:   1
@@ -55,7 +55,7 @@ Total:
 def test_cleared_statistics_output(gitcache_ifc: GitcacheIfc):
     """Test the statistics output after clearing it."""
     # Clone a repository
-    repo = "https://github.com/seeraven/gitcache.git"
+    repo = "https://github.com/seeraven/gitcache"
     tgt = os.path.join(gitcache_ifc.workspace.workspace_path, "gitcache")
     gitcache_ifc.run_ok(["git", "clone", repo, tgt])
     assert 1 == gitcache_ifc.db_field("clones", repo)
@@ -66,7 +66,7 @@ def test_cleared_statistics_output(gitcache_ifc: GitcacheIfc):
 
     # Statistics output after clearing the statistics
     result = gitcache_ifc.run_ok(["-s"])
-    zeroed_stats_output = """Mirror of https://github.com/seeraven/gitcache.git:
+    zeroed_stats_output = """Mirror of https://github.com/seeraven/gitcache:
   Mirror Updates:       0
   Mirror Updates (LFS): 0
   Clones from Mirror:   0

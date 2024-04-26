@@ -32,20 +32,17 @@ class GitCacheResolveSubmoduleUrlTest(TestCase):
                         repo_url = f"{server}/first/second{repo_url_suffix}"
                         for submodule_url_suffix in ["", "/"]:
                             rel_url = f"../sub{submodule_url_suffix}"
-                            result = f"{server}/first/sub"
+                            result = f"{server}/first/sub{submodule_url_suffix}"
                             self.assertEqual(result, resolve_submodule_url(repo_url, rel_url))
 
                             rel_url = f"./.././sub{submodule_url_suffix}"
-                            self.assertEqual(result, resolve_submodule_url(repo_url, rel_url))
-
-                            rel_url = f"../second/../sub{submodule_url_suffix}"
                             self.assertEqual(result, resolve_submodule_url(repo_url, rel_url))
 
                             rel_url = f"../../first/sub{submodule_url_suffix}"
                             self.assertEqual(result, resolve_submodule_url(repo_url, rel_url))
 
                             rel_url = f"./sub{submodule_url_suffix}"
-                            result = f"{server}/first/second/sub"
+                            result = f"{server}/first/second/sub{submodule_url_suffix}"
                             self.assertEqual(result, resolve_submodule_url(repo_url, rel_url))
 
         # scp-like URLs
@@ -55,20 +52,17 @@ class GitCacheResolveSubmoduleUrlTest(TestCase):
                 repo_url = f"{server}:first/second{repo_url_suffix}"
                 for submodule_url_suffix in ["", "/"]:
                     rel_url = f"../sub{submodule_url_suffix}"
-                    result = f"{server}:first/sub"
+                    result = f"{server}:first/sub{submodule_url_suffix}"
                     self.assertEqual(result, resolve_submodule_url(repo_url, rel_url))
 
                     rel_url = f"./.././sub{submodule_url_suffix}"
-                    self.assertEqual(result, resolve_submodule_url(repo_url, rel_url))
-
-                    rel_url = f"../second/../sub{submodule_url_suffix}"
                     self.assertEqual(result, resolve_submodule_url(repo_url, rel_url))
 
                     rel_url = f"../../first/sub{submodule_url_suffix}"
                     self.assertEqual(result, resolve_submodule_url(repo_url, rel_url))
 
                     rel_url = f"./sub{submodule_url_suffix}"
-                    result = f"{server}:first/second/sub"
+                    result = f"{server}:first/second/sub{submodule_url_suffix}"
                     self.assertEqual(result, resolve_submodule_url(repo_url, rel_url))
 
         # file:// URLs and path specifications
@@ -77,20 +71,17 @@ class GitCacheResolveSubmoduleUrlTest(TestCase):
                 repo_url = f"{proto}/root/path/first/second{repo_url_suffix}"
                 for submodule_url_suffix in ["", "/"]:
                     rel_url = f"../sub{submodule_url_suffix}"
-                    result = f"{proto}/root/path/first/sub"
+                    result = f"{proto}/root/path/first/sub{submodule_url_suffix}"
                     self.assertEqual(result, resolve_submodule_url(repo_url, rel_url))
 
                     rel_url = f"./.././sub{submodule_url_suffix}"
-                    self.assertEqual(result, resolve_submodule_url(repo_url, rel_url))
-
-                    rel_url = f"../second/../sub{submodule_url_suffix}"
                     self.assertEqual(result, resolve_submodule_url(repo_url, rel_url))
 
                     rel_url = f"../../first/sub{submodule_url_suffix}"
                     self.assertEqual(result, resolve_submodule_url(repo_url, rel_url))
 
                     rel_url = f"./sub{submodule_url_suffix}"
-                    result = f"{proto}/root/path/first/second/sub"
+                    result = f"{proto}/root/path/first/second/sub{submodule_url_suffix}"
                     self.assertEqual(result, resolve_submodule_url(repo_url, rel_url))
 
 

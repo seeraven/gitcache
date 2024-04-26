@@ -14,7 +14,7 @@ from helpers.gitcache_ifc import GitcacheIfc
 def test_checkout(gitcache_ifc: GitcacheIfc):
     """Test the 'git checkout' command."""
     # Initial clone
-    repo = "https://github.com/seeraven/lfs-example.git"
+    repo = "https://github.com/seeraven/lfs-example"
     checkout = os.path.join(gitcache_ifc.workspace.workspace_path, "lfs-example")
     gitcache_ifc.run_ok(["git", "clone", repo, checkout])
     assert 0 == gitcache_ifc.db_field("mirror-updates", repo)

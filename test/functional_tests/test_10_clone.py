@@ -30,7 +30,7 @@ def test_clone_error(gitcache_ifc: GitcacheIfc):
 def test_clone(gitcache_ifc: GitcacheIfc):
     """Test the normal behaviour of "git clone"."""
     # Initial clone
-    repo = "https://github.com/seeraven/gitcache.git"
+    repo = "https://github.com/seeraven/gitcache"
     tgt = os.path.join(gitcache_ifc.workspace.workspace_path, "gitcache")
     gitcache_ifc.run_ok(["git", "-C", gitcache_ifc.workspace.workspace_path, "clone", repo])
     assert 0 == gitcache_ifc.db_field("mirror-updates", repo)
@@ -130,7 +130,7 @@ def test_include(gitcache_ifc: GitcacheIfc):
 
 def test_aborted_clone(gitcache_ifc: GitcacheIfc):
     """Test aborting the first clone command and cloning again."""
-    repo = "https://github.com/seeraven/gitcache.git"
+    repo = "https://github.com/seeraven/gitcache"
     checkout = os.path.join(gitcache_ifc.workspace.workspace_path, "gitcache")
     gitcache_ifc.run_abort(["git", "-C", gitcache_ifc.workspace.workspace_path, "clone", repo])
     assert gitcache_ifc.db_field("mirror-updates", repo) is None
@@ -145,7 +145,7 @@ def test_aborted_clone(gitcache_ifc: GitcacheIfc):
 
 def test_clone_with_port(gitcache_ifc: GitcacheIfc):
     """Test clone with port specification."""
-    repo = "https://github.com:443/seeraven/gitcache.git"
+    repo = "https://github.com:443/seeraven/gitcache"
     gitcache_ifc.run_ok(["git", "-C", gitcache_ifc.workspace.workspace_path, "clone", repo])
     assert "github.com_443" in gitcache_ifc.db_field("mirror-dir", repo)
 
@@ -163,7 +163,7 @@ def test_clone_with_port(gitcache_ifc: GitcacheIfc):
 def test_clone_via_ssh(gitcache_ifc: GitcacheIfc, remote_url: str):
     """Test clone via ssh URLs."""
     gitcache_ifc.run_ok(["git", "-C", gitcache_ifc.workspace.workspace_path, "clone", remote_url])
-    assert "github.com/seeraven/gitcache" in gitcache_ifc.db_field("mirror-dir", remote_url)
+    assert "github.com/seeraven/gitcache" in gitcache_ifc.db_field("mirror-dir", remote_url[:-4])
 
 
 @pytest.mark.skipif(platform.node() != "Workhorse", reason="Requires known ssh environment")
@@ -177,7 +177,7 @@ def test_clone_via_ssh(gitcache_ifc: GitcacheIfc, remote_url: str):
 def test_clone_via_ssh_and_port(gitcache_ifc: GitcacheIfc, remote_url: str):
     """Test clone via ssh URLs."""
     gitcache_ifc.run_ok(["git", "-C", gitcache_ifc.workspace.workspace_path, "clone", remote_url])
-    assert "github.com_22/seeraven/gitcache" in gitcache_ifc.db_field("mirror-dir", remote_url)
+    assert "github.com_22/seeraven/gitcache" in gitcache_ifc.db_field("mirror-dir", remote_url[:-4])
 
 
 # ----------------------------------------------------------------------------

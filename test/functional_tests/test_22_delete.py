@@ -14,7 +14,7 @@ from helpers.gitcache_ifc import GitcacheIfc
 def test_delete(gitcache_ifc: GitcacheIfc):
     """Test the 'git delete-mirror' command."""
     # Initial clone
-    repo = "https://github.com/seeraven/gitcache.git"
+    repo = "https://github.com/seeraven/gitcache"
     checkout = os.path.join(gitcache_ifc.workspace.workspace_path, "gitcache")
     gitcache_ifc.run_ok(["git", "clone", repo, checkout])
     assert 0 == gitcache_ifc.db_field("mirror-updates", repo)
@@ -49,7 +49,7 @@ def test_delete(gitcache_ifc: GitcacheIfc):
     assert gitcache_ifc.db_field("mirror-updates", repo) is None
 
     # Delete using invalid URL
-    gitcache_ifc.run_fail(["-d", "https://github.com/seeraven/gatcache.git"])
+    gitcache_ifc.run_fail(["-d", "https://github.com/seeraven/gatcache"])
 
     # Delete using invalid path
     mirror_dir = os.path.join(gitcache_ifc.workspace.gitcache_dir_path, "mirrors", "github.com", "seeraven", "gatcache")

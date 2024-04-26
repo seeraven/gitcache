@@ -53,8 +53,8 @@ class GitcacheIfc:
         result = self.run(args, cwd)
         if result.returncode != 0:
             print(f"Command {self._executable + args} failed:")
-            print(f"  Stdout: {result.stdout}")
-            print(f"  Stderr: {result.stderr}")
+        print(f"  Stdout: {result.stdout}")
+        print(f"  Stderr: {result.stderr}")
         assert 0 == result.returncode
         return result
 
