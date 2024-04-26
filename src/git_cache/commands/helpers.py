@@ -128,7 +128,7 @@ def resolve_submodule_url(repo_url, submodule_url):
     if not submodule_url.startswith("./") and not submodule_url.startswith("../"):
         return submodule_url
 
-    repo_url.rstrip("/")
+    repo_url = repo_url.rstrip("/")
 
     while True:
         if submodule_url.startswith("./"):
