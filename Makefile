@@ -18,7 +18,7 @@ APP_VERSION          := 1.0.14
 ALL_TARGET           := check-style.venv
 SCRIPT               := src/gitcache
 
-UBUNTU_DIST_VERSIONS := 20.04 22.04
+UBUNTU_DIST_VERSIONS := 20.04 22.04 24.04
 MAKE4PY_DOCKER_IMAGE := make4py-gitcache
 MAKE4PY_DOCKER_PKGS  := git git-lfs
 

@@ -12,7 +12,7 @@ babel==2.14.0
     # via sphinx
 backcall==0.2.0
     # via ipython
-black==24.4.0
+black==24.4.2
     # via
     #   flake8-black
     #   gitcache (pyproject.toml)
@@ -100,7 +100,7 @@ mccabe==0.7.0
     #   pylint
 mock==5.1.0
     # via gitcache (pyproject.toml)
-mypy==1.9.0
+mypy==1.10.0
     # via gitcache (pyproject.toml)
 mypy-extensions==1.0.0
     # via
@@ -215,7 +215,7 @@ traitlets==5.14.3
     # via
     #   ipython
     #   matplotlib-inline
-types-mock==5.1.0.20240311
+types-mock==5.1.0.20240425
     # via gitcache (pyproject.toml)
 typing-extensions==4.11.0
     # via

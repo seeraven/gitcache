@@ -10,7 +10,7 @@ attrs==23.2.0
     # via flake8-bugbear
 babel==2.14.0
     # via sphinx
-black==24.4.0
+black==24.4.2
     # via
     #   flake8-black
     #   gitcache (pyproject.toml)
@@ -76,7 +76,7 @@ imagesize==1.4.1
     # via sphinx
 iniconfig==2.0.0
     # via pytest
-ipython==8.23.0
+ipython==8.24.0
     # via gitcache (pyproject.toml)
 isort==5.13.2
     # via
@@ -97,7 +97,7 @@ mccabe==0.7.0
     #   pylint
 mock==5.1.0
     # via gitcache (pyproject.toml)
-mypy==1.9.0
+mypy==1.10.0
     # via gitcache (pyproject.toml)
 mypy-extensions==1.0.0
     # via
@@ -204,7 +204,7 @@ traitlets==5.14.3
     # via
     #   ipython
     #   matplotlib-inline
-types-mock==5.1.0.20240311
+types-mock==5.1.0.20240425
     # via gitcache (pyproject.toml)
 typing-extensions==4.11.0
     # via
