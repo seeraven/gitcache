@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Module for handling the global settings of gitcache.
 
@@ -35,7 +34,6 @@ Copyright:
     and is released under the "BSD 3-Clause License". Please see the ``LICENSE`` file
     that is included as part of this package.
 """
-
 
 # -----------------------------------------------------------------------------
 # Module Import

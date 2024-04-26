@@ -8,7 +8,7 @@ build-backend = 'setuptools.build_meta'
 
 [project]
 name = "gitcache"
-version = "1.0.14"
+version = "1.0.15"
 authors = [{name = "Clemens Rabe", email = "clemens.rabe@clemensrabe.de"}]
 description = "Local cache for git repositories to speed up working with large repositories and multiple clones."
 readme = "README.md"
@@ -69,7 +69,7 @@ src_paths = ["src", "test"]
 
 [tool.flake8]
 max-line-length = 120
-extend-ignore = ['E203', 'E701']
+extend-ignore = ['E203']
 
 [tool.pylint.main]
 py-version = "3.10"

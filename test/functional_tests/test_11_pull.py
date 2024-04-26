@@ -13,7 +13,7 @@ from helpers.gitcache_ifc import GitcacheIfc
 # ----------------------------------------------------------------------------
 def test_pull(gitcache_ifc: GitcacheIfc):
     """Test the "git pull" command."""
-    repo = "https://github.com/seeraven/gitcache.git"
+    repo = "https://github.com/seeraven/gitcache"
     checkout = os.path.join(gitcache_ifc.workspace.workspace_path, "gitcache")
     gitcache_ifc.run_ok(["git", "clone", repo, checkout])
 

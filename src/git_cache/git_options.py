@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Option parser for git commands.
 
@@ -12,13 +11,12 @@ Copyright:
     that is included as part of this package.
 """
 
-
 # -----------------------------------------------------------------------------
 # Module Import
 # -----------------------------------------------------------------------------
 import logging
 import os
-from typing import List
+from typing import Dict, List, Optional, Tuple
 
 from .config import Config
 
@@ -37,8 +35,14 @@ class Option:
 
     # pylint: disable=too-many-arguments
     def __init__(
-        self, group="ignored", short_name=None, long_name=None, has_arg=True, has_stuck=True, has_separate=True
-    ):
+        self,
+        group: str = "ignored",
+        short_name: Optional[str] = None,
+        long_name: Optional[str] = None,
+        has_arg: bool = True,
+        has_stuck: bool = True,
+        has_separate: bool = True,
+    ) -> None:
         """Construct a new option.
 
         Args:
@@ -71,7 +75,7 @@ class Option:
             if self.long_name:
                 self._option_prefixes.append(f"--{self.long_name}=")
 
-    def parse(self, args):
+    def parse(self, args) -> Tuple[bool, int, Optional[str]]:
         """Try to parse this option from the given arguments.
 
         Args:
@@ -265,22 +269,22 @@ COMMAND_OPTIONS = {
 class GitOptions:
     """Main parser class for the git command line."""
 
-    def __init__(self, args):
+    def __init__(self, args: List[str]) -> None:
         """Construct a GitOptions object from the given arguments.
 
         Args:
             args (list): The arguments to git without the actual git command.
         """
         self.all_args = args  # All arguments
-        self.global_options = []  # All global options
-        self.global_group_values = {}  # Map of group to list of (option) values
-        self.command = None  # The command
-        self.command_options = []  # The command options
-        self.command_args = []  # The command arguments
-        self.command_group_values = {}  # Map of group to list of (option) values
+        self.global_options: List[str] = []  # All global options
+        self.global_group_values: Dict[str, List[Optional[str]]] = {}  # Map of group to list of (option) values
+        self.command: Optional[str] = None  # The command
+        self.command_options: List[str] = []  # The command options
+        self.command_args: List[str] = []  # The command arguments
+        self.command_group_values: Dict[str, List[Optional[str]]] = {}  # Map of group to list of (option) values
         self._parse(args)
 
-    def has_bail_out(self):
+    def has_bail_out(self) -> bool:
         """Check if a bail out option was given.
 
         A bail out option is an option that would cause the real git command
@@ -291,7 +295,7 @@ class GitOptions:
         """
         return "bail_out" in self.global_group_values
 
-    def get_command(self):
+    def get_command(self) -> Optional[str]:
         """Get the command.
 
         Return:
@@ -299,7 +303,7 @@ class GitOptions:
         """
         return self.command
 
-    def get_real_git_with_options(self):
+    def get_real_git_with_options(self) -> List[str]:
         """Get a command line list consisting of the real git command and all global options.
 
         Return:
@@ -309,7 +313,7 @@ class GitOptions:
         real_git = config.get("System", "RealGit")
         return [real_git] + self.global_options
 
-    def get_real_git_all_args(self):
+    def get_real_git_all_args(self) -> List[str]:
         """Get a list of command line arguments to call the real git command.
 
         Return:
@@ -320,7 +324,7 @@ class GitOptions:
         real_git = config.get("System", "RealGit")
         return [real_git] + self.all_args
 
-    def get_run_path(self):
+    def get_run_path(self) -> str:
         """Get a path that results after applying all the '-C' global options.
 
         Return:
@@ -347,7 +351,12 @@ class GitOptions:
         return []
 
     @staticmethod
-    def _parse_any_option(options, args, option_arg_storage, group_values_storage):
+    def _parse_any_option(
+        options: List[Option],
+        args: List[str],
+        option_arg_storage: List[str],
+        group_values_storage: Dict[str, List[Optional[str]]],
+    ) -> int:
         """Parse the next argument(s) trying all known options.
 
         Args:
@@ -368,7 +377,7 @@ class GitOptions:
         group_values_storage.setdefault("ignored", []).append(None)
         return 1
 
-    def _parse(self, args):
+    def _parse(self, args: List[str]) -> None:
         """Parse the arguments.
 
         Args:

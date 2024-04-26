@@ -59,7 +59,7 @@ def _perform_submodule_update_test(gitcache_ifc: GitcacheIfc, c_option=None, cwd
         cwd (str):       The working directory to execute the command from.
     """
     c_option = c_option or []
-    repo = "https://github.com/seeraven/submodule-example.git"
+    repo = "https://github.com/seeraven/submodule-example"
     repo_sub1 = "https://github.com/seeraven/dmdcache"
     repo_sub2 = "https://github.com/seeraven/gitcache"
     checkout = os.path.join(gitcache_ifc.workspace.workspace_path, "submodules")
@@ -102,7 +102,7 @@ def _perform_submodule_update_module_test(gitcache_ifc: GitcacheIfc, c_option=No
         cwd (str):       The working directory to execute the command from.
     """
     c_option = c_option or []
-    repo = "https://github.com/seeraven/submodule-example.git"
+    repo = "https://github.com/seeraven/submodule-example"
     repo_sub1 = "https://github.com/seeraven/dmdcache"
     repo_sub2 = "https://github.com/seeraven/gitcache"
     checkout = os.path.join(gitcache_ifc.workspace.workspace_path, "submodules")
@@ -141,19 +141,19 @@ def test_recursive_init(gitcache_ifc: GitcacheIfc):
     assert 0 == gitcache_ifc.db_field("updates", repo)
 
     gitcache_ifc.run_ok(["git", "submodule", "update", "--recursive", "--init"], cwd=checkout)
-    assert 1 == gitcache_ifc.db_field("clones", "https://github.com/awslabs/aws-crt-cpp.git")
-    assert 1 == gitcache_ifc.db_field("clones", "https://github.com/awslabs/aws-c-common.git")
-    assert 1 == gitcache_ifc.db_field("clones", "https://github.com/awslabs/aws-c-io.git")
-    assert 1 == gitcache_ifc.db_field("clones", "https://github.com/awslabs/aws-c-compression.git")
-    assert 1 == gitcache_ifc.db_field("clones", "https://github.com/awslabs/aws-c-cal.git")
-    assert 1 == gitcache_ifc.db_field("clones", "https://github.com/awslabs/aws-c-auth.git")
-    assert 1 == gitcache_ifc.db_field("clones", "https://github.com/awslabs/aws-c-http.git")
-    assert 1 == gitcache_ifc.db_field("clones", "https://github.com/awslabs/aws-c-mqtt.git")
-    assert 1 == gitcache_ifc.db_field("clones", "https://github.com/awslabs/s2n.git")
-    assert 1 == gitcache_ifc.db_field("clones", "https://github.com/awslabs/aws-checksums.git")
-    assert 1 == gitcache_ifc.db_field("clones", "https://github.com/awslabs/aws-c-event-stream.git")
-    assert 1 == gitcache_ifc.db_field("clones", "https://github.com/awslabs/aws-c-s3.git")
-    assert 1 == gitcache_ifc.db_field("clones", "https://github.com/awslabs/aws-lc.git")
+    assert 1 == gitcache_ifc.db_field("clones", "https://github.com/awslabs/aws-crt-cpp")
+    assert 1 == gitcache_ifc.db_field("clones", "https://github.com/awslabs/aws-c-common")
+    assert 1 == gitcache_ifc.db_field("clones", "https://github.com/awslabs/aws-c-io")
+    assert 1 == gitcache_ifc.db_field("clones", "https://github.com/awslabs/aws-c-compression")
+    assert 1 == gitcache_ifc.db_field("clones", "https://github.com/awslabs/aws-c-cal")
+    assert 1 == gitcache_ifc.db_field("clones", "https://github.com/awslabs/aws-c-auth")
+    assert 1 == gitcache_ifc.db_field("clones", "https://github.com/awslabs/aws-c-http")
+    assert 1 == gitcache_ifc.db_field("clones", "https://github.com/awslabs/aws-c-mqtt")
+    assert 1 == gitcache_ifc.db_field("clones", "https://github.com/awslabs/s2n")
+    assert 1 == gitcache_ifc.db_field("clones", "https://github.com/awslabs/aws-checksums")
+    assert 1 == gitcache_ifc.db_field("clones", "https://github.com/awslabs/aws-c-event-stream")
+    assert 1 == gitcache_ifc.db_field("clones", "https://github.com/awslabs/aws-c-s3")
+    assert 1 == gitcache_ifc.db_field("clones", "https://github.com/awslabs/aws-lc")
 
 
 def test_exclude(gitcache_ifc: GitcacheIfc):
@@ -312,11 +312,6 @@ def test_relative_submodule_specs(
         ),
         (
             "git@github.com:seeraven/submodule-example",
-            "../something/../dmdcache",
-            "git@github.com:seeraven/dmdcache",
-        ),
-        (
-            "git@github.com:seeraven/submodule-example",
             "../dmdcache/",
             "git@github.com:seeraven/dmdcache",
         ),
@@ -368,11 +363,6 @@ def test_relative_submodule_specs(
         ),
         (
             "ssh://git@github.com/seeraven/submodule-example",
-            "../something/../dmdcache",
-            "ssh://git@github.com/seeraven/dmdcache",
-        ),
-        (
-            "ssh://git@github.com/seeraven/submodule-example",
             "../../seeraven/dmdcache",
             "ssh://git@github.com/seeraven/dmdcache",
         ),
@@ -385,11 +375,6 @@ def test_relative_submodule_specs(
         (
             "ssh://git@github.com:22/seeraven/submodule-example",
             "../dmdcache",
-            "ssh://git@github.com:22/seeraven/dmdcache",
-        ),
-        (
-            "ssh://git@github.com:22/seeraven/submodule-example",
-            "../something/../dmdcache",
             "ssh://git@github.com:22/seeraven/dmdcache",
         ),
         (

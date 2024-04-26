@@ -69,7 +69,7 @@ def git_ls_remote(git_options):
         new_args = git_options.global_options
         new_args += [git_options.command]
         new_args += git_options.command_options
-        new_args += ["origin"]
+        new_args += [mirror.git_dir]
         new_args += git_options.command_args[1:]
     else:
         new_args = git_options.all_args

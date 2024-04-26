@@ -18,6 +18,7 @@ Copyright:
 # -----------------------------------------------------------------------------
 import logging
 import os
+import posixpath
 import re
 import shutil
 from typing import Optional
@@ -40,11 +41,11 @@ LOG = logging.getLogger(__name__)
 # -----------------------------------------------------------------------------
 
 # Pattern to match ssh, git, http[s] and ftp[s]:
-#                                <proto>      [user@]  <host>  [:port]   <path>
-RE_URL_WITH_PROTO = re.compile(r"[a-zA-Z]+://([^@]+@)?([^:/]+)(:[0-9]+)?/(.*)")
+#                                  <proto>      [user@]  <host>  [:port]   <path>
+RE_URL_WITH_PROTO = re.compile(r"([a-zA-Z]+)://([^@]+@)?([^:/]+)(:[0-9]+)?/(.*)")
 
-# Pattern to match scp-like syntax:  [user@]  <host>  <path>
-RE_URL_WITHOUT_PROTO = re.compile(r"([^@]+@)?([^:/]+):(.*)")
+# Pattern to match scp-like syntax:  [user@]  <host>       <path>
+RE_URL_WITHOUT_PROTO = re.compile(r"([^@]+@)?([^:/\\]{2,}):(.*)")
 
 # Pattern to match file://<path>
 RE_URL_WITH_FILE = re.compile(r"file://(.*)")
@@ -125,6 +126,9 @@ class GitMirror:
         self.database = database
         if self.database is None:
             self.database = Database()
+
+        if self.url:
+            self.normalized_url = self.normalize_url(url)
 
         if self.url and self.path is None:
             self.path = self.get_mirror_path(self.url)
@@ -253,6 +257,8 @@ class GitMirror:
                     # pylint: disable=misplaced-bare-raise
                     raise
 
+        # On newer python versions the onerror argument is deprecated:
+        # pylint: disable=deprecated-argument
         shutil.rmtree(name, onerror=onerror)
 
     def delete(self):
@@ -383,7 +389,7 @@ class GitMirror:
         )
 
         if return_code == 0:
-            self.database.add(self.url, self.path)
+            self.database.add(self.normalized_url, self.path)
         else:
             return False
 
@@ -508,6 +514,43 @@ class GitMirror:
         return None
 
     @staticmethod
+    def normalize_url(url: str) -> str:
+        """Normalize the given URL.
+
+        Args:
+            url (str): The URL of the repository.
+
+        Return:
+            Returns the normalized URL.
+        """
+        # file:// urls are not mirrored
+        if match := RE_URL_WITH_FILE.match(url):
+            return url
+
+        if match := RE_URL_WITH_PROTO.match(url):
+            path = posixpath.normpath(match.group(5))
+            while path.startswith("../"):
+                path = path[3:]
+            while path.endswith("/"):
+                path = path[:-1]
+            if path.endswith(".git"):
+                path = path[:-4]
+            return f"{match.group(1)}://{match.group(2) or ''}{match.group(3)}{match.group(4) or ''}/{path}"
+
+        if match := RE_URL_WITHOUT_PROTO.match(url):
+            path = posixpath.normpath(match.group(3))
+            while path.startswith("../"):
+                path = path[3:]
+            while path.endswith("/"):
+                path = path[:-1]
+            if path.endswith(".git"):
+                path = path[:-4]
+            return f"{match.group(1) or ''}{match.group(2)}:{path}"
+
+        return url
+
+    @staticmethod
+    # pylint: disable=too-many-branches,too-many-return-statements
     def get_mirror_path(url) -> Optional[str]:
         """Convert an URL into a repository mirror path.
 
@@ -522,25 +565,35 @@ class GitMirror:
         """
         sub_dir = None
         if match := RE_URL_WITH_FILE.match(url):
-            sub_dir = match.group(1)
+            sub_dir = posixpath.normpath(match.group(1))
+            # On Windows you can user either posix paths or windows paths
+            if sub_dir.startswith(GITCACHE_DIR.replace("/", os.path.sep)):
+                return sub_dir
             if sub_dir.startswith(GITCACHE_DIR):
                 return sub_dir
             return ""
 
-        if match := RE_URL_WITH_PROTO.match(url):
-            sub_dir = match.group(2)
-            port = match.group(3)
-            if port is not None:
-                sub_dir += port.replace(":", "_")
-            sub_dir += "/" + match.group(4)
-
-        elif match := RE_URL_WITHOUT_PROTO.match(url):
-            sub_dir = match.group(2) + "/" + match.group(3)
-
-        elif os.path.exists(url):
+        if os.path.exists(os.path.normpath(url)):
+            url = os.path.normpath(url)
             if url.startswith(GITCACHE_DIR):
                 return url
             return ""
+
+        if match := RE_URL_WITH_PROTO.match(url):
+            sub_dir = match.group(3)
+            port = match.group(4)
+            if port is not None:
+                sub_dir += port.replace(":", "_")
+            path = posixpath.normpath(match.group(5))
+            while path.startswith("../"):
+                path = path[3:]
+            sub_dir += "/" + posixpath.normpath(path)
+
+        elif match := RE_URL_WITHOUT_PROTO.match(url):
+            path = posixpath.normpath(match.group(3))
+            while path.startswith("../"):
+                path = path[3:]
+            sub_dir = match.group(2) + "/" + path
 
         else:
             return None
