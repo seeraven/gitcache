@@ -32,8 +32,8 @@ LOG = logging.getLogger(__name__)
 # -----------------------------------------------------------------------------
 # Exported Functions
 # -----------------------------------------------------------------------------
-# pylint: disable=too-many-locals,too-many-statements
-def call_command(command, cwd=None, shell=False, command_timeout=None, output_timeout=None):
+# pylint: disable=too-many-locals,too-many-statements,too-many-arguments
+def call_command(command, cwd=None, shell=False, command_timeout=None, output_timeout=None, stderr_capture=True):
     """Call the given command with optional timeouts.
 
     This function calls the given command and applies a timeout on the whole
@@ -55,26 +55,22 @@ def call_command(command, cwd=None, shell=False, command_timeout=None, output_ti
                                  a shell.
         command_timeout (float): The timeout of the whole command execution in seconds.
         output_timeout (float):  The timeout of stdout/stderr outputs.
+        stderr_capture (bool):   Flag indicating stderr should be captured.
 
     Returns:
         The tuple (return_code, stdout_buffer, stderr_buffer) with the return code
         of the command (or -1000 on a command timeout resp. -2000 on a stdout timeout)
         and the stdout/stderr buffers as byte arrays.
     """
-    # if shell:
-    #     if isinstance(command, str):
-    #         command = ['cmd.exe', '/C', command]
-    #     else:
-    #         command = ['cmd.exe', '/C', ' '.join(command)]
-
     LOG.debug(
         "Execute command '%s' (shell=%s, cwd=%s) with command timeout of %s seconds and "
-        "output timeout of %s seconds.",
+        "output timeout of %s seconds. stderr_capture=%s",
         command,
         shell,
         cwd,
         command_timeout,
         output_timeout,
+        stderr_capture,
     )
 
     return_code = -1
@@ -135,7 +131,12 @@ def call_command(command, cwd=None, shell=False, command_timeout=None, output_ti
 
     try:
         with subprocess.Popen(
-            command, bufsize=0, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd, shell=shell
+            command,
+            bufsize=0,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE if stderr_capture else None,
+            cwd=cwd,
+            shell=shell,
         ) as proc:
             output_start_time = time.time()
             command_start_time = output_start_time
@@ -144,9 +145,10 @@ def call_command(command, cwd=None, shell=False, command_timeout=None, output_ti
             buffer_size = 1024
 
             stdout_thread = Thread(target=enqueue_output, args=(proc, proc.stdout, stdout_queue))
-            stderr_thread = Thread(target=enqueue_output, args=(proc, proc.stderr, stderr_queue))
             stdout_thread.start()
-            stderr_thread.start()
+            if stderr_capture:
+                stderr_thread = Thread(target=enqueue_output, args=(proc, proc.stderr, stderr_queue))
+                stderr_thread.start()
 
             while proc.poll() is None:
                 if fill_buffers():
@@ -171,12 +173,14 @@ def call_command(command, cwd=None, shell=False, command_timeout=None, output_ti
 
             # To cleanup any pending resources
             stdout_thread.join()
-            stderr_thread.join()
+            if stderr_capture:
+                stderr_thread.join()
             fill_buffers()
             proc.wait()
 
             sys.stdout.buffer.flush()
-            sys.stderr.buffer.flush()
+            if stderr_capture:
+                sys.stderr.buffer.flush()
 
             return_code = proc.returncode
             if command_timeout_occured:

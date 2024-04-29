@@ -2,6 +2,10 @@
 
 ## Upcoming Version
 
+- Workaround: Git for Windows has a bug preventing asking for a password when stderr is redirected
+  (see https://github.com/git-for-windows/git/issues/1613). As a workaround, we disable stderr
+  capture (and analysis) if we find the pattern "Permission denied (publickey)." in stderr.
+
 ## v1.0.14
 
 - Bugfix: Fixed relative submodule URLs (thanks to Ihor Dutchak)

@@ -34,8 +34,8 @@ LOG = logging.getLogger(__name__)
 # -----------------------------------------------------------------------------
 # Exported Functions
 # -----------------------------------------------------------------------------
-# pylint: disable=too-many-locals,too-many-statements
-def call_command(command, cwd=None, shell=False, command_timeout=None, output_timeout=None):
+# pylint: disable=too-many-locals,too-many-statements,too-many-arguments,too-many-branches
+def call_command(command, cwd=None, shell=False, command_timeout=None, output_timeout=None, stderr_capture=True):
     """Call the given command with optional timeouts.
 
     This function calls the given command and applies a timeout on the whole
@@ -57,6 +57,7 @@ def call_command(command, cwd=None, shell=False, command_timeout=None, output_ti
                                  a shell.
         command_timeout (float): The timeout of the whole command execution in seconds.
         output_timeout (float):  The timeout of stdout/stderr outputs.
+        stderr_capture (bool):   Flag indicating stderr should be captured.
 
     Returns:
         The tuple (return_code, stdout_buffer, stderr_buffer) with the return code
@@ -70,12 +71,13 @@ def call_command(command, cwd=None, shell=False, command_timeout=None, output_ti
 
     LOG.debug(
         "Execute command '%s' (shell=%s, cwd=%s) with command timeout of %s seconds and "
-        "output timeout of %s seconds.",
+        "output timeout of %s seconds. stderr_capture=%s",
         command_str,
         shell,
         cwd,
         command_timeout,
         output_timeout,
+        stderr_capture,
     )
 
     stdout_r, stdout_w = pty.openpty()
@@ -85,7 +87,9 @@ def call_command(command, cwd=None, shell=False, command_timeout=None, output_ti
     stdout_buffer = b""
     stderr_buffer = b""
     try:
-        with subprocess.Popen(command, bufsize=0, cwd=cwd, shell=shell, stdout=stdout_w, stderr=stderr_w) as proc:
+        with subprocess.Popen(
+            command, bufsize=0, cwd=cwd, shell=shell, stdout=stdout_w, stderr=stderr_w if stderr_capture else None
+        ) as proc:
             os.close(stdout_w)
             os.close(stderr_w)
 
@@ -139,7 +143,8 @@ def call_command(command, cwd=None, shell=False, command_timeout=None, output_ti
             os.close(stdout_r)
             os.close(stderr_r)
             sys.stdout.buffer.flush()
-            sys.stderr.buffer.flush()
+            if stderr_capture:
+                sys.stderr.buffer.flush()
 
             return_code = proc.returncode
             if command_timeout_occured:
