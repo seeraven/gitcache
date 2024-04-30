@@ -37,6 +37,13 @@ LOG = logging.getLogger(__name__)
 
 
 # -----------------------------------------------------------------------------
+# Globals
+# -----------------------------------------------------------------------------
+ON_WINDOWS = platform.system().lower().startswith("win")
+STDERR_DISABLE_PATTERNS = ["Permission denied (publickey).".encode()]
+
+
+# -----------------------------------------------------------------------------
 # Exported Functions
 # -----------------------------------------------------------------------------
 # pylint: disable=too-many-arguments
@@ -82,13 +89,30 @@ def call_command_retry(
     else:
         command_str = " ".join(command)
 
+    stderr_capture = True
     LOG.debug("Retry to execute command '%s' up to %d times.", command_str, num_retries)
     for retry in range(num_retries + 1):
         return_code, stdout_buffer, stderr_buffer = call_command(
-            command, cwd=cwd, shell=shell, command_timeout=command_timeout, output_timeout=output_timeout
+            command,
+            cwd=cwd,
+            shell=shell,
+            command_timeout=command_timeout,
+            output_timeout=output_timeout,
+            stderr_capture=stderr_capture,
         )
         if return_code == 0:
             break
+
+        if ON_WINDOWS and stderr_capture:
+            for pattern in STDERR_DISABLE_PATTERNS:
+                if pattern in stderr_buffer:
+                    LOG.info(
+                        "Found pattern '%s' indicating we should disable stderr forwarding "
+                        "as a workaround on Windows to enable git asking for a password.",
+                        pattern,
+                    )
+                    stderr_capture = False
+                    break
 
         if remove_dir:
             LOG.debug("Delete directory %s.", remove_dir)
