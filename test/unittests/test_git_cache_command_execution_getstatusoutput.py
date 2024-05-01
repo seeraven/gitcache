@@ -93,24 +93,28 @@ class GitCacheGetStatusOutputTest(TestCase):
         if self.on_windows:
             cmd = ["cmd.exe", "/C", "echo %CD%"]
             cwd = r"C:\Windows"
+            expected_outputs = [cwd]
         else:
             cmd = ["pwd"]
             cwd = "/var/log"
+            expected_outputs = [cwd, "/private/var/log"]
         return_code, output = getstatusoutput(cmd, cwd=cwd)
         self.assertEqual(0, return_code)
-        self.assertEqual(cwd, output)
+        self.assertIn(output, expected_outputs)
 
     def test_shell_cwd(self):
         """git_cache.command_execution.getstatusoutput(): Support of cwd using shell."""
         if self.on_windows:
             cmd = "echo %CD%"
             cwd = r"C:\Windows"
+            expected_outputs = [cwd]
         else:
             cmd = ["pwd"]
             cwd = "/var/log"
+            expected_outputs = [cwd, "/private/var/log"]
         return_code, output = getstatusoutput(cmd, cwd=cwd, shell=True)
         self.assertEqual(0, return_code)
-        self.assertEqual(cwd, output)
+        self.assertIn(output, expected_outputs)
 
 
 # -----------------------------------------------------------------------------

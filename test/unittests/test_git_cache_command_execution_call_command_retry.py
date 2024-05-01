@@ -109,7 +109,7 @@ class GitCacheCallCommandRetryTest(TestCase):
         if self.on_windows:
             cmd = ["cmd.exe", "/C", "ping -n 3 127.0.0.1 >nul"]
         else:
-            cmd = ["sleep", "2s"]
+            cmd = ["sleep", "2"]
         return_code, stdout_buffer, stderr_buffer = call_command_retry(cmd, 3, command_timeout=1)
         self.assertEqual(-1000, return_code)
         self.assertEqual(b"", stdout_buffer)
@@ -120,7 +120,7 @@ class GitCacheCallCommandRetryTest(TestCase):
         if self.on_windows:
             cmd = "ping -n 3 127.0.0.1 >nul"
         else:
-            cmd = "sleep 2s"
+            cmd = "sleep 2"
         return_code, stdout_buffer, stderr_buffer = call_command_retry(cmd, 3, shell=True, command_timeout=1)
         self.assertEqual(-1000, return_code)
         self.assertEqual(b"", stdout_buffer)
@@ -132,7 +132,7 @@ class GitCacheCallCommandRetryTest(TestCase):
             cmd = "echo a & ping -n 2 127.0.0.1 >nul & echo b & "
             cmd += "ping -n 4 127.0.0.1 >nul & echo c"
         else:
-            cmd = "echo a; sleep 1s; echo b; sleep 3s; echo c"
+            cmd = "echo a; sleep 1; echo b; sleep 3; echo c"
         return_code, stdout_buffer, stderr_buffer = call_command_retry(cmd, 3, shell=True, output_timeout=2)
         self.assertEqual(-2000, return_code)
         # On Windows we seem to not receive the partial output
