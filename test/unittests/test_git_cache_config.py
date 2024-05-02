@@ -14,7 +14,6 @@
 # -----------------------------------------------------------------------------
 import importlib
 import os
-import platform
 from unittest import TestCase
 
 import mock
@@ -57,12 +56,7 @@ class GitCacheConfigTest(TestCase):
         importlib.reload(git_cache.config)
         config = git_cache.config.Config()
 
-        if platform.system().lower().startswith("win"):
-            expected_git_cmd = "C:\\Program Files\\Git\\cmd\\git.exe"
-        else:
-            expected_git_cmd = "/usr/bin/git"
-
-        self.assertEqual(config.get("System", "RealGit"), expected_git_cmd)
+        self.assertEqual(config.get("System", "RealGit"), git_cache.config.find_git())
         self.assertEqual(config.get("MirrorHandling", "UpdateInterval"), 0)
         self.assertEqual(config.get("MirrorHandling", "CleanupAfter"), 14 * 24 * 60 * 60)
         self.assertEqual(config.get("LFS", "Retries"), 3)
@@ -113,11 +107,7 @@ permirrorstorage = false
         importlib.reload(git_cache.config)
         config = git_cache.config.Config()
 
-        if platform.system().lower().startswith("win"):
-            expected_git_cmd = "C:\\Program Files\\Git\\cmd\\git.exe"
-        else:
-            expected_git_cmd = "/usr/bin/git        "
-
+        expected_git_cmd = git_cache.config.find_git()
         expected_config_str = f"""Clone:
  commandtimeout       = 1 hour               (GITCACHE_CLONE_COMMAND_TIMEOUT)
  outputtimeout        = 5 minutes            (GITCACHE_CLONE_OUTPUT_TIMEOUT)
@@ -144,7 +134,7 @@ MirrorHandling:
  updateinterval       = 0 seconds            (GITCACHE_UPDATE_INTERVAL)
 
 System:
- realgit              = {expected_git_cmd} (GITCACHE_REAL_GIT)
+ realgit              = {expected_git_cmd : <20} (GITCACHE_REAL_GIT)
 
 Update:
  commandtimeout       = 1 hour               (GITCACHE_UPDATE_COMMAND_TIMEOUT)
