@@ -71,29 +71,29 @@ class GitCacheGetMirrorPathTest(TestCase):
 
         # file:// urls
         path = GitMirror.get_mirror_path("file:///somewhere/a/file")
-        self.assertEqual(path, "")
+        self.assertIsNone(path)
 
         path = GitMirror.get_mirror_path(f"file://{GITCACHE_DIR}/file")
-        self.assertEqual(path, f"{GITCACHE_DIR}/file")
+        self.assertIsNone(path)
 
         path = GitMirror.get_mirror_path(f"file://{GITCACHE_DIR}/a/../file")
-        self.assertEqual(path, f"{GITCACHE_DIR}/file")
+        self.assertIsNone(path)
 
         path = GitMirror.get_mirror_path(f"file://{GITCACHE_DIR}/../file")
-        self.assertEqual(path, "")
+        self.assertIsNone(path)
 
         # files
         path = GitMirror.get_mirror_path(os.path.join(GITCACHE_DIR, "config"))
-        self.assertEqual(path, os.path.join(GITCACHE_DIR, "config"))
+        self.assertIsNone(path)
 
         path = GitMirror.get_mirror_path(os.path.join(GITCACHE_DIR, "a", "..", "config"))
-        self.assertEqual(path, os.path.join(GITCACHE_DIR, "config"))
+        self.assertIsNone(path)
 
         path = GitMirror.get_mirror_path(os.path.join(GITCACHE_DIR, "..", "file"))
-        self.assertEqual(path, None)
+        self.assertIsNone(path)
 
         path = GitMirror.get_mirror_path(__file__)
-        self.assertEqual(path, "")
+        self.assertIsNone(path)
 
 
 # -----------------------------------------------------------------------------

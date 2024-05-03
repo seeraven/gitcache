@@ -13,10 +13,10 @@
 # Module Import
 # -----------------------------------------------------------------------------
 import os
-import platform
 from unittest import TestCase
 
 import git_cache.git_options
+from git_cache.config import find_git
 
 
 # -----------------------------------------------------------------------------
@@ -57,16 +57,10 @@ class GitCacheGitOptionsTest(TestCase):
         """git_cache.git_options.GitOptions: Test real git command setup."""
         args = ["-C", "1", "-c", "user.email=something", "--git-dir=here"]
         git_options = git_cache.git_options.GitOptions(args)
-        if platform.system().lower().startswith("win"):
-            self.assertListEqual(
-                ["C:\\Program Files\\Git\\cmd\\git.exe", "-C", "1", "-c", "user.email=something", "--git-dir=here"],
-                git_options.get_real_git_with_options(),
-            )
-        else:
-            self.assertListEqual(
-                ["/usr/bin/git", "-C", "1", "-c", "user.email=something", "--git-dir=here"],
-                git_options.get_real_git_with_options(),
-            )
+        self.assertListEqual(
+            [find_git(), "-C", "1", "-c", "user.email=something", "--git-dir=here"],
+            git_options.get_real_git_with_options(),
+        )
 
     def test_run_path(self):
         """git_cache.git_options.GitOptions: Test run_path extraction."""

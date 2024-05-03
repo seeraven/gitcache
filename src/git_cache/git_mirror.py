@@ -559,25 +559,12 @@ class GitMirror:
 
         Return:
             Returns the full path to the mirror directory. If the
-            given URL is a local path (which is not mirrored) the
-            empty string is returned. If the given URL can not be
-            parsed, None is returned.
+            given URL is a local path (which is not mirrored) or
+            can not be parsed, None is returned.
         """
         sub_dir = None
         if match := RE_URL_WITH_FILE.match(url):
-            sub_dir = posixpath.normpath(match.group(1))
-            # On Windows you can user either posix paths or windows paths
-            if sub_dir.startswith(GITCACHE_DIR.replace("/", os.path.sep)):
-                return sub_dir
-            if sub_dir.startswith(GITCACHE_DIR):
-                return sub_dir
-            return ""
-
-        if os.path.exists(os.path.normpath(url)):
-            url = os.path.normpath(url)
-            if url.startswith(GITCACHE_DIR):
-                return url
-            return ""
+            return None
 
         if match := RE_URL_WITH_PROTO.match(url):
             sub_dir = match.group(3)
