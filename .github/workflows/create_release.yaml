@@ -139,11 +139,11 @@ jobs:
       - name: List releases folder
         run: ls -R releases
       - name: Create Release
-        uses: "marvinpinto/action-automatic-releases@latest"
+        uses: "ncipollo/release-action@v1"
         with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          token: "${{ secrets.GITHUB_TOKEN }}"
           prerelease: false
           draft: true
-          title: "gitcache ${{ github.ref }}"
-          files: |
-            releases/*
+          name: "gitcache ${{ github.ref }}"
+	  body: "# gitcache ${{ github.ref }}"
+          artifacts: "releases/*"
