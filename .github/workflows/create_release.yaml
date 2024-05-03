@@ -1,0 +1,149 @@
+#
+# Workflow to create a new release.
+#
+
+name: Create Release
+
+on:
+  push:
+    tags: 'v*'
+
+jobs:
+  build-ubuntu-2004:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lsb-release make binutils
+          sudo apt-get install -y python3-dev python3-venv
+          sudo apt-get install git git-lfs
+      - name: Build Release
+        run: |
+          make current-release
+      - name: Test Release
+        run: |
+          make test-current-release
+      - name: Create Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-ubuntu2004
+          retention-days: 1
+          overwrite: true
+          path: |
+            releases
+
+  build-ubuntu-2204:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lsb-release make binutils
+          sudo apt-get install -y python3-dev python3-venv
+          sudo apt-get install git git-lfs
+      - name: Build Release
+        run: |
+          make current-release
+      - name: Test Release
+        run: |
+          make test-current-release
+      - name: Create Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-ubuntu2204
+          retention-days: 1
+          overwrite: true
+          path: |
+            releases
+
+  build-windows-2022:
+    runs-on: windows-2022
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+      # Note: Keep python version in sync with pip-deps!
+      - name: Setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11.9'
+      - name: Install dependencies
+        uses: crazy-max/ghaction-chocolatey@v3
+        with:
+          args: install -y make
+      - name: Refresh Environment
+        shell: cmd
+        run: |
+          refreshenv
+      - name: Build Release
+        shell: cmd
+        run: |
+          C:\ProgramData\chocolatey\bin\make current-release
+      - name: Test Release
+        shell: cmd
+        run: |
+          C:\ProgramData\chocolatey\bin\make test-current-release
+      - name: Create Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-windows
+          retention-days: 1
+          overwrite: true
+          path: |
+            releases
+
+  build-macos:
+    runs-on: macos-14
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Install dependencies
+        run: |
+          brew install make git-lfs
+      - name: Build Release
+        run: |
+          make current-release
+      - name: Test Release
+        run: |
+          make test-current-release
+      - name: Create Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-macos
+          retention-days: 1
+          overwrite: true
+          path: |
+            releases
+
+  create_release:
+    runs-on: ubuntu-latest
+    needs: [build-ubuntu-2004, build-ubuntu-2204, build-windows-2022, build-macos]
+    steps:
+      - name: Get artifacts
+        uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+          path: releases
+      - name: List releases folder
+        run: ls -R releases
+      - name: Create Release
+        uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          prerelease: false
+          draft: true
+          title: "gitcache ${{ github.ref }}"
+          files: |
+            releases/*
