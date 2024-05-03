@@ -60,7 +60,7 @@ flake8==7.0.0
     #   pep8-naming
 flake8-black==0.3.6
     # via gitcache (pyproject.toml)
-flake8-bugbear==24.4.21
+flake8-bugbear==24.4.26
     # via gitcache (pyproject.toml)
 flake8-comprehensions==3.14.0
     # via gitcache (pyproject.toml)
@@ -150,7 +150,7 @@ pylint==3.1.0
     # via gitcache (pyproject.toml)
 pyreadline3==3.4.1
     # via humanfriendly
-pytest==8.1.1
+pytest==8.2.0
     # via
     #   gitcache (pyproject.toml)
     #   pytest-cov
