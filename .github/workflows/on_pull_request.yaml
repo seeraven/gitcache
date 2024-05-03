@@ -1,6 +1,7 @@
-name: GitHub Builds
+name: Unit and Functional Tests
 
-on: [push]
+on:
+  pull_request:
 
 # A list of available runners is available on
 # https://docs.github.com/de/actions/using-github-hosted-runners/about-github-hosted-runners/about-github-hosted-runners
@@ -22,6 +23,9 @@ jobs:
       - name: Check Style
         run: |
           make
+      - name: Tests
+        run: |
+          make tests
 
   ubuntu-2004:
     runs-on: ubuntu-20.04
@@ -39,6 +43,9 @@ jobs:
       - name: Check Style
         run: |
           make
+      - name: Tests
+        run: |
+          make tests
 
   windows-2022:
     runs-on: windows-2022
@@ -79,18 +86,9 @@ jobs:
       - name: Install dependencies
         run: |
           brew install make git-lfs
-      - name: Pip Deps Upgrade
-        run: |
-          make pip-deps-upgrade
       - name: Check Style
         run: |
           make
-      # - name: Tests
-      #   run: |
-      #     make tests
-      # - name: Build Release
-      #   run: |
-      #     make current-release
-      # - name: Test Release
-      #   run: |
-      #     make test-current-release
+      - name: Tests
+        run: |
+          make tests

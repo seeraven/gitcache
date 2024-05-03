@@ -1,0 +1,80 @@
+name: Check Style
+
+on: [push]
+
+# A list of available runners is available on
+# https://docs.github.com/de/actions/using-github-hosted-runners/about-github-hosted-runners/about-github-hosted-runners
+
+jobs:
+  ubuntu-2204:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lsb-release make binutils
+          sudo apt-get install -y python3-dev python3-venv
+          sudo apt-get install git git-lfs
+      - name: Check Style
+        run: |
+          make
+
+  ubuntu-2004:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lsb-release make binutils
+          sudo apt-get install -y python3-dev python3-venv
+          sudo apt-get install git git-lfs
+      - name: Check Style
+        run: |
+          make
+
+  windows-2022:
+    runs-on: windows-2022
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+      # Note: Keep python version in sync with pip-deps!
+      - name: Setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11.9'
+      - name: Install dependencies
+        uses: crazy-max/ghaction-chocolatey@v3
+        with:
+          args: install -y make
+      - name: Refresh Environment
+        shell: cmd
+        run: |
+          refreshenv
+      - name: Check Style
+        shell: cmd
+        run: |
+          C:\ProgramData\chocolatey\bin\make
+
+  macos-14:
+    runs-on: macos-14
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+      - name: Install dependencies
+        run: |
+          brew install make git-lfs
+      - name: Check Style
+        run: |
+          make
