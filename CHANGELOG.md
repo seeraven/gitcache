@@ -2,9 +2,14 @@
 
 ## Upcoming Version
 
+## v1.0.15
+
 - Workaround: Git for Windows has a bug preventing asking for a password when stderr is redirected
   (see https://github.com/git-for-windows/git/issues/1613). As a workaround, we disable stderr
   capture (and analysis) if we find the pattern "Permission denied (publickey)." in stderr.
+- Bugfix: Prevent creating mirrors from existing gitcache mirror directories.
+- Bugfix: Fixed unit tests.
+- Feature: Fixes to support MacOS.
 
 ## v1.0.14
 
