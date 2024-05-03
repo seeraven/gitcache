@@ -276,6 +276,34 @@ git repositories with other users, as you do not know if another user would have
 the permission to access the remote repository.
 
 
+Notes on Releases
+-----------------
+
+Releases are now automatically built if a new tag `v<major>.<minor>.<revision>`
+is pushed to the repository. This changes the release process a little bit:
+
+  - Ensure the upcoming release is fully tested. A look on the commits on github
+    should be enough.
+  - Modify the `CHANGELOG.md` file and insert the new version number.
+  - Commit the modified `CHANGELOG.md` file and tag the commit with the new
+    version number.
+  - As soon as the new tag is pushed to github, the release is built. When it
+    is finished, it is found as a draft on the releases page.
+  - As github does not (yet) support Ubuntu 24.04, that release must be built
+    manually by calling:
+
+        make releases/gitcache_v1.0.15_Ubuntu24.04_x86_64.venv.ubuntu24.04
+
+  - Now edit the release draft, insert the changes from the `CHANGELOG.md` file
+    and upload the Ubuntu 24.04 binary. Then the release can be saved as a
+    regular release.
+  - Now prepare the next version. Edit the files `Makefile`, `pyproject.toml`,
+    `src/git_cache/git_cache_command.py` and `doc/source/installation.rst` and
+    replace the version number:
+
+        sed -i 's/1.0.15/1.0.16/g' Makefile pyproject.toml src/git_cache/git_cache_command.py doc/source/installation.rst
+
+
 [git]: https://git-scm.com/
 [git-lfs]: https://git-lfs.github.com/
 [pyInstaller]: https://www.pyinstaller.org/
