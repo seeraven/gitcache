@@ -125,7 +125,7 @@ jobs:
           retention-days: 1
           overwrite: true
           path: |
-            releases
+            releases/*.tgz
 
   create_release:
     runs-on: ubuntu-latest

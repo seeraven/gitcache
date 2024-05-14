@@ -22,6 +22,10 @@ UBUNTU_DIST_VERSIONS := 20.04 22.04 24.04
 MAKE4PY_DOCKER_IMAGE := make4py-gitcache
 MAKE4PY_DOCKER_PKGS  := git git-lfs
 
+PYINSTALLER_ARGS_LINUX   := --clean --onefile
+PYINSTALLER_ARGS_DARWIN  := --clean --onedir
+PYINSTALLER_ARGS_WINDOWS := --clean --onefile
+
 
 # ----------------------------------------------------------------------------
 #  MAKE4PY INTEGRATION
