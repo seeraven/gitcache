@@ -42,7 +42,7 @@ jobs:
         with:
           commit-message: "${{ inputs.commit_message }}"
           committer: "${{ inputs.committer }}"
-          branch: "feature/update-macos-pip-deps"
-          title: "Update MacOS Pip-Dependencies"
+          branch: "feature/update-macos-pip-deps-${{ matrix.os }}"
+          title: "Update MacOS Pip-Dependencies (${{ matrix.os }})"
           assignees: "seeraven"
           reviewers: "seeraven"
