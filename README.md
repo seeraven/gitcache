@@ -82,8 +82,8 @@ gitcache is distributed as a single executable packaged using [pyInstaller].
 So all you have to do is to download the latest executable and copy it to a
 location of your choice, for example `~/bin`:
 
-    wget https://github.com/seeraven/gitcache/releases/download/v1.0.12/gitcache_v1.0.12_Ubuntu22.04_amd64
-    mv gitcache_v1.0.12_Ubuntu22.04_amd64 ~/bin/gitcache
+    wget https://github.com/seeraven/gitcache/releases/download/v1.0.16/gitcache_v1.0.16_Ubuntu22.04_amd64
+    mv gitcache_v1.0.16_Ubuntu22.04_amd64 ~/bin/gitcache
     chmod +x ~/bin/gitcache
 
 gitcache can be used as a stand-alone command, but it is much easier to use
@@ -112,6 +112,24 @@ executing:
 
 Please note that the directory you are putting the symlink into should be
 stated before the real git command directory in your PATH variable!
+
+
+Installation on MacOS
+---------------------
+
+A single [pyInstaller] executable has a huge startup delay on MacOS, therefore
+gitcache is distributed as a tar-ball (`*.tgz` file). Download the archive and
+extract it at your desired target location (the archive contains a subfolder):
+
+    cd /my/target/destination
+    tar xfz gitcache_v1.0.16_Darwin_arm64.tgz
+    ls gitcache_v1.0.16_Darwin_arm64
+
+To use the `gitcache` command, the final installation directory should be put
+into your `PATH` variable. To use it as a wrapper to the `git` command, you
+have to create the symlink and adjust the `PATH` variable so that the wrapper
+is found bfore the real `git` command as described on the installation on Linux
+section.
 
 
 Configuration
@@ -292,7 +310,7 @@ is pushed to the repository. This changes the release process a little bit:
   - As github does not (yet) support Ubuntu 24.04, that release must be built
     manually by calling:
 
-        make releases/gitcache_v1.0.15_Ubuntu24.04_x86_64.venv.ubuntu24.04
+        make releases/gitcache_v1.0.16_Ubuntu24.04_x86_64.venv.ubuntu24.04
 
   - Now edit the release draft, insert the changes from the `CHANGELOG.md` file
     and upload the Ubuntu 24.04 binary. Then the release can be saved as a
@@ -301,7 +319,7 @@ is pushed to the repository. This changes the release process a little bit:
     `src/git_cache/git_cache_command.py` and `doc/source/installation.rst` and
     replace the version number:
 
-        sed -i 's/1.0.15/1.0.16/g' Makefile pyproject.toml src/git_cache/git_cache_command.py doc/source/installation.rst
+        sed -i 's/1.0.16/1.0.17/g' Makefile pyproject.toml src/git_cache/git_cache_command.py doc/source/installation.rst
 
 
 [git]: https://git-scm.com/

@@ -2,6 +2,11 @@
 
 ## Upcoming Version
 
+## v1.0.16
+
+- Feature: Release on MacOS is not a single executable any more but a directory. This is
+  necessary as MacOS has a huge startup delay (about 5s per gitcache call!).
+
 ## v1.0.15
 
 - Workaround: Git for Windows has a bug preventing asking for a password when stderr is redirected
