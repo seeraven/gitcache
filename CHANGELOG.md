@@ -2,6 +2,10 @@
 
 ## Upcoming Version
 
+## v1.0.17
+
+- Feature: Added release for MacOS x86_64 (thanks to Ihor Dutchak)
+
 ## v1.0.16
 
 - Feature: Release on MacOS is not a single executable any more but a directory. This is

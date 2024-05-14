@@ -2,7 +2,7 @@ alabaster==0.7.13
     # via sphinx
 altgraph==0.17.4
     # via pyinstaller
-astroid==3.1.0
+astroid==3.2.0
     # via pylint
 asttokens==2.4.1
     # via stack-data
@@ -153,7 +153,7 @@ pyinstaller==6.6.0
     # via gitcache (pyproject.toml)
 pyinstaller-hooks-contrib==2024.6
     # via pyinstaller
-pylint==3.1.1
+pylint==3.2.0
     # via gitcache (pyproject.toml)
 pytest==8.2.0
     # via
