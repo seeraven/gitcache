@@ -65,8 +65,11 @@ jobs:
         run: |
           C:\ProgramData\chocolatey\bin\make
 
-  macos-14:
-    runs-on: macos-14
+  macos:
+    strategy:
+      matrix:
+        os: [macos-13, macos-14]
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4

@@ -20,8 +20,12 @@ on:
         type: string
 
 jobs:
-  macos-14:
-    runs-on: macos-14
+  macos:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-13, macos-14]
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
@@ -38,7 +42,7 @@ jobs:
         with:
           commit-message: "${{ inputs.commit_message }}"
           committer: "${{ inputs.committer }}"
-          branch: "feature/update-macos-pip-deps"
-          title: "Update MacOS Pip-Dependencies"
+          branch: "feature/update-macos-pip-deps-${{ matrix.os }}"
+          title: "Update MacOS Pip-Dependencies (${{ matrix.os }})"
           assignees: "seeraven"
           reviewers: "seeraven"
