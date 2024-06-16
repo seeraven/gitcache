@@ -2,6 +2,8 @@
 
 ## Upcoming Version
 
+## v1.0.18
+
 - Feature: Use own implementation of rmtree that handles PermisionError whenever a directory is to be deleted.
 
 ## v1.0.17
