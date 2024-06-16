@@ -20,7 +20,6 @@ import logging
 import os
 import posixpath
 import re
-import shutil
 from typing import Optional
 
 import portalocker
@@ -29,6 +28,7 @@ from .command_execution import getstatusoutput, pretty_call_command_retry, simpl
 from .config import Config, has_git_lfs_cmd
 from .database import Database
 from .global_settings import GITCACHE_DIR
+from .helpers import rmtree
 
 # -----------------------------------------------------------------------------
 # Logger
@@ -166,7 +166,7 @@ class GitMirror:
         try:
             with Locker(f"Mirror {self.path}", self.lockfile, self.config):
                 if not mirror_exists:
-                    self._rmtree(self.path, ignore_errors=True)
+                    rmtree(self.path, ignore_errors=True)
                     return self._clone(ref)
 
                 if force or self._update_time_reached():
@@ -215,52 +215,6 @@ class GitMirror:
             return self.delete()
         return False
 
-    @classmethod
-    def _rmtree(cls, name, ignore_errors=False):
-        """Delete a directory tree.
-
-        Method borrowed from https://github.com/python/cpython/blob/main/Lib/tempfile.py.
-
-        Args:
-            cls (class):          The class.
-            name (str):           The path to delete.
-            ignore_errors (bool): If set to True, ignore errors, otherwise raise them.
-        """
-
-        # pylint: disable=unused-argument
-        def onerror(func, path, exc_info):
-            if issubclass(exc_info[0], PermissionError):
-
-                def resetperms(path):
-                    try:
-                        os.chflags(path, 0)
-                    except AttributeError:
-                        pass
-                    os.chmod(path, 0o700)
-
-                try:
-                    if path != name:
-                        resetperms(os.path.dirname(path))
-                    resetperms(path)
-
-                    try:
-                        os.unlink(path)
-                    # PermissionError is raised on FreeBSD for directories
-                    except (IsADirectoryError, PermissionError):
-                        cls._rmtree(path, ignore_errors=ignore_errors)
-                except FileNotFoundError:
-                    pass
-            elif issubclass(exc_info[0], FileNotFoundError):
-                pass
-            else:
-                if not ignore_errors:
-                    # pylint: disable=misplaced-bare-raise
-                    raise
-
-        # On newer python versions the onerror argument is deprecated:
-        # pylint: disable=deprecated-argument
-        shutil.rmtree(name, onerror=onerror)
-
     def delete(self):
         """Delete the mirror.
 
@@ -271,11 +225,11 @@ class GitMirror:
             with Locker(f"Mirror {self.path}", self.lockfile, self.config):
                 LOG.debug("Deleting mirror %s", self.path)
                 self.database.remove(self.path)
-                self._rmtree(self.path, ignore_errors=True)
+                rmtree(self.path, ignore_errors=True)
 
             # Delete again outside lock to ensure lock file and directory are removed
             if os.path.exists(self.path):
-                self._rmtree(self.path, ignore_errors=False)
+                rmtree(self.path, ignore_errors=False)
         except portalocker.exceptions.LockException:
             LOG.error("Delete timed out due to locked mirror.")
             return False

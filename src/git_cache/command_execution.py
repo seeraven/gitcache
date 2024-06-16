@@ -18,9 +18,10 @@ Copyright:
 # -----------------------------------------------------------------------------
 import logging
 import platform
-import shutil
 import subprocess
 import time
+
+from .helpers import rmtree
 
 if platform.system().lower().startswith("win"):
     # pylint: disable=import-error
@@ -28,7 +29,6 @@ if platform.system().lower().startswith("win"):
 else:
     # pylint: disable=import-error
     from .command_execution_unix import call_command
-
 
 # -----------------------------------------------------------------------------
 # Logger
@@ -115,8 +115,7 @@ def call_command_retry(
                     break
 
         if remove_dir:
-            LOG.debug("Delete directory %s.", remove_dir)
-            shutil.rmtree(remove_dir, ignore_errors=True)
+            rmtree(remove_dir, ignore_errors=True)
 
         if abort_on_pattern:
             if (abort_on_pattern in stdout_buffer) or (abort_on_pattern in stderr_buffer):
