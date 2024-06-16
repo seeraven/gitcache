@@ -2,6 +2,8 @@
 
 ## Upcoming Version
 
+- Feature: Use own implementation of rmtree that handles PermisionError whenever a directory is to be deleted.
+
 ## v1.0.17
 
 - Feature: Added release for MacOS x86_64 (thanks to Ihor Dutchak)
