@@ -4,7 +4,7 @@ altgraph==0.17.4
     # via
     #   macholib
     #   pyinstaller
-astroid==3.2.0
+astroid==3.2.2
     # via pylint
 asttokens==2.4.1
     # via stack-data
@@ -16,7 +16,7 @@ black==24.4.2
     # via
     #   flake8-black
     #   gitcache (pyproject.toml)
-certifi==2024.2.2
+certifi==2024.6.2
     # via requests
 charset-normalizer==3.3.2
     # via requests
@@ -24,7 +24,7 @@ click==8.1.7
     # via black
 coloredlogs==15.0.1
     # via gitcache (pyproject.toml)
-coverage[toml]==7.5.1
+coverage[toml]==7.5.3
     # via
     #   gitcache (pyproject.toml)
     #   pytest-cov
@@ -38,13 +38,13 @@ docutils==0.20.1
     #   sphinx-rtd-theme
 dom-toml==2.0.0
     # via sphinx-pyproject
-domdf-python-tools==3.8.0.post2
+domdf-python-tools==3.8.1
     # via
     #   dom-toml
     #   sphinx-pyproject
 executing==2.0.1
     # via stack-data
-flake8==7.0.0
+flake8==7.1.0
     # via
     #   flake8-black
     #   flake8-bugbear
@@ -71,7 +71,7 @@ imagesize==1.4.1
     # via sphinx
 iniconfig==2.0.0
     # via pytest
-ipython==8.24.0
+ipython==8.25.0
     # via gitcache (pyproject.toml)
 isort==5.13.2
     # via
@@ -102,7 +102,7 @@ mypy-extensions==1.0.0
     #   mypy
 natsort==8.4.0
     # via domdf-python-tools
-packaging==24.0
+packaging==24.1
     # via
     #   black
     #   pyinstaller
@@ -113,11 +113,11 @@ parso==0.8.4
     # via jedi
 pathspec==0.12.1
     # via black
-pep8-naming==0.13.3
+pep8-naming==0.14.1
     # via gitcache (pyproject.toml)
 pexpect==4.9.0
     # via ipython
-platformdirs==4.2.1
+platformdirs==4.2.2
     # via
     #   black
     #   pylint
@@ -125,13 +125,13 @@ pluggy==1.5.0
     # via pytest
 portalocker==2.8.2
     # via gitcache (pyproject.toml)
-prompt-toolkit==3.0.43
+prompt-toolkit==3.0.47
     # via ipython
 ptyprocess==0.7.0
     # via pexpect
 pure-eval==0.2.2
     # via stack-data
-pycodestyle==2.11.1
+pycodestyle==2.12.0
     # via
     #   flake8
     #   gitcache (pyproject.toml)
@@ -141,13 +141,13 @@ pygments==2.18.0
     # via
     #   ipython
     #   sphinx
-pyinstaller==6.6.0
+pyinstaller==6.8.0
     # via gitcache (pyproject.toml)
-pyinstaller-hooks-contrib==2024.6
+pyinstaller-hooks-contrib==2024.7
     # via pyinstaller
-pylint==3.2.0
+pylint==3.2.3
     # via gitcache (pyproject.toml)
-pytest==8.2.0
+pytest==8.2.2
     # via
     #   gitcache (pyproject.toml)
     #   pytest-cov
@@ -158,7 +158,7 @@ pytest-timeout==2.3.1
     # via gitcache (pyproject.toml)
 pytimeparse==1.1.8
     # via gitcache (pyproject.toml)
-requests==2.31.0
+requests==2.32.3
     # via sphinx
 six==1.16.0
     # via asttokens
@@ -199,7 +199,7 @@ traitlets==5.14.3
     #   matplotlib-inline
 types-mock==5.1.0.20240425
     # via gitcache (pyproject.toml)
-typing-extensions==4.11.0
+typing-extensions==4.12.2
     # via
     #   domdf-python-tools
     #   mypy
