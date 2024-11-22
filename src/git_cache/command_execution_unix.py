@@ -34,7 +34,7 @@ LOG = logging.getLogger(__name__)
 # -----------------------------------------------------------------------------
 # Exported Functions
 # -----------------------------------------------------------------------------
-# pylint: disable=too-many-locals,too-many-statements,too-many-arguments,too-many-branches
+# pylint: disable=too-many-locals,too-many-statements,too-many-arguments,too-many-positional-arguments,too-many-branches
 def call_command(command, cwd=None, shell=False, command_timeout=None, output_timeout=None, stderr_capture=True):
     """Call the given command with optional timeouts.
 

@@ -73,6 +73,7 @@ extend-ignore = ['E203']
 
 [tool.pylint.main]
 py-version = "3.10"
+disable = ["unknown-option-value"]
 
 [tool.pylint.format]
 max-line-length = 120

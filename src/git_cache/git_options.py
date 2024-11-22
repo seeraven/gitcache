@@ -33,7 +33,7 @@ LOG = logging.getLogger(__name__)
 class Option:
     """Definition of a git command option."""
 
-    # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-arguments,too-many-positional-arguments
     def __init__(
         self,
         group: str = "ignored",

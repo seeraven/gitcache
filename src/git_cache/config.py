@@ -109,7 +109,7 @@ class ConfigItem:
 
     camel_to_snake = re.compile(r"(?<!^)(?=[A-Z])")
 
-    # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-arguments,too-many-positional-arguments
     def __init__(self, section, option, default, converter=str_to_seconds, env="auto"):
         """Construct a configuration item.
 

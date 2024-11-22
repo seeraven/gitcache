@@ -46,7 +46,7 @@ STDERR_DISABLE_PATTERNS = ["Permission denied (publickey).".encode()]
 # -----------------------------------------------------------------------------
 # Exported Functions
 # -----------------------------------------------------------------------------
-# pylint: disable=too-many-arguments
+# pylint: disable=too-many-arguments,too-many-positional-arguments
 def call_command_retry(
     command,
     num_retries,
