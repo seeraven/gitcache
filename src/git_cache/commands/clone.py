@@ -20,6 +20,7 @@ import logging
 
 from ..command_execution import simple_call_command
 from ..git_mirror import GitMirror
+from ..git_options import GitOptions
 from .helpers import use_mirror_for_remote_url
 
 # -----------------------------------------------------------------------------
@@ -31,7 +32,7 @@ LOG = logging.getLogger(__name__)
 # -----------------------------------------------------------------------------
 # Function Definitions
 # -----------------------------------------------------------------------------
-def git_clone(git_options):
+def git_clone(git_options: GitOptions) -> int:
     """Handle a git clone command.
 
     Args:

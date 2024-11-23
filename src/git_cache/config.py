@@ -21,6 +21,7 @@ import logging
 import os
 import platform
 import re
+from typing import Any, Callable, Dict, List
 
 import pytimeparse
 
@@ -34,23 +35,29 @@ LOG = logging.getLogger(__name__)
 
 
 # -----------------------------------------------------------------------------
+# Type Definitions
+# -----------------------------------------------------------------------------
+ConverterType = Callable[[str], Any]
+
+
+# -----------------------------------------------------------------------------
 # Functions
 # -----------------------------------------------------------------------------
-def str_to_regex(string):
+def str_to_regex(string: str) -> str:
     """Convert a string to a regex pattern with special treatment of an empty string."""
     if string:
         return string
     return "a^"  # This pattern should never match
 
 
-def str_to_bool(string):
+def str_to_bool(string: str) -> bool:
     """Convert a string to a boolean value."""
     if string.upper() in ["1", "ON", "TRUE", "YES"]:
         return True
     return False
 
 
-def str_to_seconds(string):
+def str_to_seconds(string: str) -> int:
     """Convert a string to a seconds value."""
     seconds = pytimeparse.parse(string)
     if seconds is None:
@@ -61,7 +68,7 @@ def str_to_seconds(string):
     return seconds
 
 
-def has_git_lfs_cmd():
+def has_git_lfs_cmd() -> bool:
     """Check whether this host has the git-lfs command available.
 
     Return:
@@ -69,11 +76,11 @@ def has_git_lfs_cmd():
     """
     if not hasattr(has_git_lfs_cmd, "has_git_lfs"):
         retval, _ = getstatusoutput(["git-lfs", "version"])
-        has_git_lfs_cmd.has_git_lfs = retval == 0
-    return has_git_lfs_cmd.has_git_lfs
+        has_git_lfs_cmd.has_git_lfs = retval == 0  # type: ignore
+    return has_git_lfs_cmd.has_git_lfs  # type: ignore
 
 
-def find_git():
+def find_git() -> str:
     """Locate the real git command.
 
     Return:
@@ -81,13 +88,14 @@ def find_git():
         found, return the platform dependend default value and log a warning.
     """
     path = os.getenv("PATH")
-    on_windows = platform.system().lower().startswith("win")
-    cmd = "git.exe" if on_windows else "git"
-    for candidate in path.split(os.path.pathsep):
-        candidate = os.path.join(candidate, cmd)
-        if os.path.exists(candidate) and os.access(candidate, os.X_OK):
-            if not os.path.islink(candidate):
-                return candidate
+    if path is not None:
+        on_windows = platform.system().lower().startswith("win")
+        cmd = "git.exe" if on_windows else "git"
+        for candidate in path.split(os.path.pathsep):
+            candidate = os.path.join(candidate, cmd)
+            if os.path.exists(candidate) and os.access(candidate, os.X_OK):
+                if not os.path.islink(candidate):
+                    return candidate
 
     LOG.warning("Can't find git command! Please specify manually in the config file!")
     return "/usr/bin/git"
@@ -110,7 +118,9 @@ class ConfigItem:
     camel_to_snake = re.compile(r"(?<!^)(?=[A-Z])")
 
     # pylint: disable=too-many-arguments,too-many-positional-arguments
-    def __init__(self, section, option, default, converter=str_to_seconds, env="auto"):
+    def __init__(
+        self, section: str, option: str, default: Any, converter: ConverterType = str_to_seconds, env: str = "auto"
+    ) -> None:
         """Construct a configuration item.
 
         Args:
@@ -133,7 +143,7 @@ class ConfigItem:
             self.env = f"GITCACHE_{self.section.upper()}_{self._get_snake_upper(self.option)}"
 
     @staticmethod
-    def _get_snake_upper(camel):
+    def _get_snake_upper(camel: str) -> str:
         """Convert the given CamelCase string into a SNAKE_CASE string.
 
         Args:
@@ -144,7 +154,7 @@ class ConfigItem:
         """
         return ConfigItem.camel_to_snake.sub("_", camel).upper()
 
-    def add_to_configparser(self, config):
+    def add_to_configparser(self, config: configparser.ConfigParser) -> None:
         """Add the configuration item to the configparser.ConfigParser object.
 
         Args:
@@ -155,7 +165,7 @@ class ConfigItem:
 
         config.set(self.section, self.option, str(self.default))
 
-    def add_to_env_keys(self, env_keys):
+    def add_to_env_keys(self, env_keys: Dict[str, Dict[str, str]]) -> None:
         """Add the configuration item to the env_keys map.
 
         Args:
@@ -168,7 +178,7 @@ class ConfigItem:
                 env_keys[env_section] = {}
             env_keys[env_section][env_option] = self.env
 
-    def add_to_converters(self, converters):
+    def add_to_converters(self, converters: Dict[str, Dict[str, ConverterType]]) -> None:
         """Add the configuration item to the converters map.
 
         Args:
@@ -184,13 +194,13 @@ class ConfigItem:
 class Config:
     """The configuration of gitcache."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize the configuration.
 
         Initialize the configuration by setting the default values and
         loading the global configuration file.
         """
-        self.items = []
+        self.items: List[ConfigItem] = []
         self.items.append(ConfigItem("System", "RealGit", find_git(), converter=str, env="GITCACHE_REAL_GIT"))
 
         self.items.append(ConfigItem("MirrorHandling", "UpdateInterval", "0 seconds", env="GITCACHE_UPDATE_INTERVAL"))
@@ -221,8 +231,8 @@ class Config:
         self.items.append(ConfigItem("LFS", "PerMirrorStorage", True, converter=str_to_bool))
 
         self.config = configparser.ConfigParser()
-        self.env_keys = {}
-        self.converters = {}
+        self.env_keys: Dict[str, Dict[str, str]] = {}
+        self.converters: Dict[str, Dict[str, ConverterType]] = {}
         for item in self.items:
             item.add_to_configparser(self.config)
             item.add_to_env_keys(self.env_keys)
@@ -231,7 +241,7 @@ class Config:
         if not self.load(os.path.join(GITCACHE_DIR, "config")):
             self.save(os.path.join(GITCACHE_DIR, "config"))
 
-    def get(self, section, option):
+    def get(self, section: str, option: str) -> Any:
         """Get a configuration value.
 
         Args:
@@ -254,7 +264,7 @@ class Config:
 
         return value
 
-    def load(self, filename):
+    def load(self, filename: str) -> bool:
         """Load the configuration file.
 
         Args:
@@ -271,7 +281,7 @@ class Config:
         LOG.debug("Can't load configuration file %s as it does not exist!", filename)
         return False
 
-    def save(self, filename):
+    def save(self, filename: str) -> None:
         """Save the configuration file.
 
         Args:
@@ -283,7 +293,7 @@ class Config:
         with open(filename, "w", encoding="utf-8") as file_handle:
             self.config.write(file_handle)
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Get a string representation of the current configuration.
 
         Return:

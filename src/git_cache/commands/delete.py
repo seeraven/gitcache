@@ -17,6 +17,7 @@ Copyright:
 # Module Import
 # -----------------------------------------------------------------------------
 import logging
+from typing import List
 
 from ..database import Database
 from ..git_mirror import GitMirror
@@ -30,7 +31,7 @@ LOG = logging.getLogger(__name__)
 # -----------------------------------------------------------------------------
 # Function Definitions
 # -----------------------------------------------------------------------------
-def git_delete_mirror(mirror_list):
+def git_delete_mirror(mirror_list: List[str]) -> int:
     """Handle a git delete-mirror command.
 
     Args:

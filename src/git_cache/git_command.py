@@ -18,6 +18,7 @@ Copyright:
 # -----------------------------------------------------------------------------
 import logging
 import sys
+from typing import List
 
 from .command_execution import simple_call_command
 from .commands.checkout import git_checkout
@@ -44,7 +45,7 @@ LOG = logging.getLogger(__name__)
 # -----------------------------------------------------------------------------
 # Function Definitions
 # -----------------------------------------------------------------------------
-def call_real_git(args):
+def call_real_git(args: List[str]) -> int:
     """Call the real git command with the given arguments.
 
     Args:
@@ -58,7 +59,7 @@ def call_real_git(args):
 
 
 # pylint: disable=too-many-branches
-def handle_git_command(called_as, args):
+def handle_git_command(called_as: List[str], args: List[str]) -> None:
     """Handle a git command.
 
     Args:

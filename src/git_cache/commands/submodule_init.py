@@ -19,6 +19,7 @@ Copyright:
 import logging
 
 from ..command_execution import getstatusoutput, simple_call_command
+from ..git_options import GitOptions
 from .helpers import get_mirror_url, get_pull_url
 
 # -----------------------------------------------------------------------------
@@ -30,7 +31,7 @@ LOG = logging.getLogger(__name__)
 # -----------------------------------------------------------------------------
 # Function Definitions
 # -----------------------------------------------------------------------------
-def git_submodule_init(git_options):
+def git_submodule_init(git_options: GitOptions) -> int:
     """Handle a git submodule init command.
 
     The 'submodule init' command initializes the git configuration for the

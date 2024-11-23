@@ -277,11 +277,11 @@ class GitOptions:
         """
         self.all_args = args  # All arguments
         self.global_options: List[str] = []  # All global options
-        self.global_group_values: Dict[str, List[Optional[str]]] = {}  # Map of group to list of (option) values
+        self.global_group_values: Dict[str, List[Optional[str]]] = {}  # Map of group to list of (optional) values
         self.command: Optional[str] = None  # The command
         self.command_options: List[str] = []  # The command options
         self.command_args: List[str] = []  # The command arguments
-        self.command_group_values: Dict[str, List[Optional[str]]] = {}  # Map of group to list of (option) values
+        self.command_group_values: Dict[str, List[Optional[str]]] = {}  # Map of group to list of (optional) values
         self._parse(args)
 
     def has_bail_out(self) -> bool:
@@ -333,10 +333,10 @@ class GitOptions:
         """
         paths = self.get_global_group_values("run_path")
         if paths:
-            return os.path.abspath(os.path.join(*paths))
+            return os.path.abspath(os.path.join(*[path for path in paths if path is not None]))
         return os.path.abspath(os.path.curdir)
 
-    def get_global_group_values(self, group):
+    def get_global_group_values(self, group: str) -> List[Optional[str]]:
         """Get a list of values in the global options of the specified group.
 
         Args:
