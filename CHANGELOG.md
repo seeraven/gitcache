@@ -2,6 +2,13 @@
 
 ## Upcoming Version
 
+## v1.0.19
+
+- Updated pip dependencies
+- Added support to build Alpine binaries
+- Added support to build Ubuntu 24.04 image
+- Use macos-15 instead of macos-14 github runner.
+
 ## v1.0.18
 
 - Feature: Use own implementation of rmtree that handles PermisionError whenever a directory is to be deleted.
