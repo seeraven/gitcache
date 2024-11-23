@@ -60,6 +60,7 @@ def git_submodule_update(called_as: List[str], git_options: GitOptions) -> int:
     # behaviour as found in https://github.com/git/git/blob/master/git-submodule.sh.
     has_init = "init" in git_options.command_group_values
     has_recursive = "recursive" in git_options.command_group_values
+    has_remote = "remote" in git_options.command_group_values
     if has_init:
         command = called_as + git_options.global_options
         command += ["submodule", "init"] + update_paths
@@ -124,12 +125,17 @@ def git_submodule_update(called_as: List[str], git_options: GitOptions) -> int:
                 # Before entering the recursive update we must ensure the checked out
                 # repository is on the desired commit.
                 command = git_options.get_real_git_with_options()
-                command += ["submodule", "update", "--", tgt_path]
+                command += ["submodule", "update"]
+                if has_remote:
+                    command += ["--remote"]
+                command += ["--", tgt_path]
                 simple_call_command(command, cwd=cwd)
 
                 command = called_as + ["submodule", "update", "--recursive"]
                 if has_init:
                     command.append("--init")
+                if has_remote:
+                    command.append("--remote")
                 simple_call_command(command, cwd=abs_tgt_path)
 
     return simple_call_command(git_options.get_real_git_all_args())

@@ -17,6 +17,8 @@ Copyright:
 # Module Import
 # -----------------------------------------------------------------------------
 import logging
+import os
+from typing import List
 
 from ..command_execution import simple_call_command
 from ..git_mirror import GitMirror
@@ -32,10 +34,11 @@ LOG = logging.getLogger(__name__)
 # -----------------------------------------------------------------------------
 # Function Definitions
 # -----------------------------------------------------------------------------
-def git_clone(git_options: GitOptions) -> int:
+def git_clone(called_as: List[str], git_options: GitOptions) -> int:
     """Handle a git clone command.
 
     Args:
+        called_as (list):      The arguments used for the command call.
         git_options (obj):     The GitOptions object.
 
     Return:
@@ -51,7 +54,24 @@ def git_clone(git_options: GitOptions) -> int:
     if mirror_path:
         if use_mirror_for_remote_url(remote_url):
             mirror = GitMirror(url=remote_url)
-            return mirror.clone_from_mirror(git_options)
+            retval = mirror.clone_from_mirror(git_options)
+            if retval == 0:
+                if ("--recurse-submodules" in git_options.command_options) or (
+                    "--recursive" in git_options.command_options
+                ):
+                    LOG.debug("Initializing submodules by calling 'git submodule update --init --recursive'.")
+                    if len(git_options.command_args) > 1:
+                        target_dir = git_options.command_args[1]
+                    else:
+                        target_dir = os.path.basename(mirror.url).replace(".git", "")
+                    command = called_as + git_options.global_options
+                    command += ["-C", target_dir]
+                    command += ["submodule", "update", "--init", "--recursive"]
+                    if "--remote-submodules" in git_options.command_options:
+                        command += ["--remote"]
+                    retval = simple_call_command(command)
+
+            return retval
 
         LOG.debug("Remote URL does not match the UrlPatterns. Using original git command.")
     else:

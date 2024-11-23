@@ -150,6 +150,64 @@ def test_clone_with_port(gitcache_ifc: GitcacheIfc):
     assert "github.com_443" in gitcache_ifc.db_field("mirror-dir", repo)
 
 
+def test_clone_recursive(gitcache_ifc: GitcacheIfc):
+    """Test clone with option --recursive to checkout submodules."""
+    repo = "https://github.com/seeraven/submodule-example"
+    repo_sub1 = "https://github.com/seeraven/dmdcache"
+    repo_sub2 = "https://github.com/seeraven/gitcache"
+    checkout = os.path.join(gitcache_ifc.workspace.workspace_path, "submodules")
+    gitcache_ifc.run_ok(["git", "clone", "--recursive", repo, checkout])
+    assert 0 == gitcache_ifc.db_field("mirror-updates", repo)
+    assert 1 == gitcache_ifc.db_field("clones", repo)
+    assert 0 == gitcache_ifc.db_field("updates", repo)
+
+    assert 1 == gitcache_ifc.db_field("clones", repo_sub1)
+    assert 1 == gitcache_ifc.db_field("clones", repo_sub2)
+
+
+def test_clone_recurse_submodules(gitcache_ifc: GitcacheIfc):
+    """Test clone with option --recurse-submodules to checkout submodules."""
+    repo = "https://github.com/seeraven/submodule-example"
+    repo_sub1 = "https://github.com/seeraven/dmdcache"
+    repo_sub2 = "https://github.com/seeraven/gitcache"
+    checkout = os.path.join(gitcache_ifc.workspace.workspace_path, "submodules")
+    gitcache_ifc.run_ok(["git", "clone", "--recurse-submodules", repo, checkout])
+    assert 0 == gitcache_ifc.db_field("mirror-updates", repo)
+    assert 1 == gitcache_ifc.db_field("clones", repo)
+    assert 0 == gitcache_ifc.db_field("updates", repo)
+
+    assert 1 == gitcache_ifc.db_field("clones", repo_sub1)
+    assert 1 == gitcache_ifc.db_field("clones", repo_sub2)
+    assert "master" != gitcache_ifc.get_branch(os.path.join(checkout, "gitcache"))
+
+
+def test_clone_recurse_submodules_remote_submodules(gitcache_ifc: GitcacheIfc):
+    """Test clone with option --recurse-submodules --remote-submodules to checkout submodules."""
+    repo = "https://github.com/seeraven/submodule-example"
+    repo_sub1 = "https://github.com/seeraven/dmdcache"
+    repo_sub2 = "https://github.com/seeraven/gitcache"
+    checkout = os.path.join(gitcache_ifc.workspace.workspace_path, "submodules")
+    gitcache_ifc.run_ok(
+        [
+            "git",
+            "-c",
+            "protocol.file.allow=always",
+            "clone",
+            "--recurse-submodules",
+            "--remote-submodules",
+            repo,
+            checkout,
+        ]
+    )
+    assert 0 == gitcache_ifc.db_field("mirror-updates", repo)
+    assert 1 == gitcache_ifc.db_field("clones", repo)
+    assert 0 == gitcache_ifc.db_field("updates", repo)
+
+    assert 1 == gitcache_ifc.db_field("clones", repo_sub1)
+    assert 1 == gitcache_ifc.db_field("clones", repo_sub2)
+    assert "master" == gitcache_ifc.get_branch(os.path.join(checkout, "gitcache"))
+
+
 @pytest.mark.skipif(platform.node() != "Workhorse", reason="Requires known ssh environment")
 @pytest.mark.parametrize(
     "remote_url",

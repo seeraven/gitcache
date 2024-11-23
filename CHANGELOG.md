@@ -2,6 +2,8 @@
 
 ## Upcoming Version
 
+- Support flags `--recursive`, `--recurse-submodules` and `--remote-submodules` of `git clone`.
+
 ## v1.0.19
 
 - Updated pip dependencies

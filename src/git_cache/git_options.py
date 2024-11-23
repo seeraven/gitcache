@@ -156,8 +156,9 @@ CHECKOUT_OPTIONS = [
 # Only options with arguments and boolean options of interest are listed here.
 # (Look for OPT_STRING, OPT_INTEGER, OPT_CALLBACK_F, OPT_STRING_LIST)
 CLONE_OPTIONS = [
-    Option(long_name="recurse-submodules"),
-    Option(long_name="recursive"),
+    Option(long_name="recurse-submodules", has_arg=False),
+    Option(long_name="recursive", has_arg=False),
+    Option(long_name="remote-submodules", has_arg=False),
     Option(short_name="j", long_name="jobs"),
     Option(long_name="template"),
     Option(long_name="reference"),
@@ -240,6 +241,7 @@ SUBMODULE_INIT_OPTIONS: List[Option] = []
 SUBMODULE_UPDATE_OPTIONS = [
     Option(group="init", long_name="init", has_arg=False),
     Option(group="recursive", long_name="recursive", has_arg=False),
+    Option(group="remote", long_name="remote", has_arg=False),
     Option(long_name="reference"),
     Option(long_name="depth"),
     Option(short_name="j", long_name="jobs"),

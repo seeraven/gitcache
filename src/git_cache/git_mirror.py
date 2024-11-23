@@ -27,6 +27,7 @@ import portalocker
 from .command_execution import getstatusoutput, pretty_call_command_retry, simple_call_command
 from .config import Config, has_git_lfs_cmd
 from .database import Database
+from .git_options import GitOptions
 from .global_settings import GITCACHE_DIR
 from .helpers import rmtree
 
@@ -235,7 +236,7 @@ class GitMirror:
             return False
         return True
 
-    def clone_from_mirror(self, git_options):
+    def clone_from_mirror(self, git_options: GitOptions) -> int:
         """Clone from the mirror.
 
         Args:
@@ -255,6 +256,9 @@ class GitMirror:
         real_git = self.config.get("System", "RealGit")
 
         new_args = [x if x != self.url else self.git_dir for x in git_options.all_args]
+        for option in ["--recursive", "--recurse-submodules", "--remote-submodules"]:
+            if option in new_args:
+                new_args.remove(option)
         new_args.insert(0, real_git)
         new_args.insert(1, "-c")
         new_args.insert(2, f"lfs.url={git_lfs_url}")
@@ -284,7 +288,7 @@ class GitMirror:
         self.database.increment_counter(self.path, "clones")
 
         LOG.info("Setting push URL to %s and configure LFS.", self.url)
-        paths = git_options.get_global_group_values("run_path") + [target_dir]
+        paths = [path for path in git_options.get_global_group_values("run_path") if path is not None] + [target_dir]
         cwd = os.path.abspath(os.path.join(*paths))
         commands = [
             [real_git, "remote", "set-url", "--push", "origin", self.url],
