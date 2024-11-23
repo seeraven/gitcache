@@ -7,8 +7,11 @@ on:
 # https://docs.github.com/de/actions/using-github-hosted-runners/about-github-hosted-runners/about-github-hosted-runners
 
 jobs:
-  ubuntu-2204:
-    runs-on: ubuntu-22.04
+  ubuntu:
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, ubuntu-22.04, ubuntu-24.04]
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
@@ -27,8 +30,11 @@ jobs:
         run: |
           make tests
 
-  ubuntu-2004:
-    runs-on: ubuntu-20.04
+  alpine:
+    strategy:
+      matrix:
+        os: [alpine3.20]
+    runs-on: ubuntu-latest
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
@@ -42,10 +48,10 @@ jobs:
           sudo apt-get install git git-lfs
       - name: Check Style
         run: |
-          make
+          make check-style.venv.${{ matrix.os }}
       - name: Tests
         run: |
-          make tests
+          make tests.venv.${{ matrix.os }}
 
   windows-2022:
     runs-on: windows-2022
@@ -79,7 +85,7 @@ jobs:
   macos:
     strategy:
       matrix:
-        os: [macos-13, macos-14]
+        os: [macos-13, macos-14, macos-15]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Check out repository code
@@ -88,7 +94,7 @@ jobs:
           submodules: true
       - name: Install dependencies
         run: |
-          brew install make git-lfs
+          brew install make
       - name: Check Style
         run: |
           make

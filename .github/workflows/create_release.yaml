@@ -9,8 +9,11 @@ on:
     tags: 'v*'
 
 jobs:
-  build-ubuntu-2004:
-    runs-on: ubuntu-20.04
+  build-ubuntu:
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, ubuntu-22.04, ubuntu-24.04]
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
@@ -31,14 +34,17 @@ jobs:
       - name: Create Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: release-ubuntu2004
+          name: release-${{ matrix.os }}
           retention-days: 1
           overwrite: true
           path: |
             releases
 
-  build-ubuntu-2204:
-    runs-on: ubuntu-22.04
+  build-alpine:
+    strategy:
+      matrix:
+        os: [alpine3.20]
+    runs-on: ubuntu-latest
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
@@ -52,14 +58,14 @@ jobs:
           sudo apt-get install git git-lfs
       - name: Build Release
         run: |
-          make current-release
+          make current-release.venv.${{ matrix.os }}
       - name: Test Release
         run: |
-          make test-current-release
+          make test-current-release.${{ matrix.os }}
       - name: Create Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: release-ubuntu2204
+          name: release-${{ matrix.os }}
           retention-days: 1
           overwrite: true
           path: |
@@ -102,8 +108,11 @@ jobs:
           path: |
             releases
 
-  build-macos-arm64:
-    runs-on: macos-14
+  build-macos:
+    strategy:
+      matrix:
+        os: [macos-13, macos-14, macos-15]
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4
@@ -111,7 +120,7 @@ jobs:
           submodules: true
       - name: Install dependencies
         run: |
-          brew install make git-lfs
+          brew install make
       - name: Build Release
         run: |
           make current-release
@@ -121,32 +130,7 @@ jobs:
       - name: Create Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: release-macos-arm64
-          retention-days: 1
-          overwrite: true
-          path: |
-            releases/*.tgz
-
-  build-macos-x86_64:
-    runs-on: macos-13
-    steps:
-      - name: Check out repository code
-        uses: actions/checkout@v4
-        with:
-          submodules: true
-      - name: Install dependencies
-        run: |
-          brew install make git-lfs
-      - name: Build Release
-        run: |
-          make current-release
-      - name: Test Release
-        run: |
-          make test-current-release
-      - name: Create Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-macos-x86_64
+          name: release-${{ matrix.os }}
           retention-days: 1
           overwrite: true
           path: |
@@ -154,7 +138,7 @@ jobs:
 
   create_release:
     runs-on: ubuntu-latest
-    needs: [build-ubuntu-2004, build-ubuntu-2204, build-windows-2022, build-macos-arm64, build-macos-x86_64]
+    needs: [build-ubuntu, build-alpine, build-windows-2022, build-macos]
     steps:
       - name: Get artifacts
         uses: actions/download-artifact@v4

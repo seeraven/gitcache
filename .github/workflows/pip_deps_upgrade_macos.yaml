@@ -24,7 +24,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-13, macos-14]
+        os: [macos-13, macos-14, macos-15]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Check out repository code
@@ -33,7 +33,7 @@ jobs:
           submodules: true
       - name: Install dependencies
         run: |
-          brew install make git-lfs
+          brew install make
       - name: Pip Deps Upgrade
         run: |
           make pip-deps-upgrade
