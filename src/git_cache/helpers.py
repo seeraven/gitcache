@@ -24,7 +24,7 @@ import shutil
 LOG = logging.getLogger(__name__)
 
 
-def rmtree(name, ignore_errors=False, repeated=False):
+def rmtree(name: str, ignore_errors: bool = False, repeated: bool = False) -> None:
     """Delete a directory tree.
 
     Method borrowed from https://github.com/python/cpython/blob/main/Lib/tempfile.py.

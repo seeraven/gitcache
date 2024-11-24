@@ -30,7 +30,7 @@ LOG = logging.getLogger(__name__)
 # -----------------------------------------------------------------------------
 # Function Definitions
 # -----------------------------------------------------------------------------
-def git_update_all_mirrors():
+def git_update_all_mirrors() -> int:
     """Handle a git update-mirrors command.
 
     Return:

@@ -22,6 +22,7 @@ Copyright:
 import json
 import os
 import time
+from typing import Any, Dict, Optional
 
 import portalocker
 
@@ -48,12 +49,12 @@ class Database:
         database (map): A map of repository paths to the per-repository entries.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Construct a new Database object."""
-        self.database = {}
+        self.database: Dict[str, Dict[str, Any]] = {}
         os.makedirs(GITCACHE_DIR, exist_ok=True)
 
-    def add(self, url, path):
+    def add(self, url: str, path: str) -> None:
         """Add a new entry to the database.
 
         Args:
@@ -72,7 +73,7 @@ class Database:
             }
             self._save()
 
-    def remove(self, path):
+    def remove(self, path: str) -> None:
         """Remove an entry from the database.
 
         Args:
@@ -83,7 +84,7 @@ class Database:
             del self.database[path]
             self._save()
 
-    def save_update_time(self, path):
+    def save_update_time(self, path: str) -> None:
         """Save the current time as the last-update-time of the mirror.
 
         Args:
@@ -95,7 +96,7 @@ class Database:
             self.database[path]["mirror-updates"] = self.database[path]["mirror-updates"] + 1
             self._save()
 
-    def increment_counter(self, path, counter):
+    def increment_counter(self, path: str, counter: str) -> None:
         """Increment a counter of a mirror.
 
         Args:
@@ -108,7 +109,7 @@ class Database:
             self.database[path][counter] = self.database[path][counter] + 1
             self._save()
 
-    def clear_counters(self, path):
+    def clear_counters(self, path: str) -> None:
         """Clear all counters of a mirror.
 
         Args:
@@ -120,7 +121,7 @@ class Database:
                 self.database[path][counter] = 0
             self._save()
 
-    def get_all(self):
+    def get_all(self) -> Dict[str, Dict[str, Any]]:
         """Get the whole database.
 
         Return:
@@ -131,7 +132,7 @@ class Database:
 
         return self.database
 
-    def get(self, path):
+    def get(self, path: str) -> Optional[Dict[str, Any]]:
         """Get the database entry for the given repository path.
 
         Args:
@@ -148,7 +149,7 @@ class Database:
 
         return None
 
-    def get_url_for_path(self, path):
+    def get_url_for_path(self, path: str) -> Optional[str]:
         """Get the url for the given path.
 
         Args:
@@ -163,7 +164,7 @@ class Database:
             return entry["url"]
         return None
 
-    def get_time_since_last_update(self, path):
+    def get_time_since_last_update(self, path: str) -> float:
         """Get the time in seconds since the last update for the given repository path.
 
         Args:
@@ -177,7 +178,7 @@ class Database:
             return time.time() - entry["last-update-time"]
         return 0.0
 
-    def _load(self):
+    def _load(self) -> None:
         """Load the database from disc."""
         self.database = {}
 
@@ -187,7 +188,7 @@ class Database:
                 for path in self.database:
                     self.database[path].setdefault("lfs-updates", 0)
 
-    def _save(self):
+    def _save(self) -> None:
         """Save the database to disc."""
         with open(GITCACHE_DB, "w", encoding="utf-8") as handle:
             json.dump(self.database, handle)

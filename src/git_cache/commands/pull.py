@@ -22,6 +22,7 @@ from ..command_execution import pretty_call_command_retry
 from ..config import Config
 from ..database import Database
 from ..git_mirror import GitMirror
+from ..git_options import GitOptions
 from .helpers import get_current_ref, get_mirror_url
 
 # -----------------------------------------------------------------------------
@@ -34,7 +35,7 @@ LOG = logging.getLogger(__name__)
 # Function Definitions
 # -----------------------------------------------------------------------------
 # pylint: disable=too-many-locals
-def git_pull(git_options):
+def git_pull(git_options: GitOptions) -> int:
     """Handle a git pull command.
 
     Args:

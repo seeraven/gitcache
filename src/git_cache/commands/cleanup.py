@@ -30,7 +30,7 @@ LOG = logging.getLogger(__name__)
 # -----------------------------------------------------------------------------
 # Function Definitions
 # -----------------------------------------------------------------------------
-def git_cleanup():
+def git_cleanup() -> int:
     """Handle a git cleanup command.
 
     Return:

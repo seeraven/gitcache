@@ -22,6 +22,7 @@ from ..command_execution import simple_call_command
 from ..config import Config
 from ..database import Database
 from ..git_mirror import GitMirror
+from ..git_options import GitOptions
 from .helpers import get_mirror_url, use_mirror_for_remote_url
 
 # -----------------------------------------------------------------------------
@@ -34,7 +35,7 @@ LOG = logging.getLogger(__name__)
 # Function Definitions
 # -----------------------------------------------------------------------------
 # pylint: disable=too-many-locals
-def git_ls_remote(git_options):
+def git_ls_remote(git_options: GitOptions) -> int:
     """Handle a git ls-remote command.
 
     The git ls-remote command updates the mirror if no repository is specified
@@ -48,6 +49,7 @@ def git_ls_remote(git_options):
         Returns 0 on success, otherwise the return code of the last failed
         command.
     """
+    assert git_options.command is not None, "Internal error: git command is NOT ls-remote!"
     config = Config()
     repository = None
     mirror_url = None

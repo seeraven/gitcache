@@ -21,6 +21,7 @@ import logging
 from ..command_execution import simple_call_command
 from ..database import Database
 from ..git_mirror import GitMirror
+from ..git_options import GitOptions
 from .helpers import get_current_ref, get_mirror_url
 
 # -----------------------------------------------------------------------------
@@ -32,7 +33,7 @@ LOG = logging.getLogger(__name__)
 # -----------------------------------------------------------------------------
 # Function Definitions
 # -----------------------------------------------------------------------------
-def git_lfs_pull(git_options):
+def git_lfs_pull(git_options: GitOptions) -> int:
     """Handle a git lfs pull command.
 
     Args:

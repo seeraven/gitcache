@@ -18,8 +18,10 @@ Copyright:
 # -----------------------------------------------------------------------------
 import logging
 import os
+from typing import List
 
 from ..command_execution import getstatusoutput, simple_call_command
+from ..git_options import GitOptions
 from .helpers import get_mirror_url, get_pull_url, resolve_submodule_url
 
 # -----------------------------------------------------------------------------
@@ -32,7 +34,7 @@ LOG = logging.getLogger(__name__)
 # Function Definitions
 # -----------------------------------------------------------------------------
 # pylint: disable=too-many-locals,too-many-statements,too-many-branches
-def git_submodule_update(called_as, git_options):
+def git_submodule_update(called_as: List[str], git_options: GitOptions) -> int:
     """Handle a git submodule update command.
 
     A 'git submodule update' command is replaced by calling 'git fetch' or
@@ -50,7 +52,7 @@ def git_submodule_update(called_as, git_options):
         Returns 0 on success, otherwise the return code of the last failed
         command.
     """
-    cd_paths = git_options.get_global_group_values("run_path")
+    cd_paths = [path for path in git_options.get_global_group_values("run_path") if path is not None]
     update_paths = git_options.command_args
 
     # If the --init option is specified, we call 'submodule init' first and
@@ -58,6 +60,7 @@ def git_submodule_update(called_as, git_options):
     # behaviour as found in https://github.com/git/git/blob/master/git-submodule.sh.
     has_init = "init" in git_options.command_group_values
     has_recursive = "recursive" in git_options.command_group_values
+    has_remote = "remote" in git_options.command_group_values
     if has_init:
         command = called_as + git_options.global_options
         command += ["submodule", "init"] + update_paths
@@ -122,12 +125,17 @@ def git_submodule_update(called_as, git_options):
                 # Before entering the recursive update we must ensure the checked out
                 # repository is on the desired commit.
                 command = git_options.get_real_git_with_options()
-                command += ["submodule", "update", "--", tgt_path]
+                command += ["submodule", "update"]
+                if has_remote:
+                    command += ["--remote"]
+                command += ["--", tgt_path]
                 simple_call_command(command, cwd=cwd)
 
                 command = called_as + ["submodule", "update", "--recursive"]
                 if has_init:
                     command.append("--init")
+                if has_remote:
+                    command.append("--remote")
                 simple_call_command(command, cwd=abs_tgt_path)
 
     return simple_call_command(git_options.get_real_git_all_args())
