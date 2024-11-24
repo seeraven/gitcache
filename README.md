@@ -82,8 +82,8 @@ gitcache is distributed as a single executable packaged using [pyInstaller].
 So all you have to do is to download the latest executable and copy it to a
 location of your choice, for example `~/bin`:
 
-    wget https://github.com/seeraven/gitcache/releases/download/v1.0.18/gitcache_v1.0.18_Ubuntu22.04_amd64
-    mv gitcache_v1.0.18_Ubuntu22.04_amd64 ~/bin/gitcache
+    wget https://github.com/seeraven/gitcache/releases/download/v1.0.20/gitcache_v1.0.20_Ubuntu22.04_amd64
+    mv gitcache_v1.0.20_Ubuntu22.04_amd64 ~/bin/gitcache
     chmod +x ~/bin/gitcache
 
 gitcache can be used as a stand-alone command, but it is much easier to use
@@ -122,8 +122,8 @@ gitcache is distributed as a tar-ball (`*.tgz` file). Download the archive and
 extract it at your desired target location (the archive contains a subfolder):
 
     cd /my/target/destination
-    tar xfz gitcache_v1.0.18_Darwin_arm64.tgz
-    ls gitcache_v1.0.18_Darwin_arm64
+    tar xfz gitcache_v1.0.20_Darwin_arm64.tgz
+    ls gitcache_v1.0.20_Darwin_arm64
 
 To use the `gitcache` command, the final installation directory should be put
 into your `PATH` variable. To use it as a wrapper to the `git` command, you
@@ -310,7 +310,7 @@ is pushed to the repository. This changes the release process a little bit:
   - As github does not (yet) support Ubuntu 24.04, that release must be built
     manually by calling:
 
-        make releases/gitcache_v1.0.18_Ubuntu24.04_x86_64.venv.ubuntu24.04
+        make releases/gitcache_v1.0.20_Ubuntu24.04_x86_64.venv.ubuntu24.04
 
   - Now edit the release draft, insert the changes from the `CHANGELOG.md` file
     and upload the Ubuntu 24.04 binary. Then the release can be saved as a
@@ -319,7 +319,7 @@ is pushed to the repository. This changes the release process a little bit:
     `src/git_cache/git_cache_command.py` and `doc/source/installation.rst` and
     replace the version number:
 
-        sed -i 's/1.0.18/1.0.18/g' Makefile pyproject.toml src/git_cache/git_cache_command.py doc/source/installation.rst
+        sed -i 's/1.0.20/1.0.21/g' Makefile pyproject.toml src/git_cache/git_cache_command.py doc/source/installation.rst
 
 
 [git]: https://git-scm.com/
