@@ -43,7 +43,8 @@ LOG = logging.getLogger(__name__)
 
 # Pattern to match ssh, git, http[s] and ftp[s]:
 #                                  <proto>      [user@]  <host>  [:port]   <path>
-RE_URL_WITH_PROTO = re.compile(r"([a-zA-Z]+)://([^@]+@)?([^:/]+)(:[0-9]+)?/(.*)")
+RE_URL_WITH_PROTO = re.compile(
+    r"([a-zA-Z]+)://([^@]+@)?([^:/]+)(:[0-9]+)?/(.*)")
 
 # Pattern to match scp-like syntax:  [user@]  <host>       <path>
 RE_URL_WITHOUT_PROTO = re.compile(r"([^@]+@)?([^:/\\]{2,}):(.*)")
@@ -79,7 +80,8 @@ class Locker:
         except portalocker.exceptions.LockException:
             pass
 
-        LOG.info("%s is locked. Waiting up to %d seconds.", self.name, self.timeout)
+        LOG.info("%s is locked. Waiting up to %d seconds.",
+                 self.name, self.timeout)
         return self.lock.acquire(timeout=self.timeout, check_interval=self.check_interval)
 
     def __exit__(self, type_, value, traceback):
@@ -192,17 +194,21 @@ class GitMirror:
         """
         if has_git_lfs_cmd():
             try:
+                os.makedirs(self.path, exist_ok=True)
                 with Locker(f"Mirror {self.path}", self.lockfile, self.config):
                     return self._fetch_lfs(ref, options)
             except portalocker.exceptions.LockException:
                 if ref is not None:
-                    LOG.error("LFS fetch of %s timed out due to locked mirror.", ref)
+                    LOG.error(
+                        "LFS fetch of %s timed out due to locked mirror.", ref)
                 else:
-                    LOG.error("LFS fetch of default ref timed out due to locked mirror.")
+                    LOG.error(
+                        "LFS fetch of default ref timed out due to locked mirror.")
                 return False
             return True
 
-        LOG.warning("LFS fetch skipped as git-lfs is not available on this system!")
+        LOG.warning(
+            "LFS fetch skipped as git-lfs is not available on this system!")
         return True
 
     def cleanup(self):
@@ -255,7 +261,8 @@ class GitMirror:
         git_lfs_url = self.url + "/info/lfs"
         real_git = self.config.get("System", "RealGit")
 
-        new_args = [x if x != self.url else self.git_dir for x in git_options.all_args]
+        new_args = [
+            x if x != self.url else self.git_dir for x in git_options.all_args]
         for option in ["--recursive", "--recurse-submodules", "--remote-submodules"]:
             if option in new_args:
                 new_args.remove(option)
@@ -288,20 +295,23 @@ class GitMirror:
         self.database.increment_counter(self.path, "clones")
 
         LOG.info("Setting push URL to %s and configure LFS.", self.url)
-        paths = [path for path in git_options.get_global_group_values("run_path") if path is not None] + [target_dir]
+        paths = [path for path in git_options.get_global_group_values(
+            "run_path") if path is not None] + [target_dir]
         cwd = os.path.abspath(os.path.join(*paths))
         commands = [
             [real_git, "remote", "set-url", "--push", "origin", self.url],
             [real_git, "config", "--local", "lfs.url", git_lfs_url],
         ]
         if self.config.get("LFS", "PerMirrorStorage"):
-            commands.append([real_git, "config", "--local", "lfs.storage", self.git_lfs_dir])
+            commands.append([real_git, "config", "--local",
+                            "lfs.storage", self.git_lfs_dir])
 
         retval = 0
         for command in commands:
             cmd_retval = simple_call_command(command, cwd=cwd)
             if cmd_retval != 0:
-                LOG.error("Command '%s' with working directory %s gave return code of %d!", command, cwd, cmd_retval)
+                LOG.error(
+                    "Command '%s' with working directory %s gave return code of %d!", command, cwd, cmd_retval)
                 retval = cmd_retval
         return retval
 
@@ -335,7 +345,8 @@ class GitMirror:
         Return:
             Returns True on success.
         """
-        command = [self.config.get("System", "RealGit"), "clone", "--progress", "--mirror", self.url, self.git_dir]
+        command = [self.config.get(
+            "System", "RealGit"), "clone", "--progress", "--mirror", self.url, self.git_dir]
         return_code, _, _ = pretty_call_command_retry(
             f"Initial clone of {self.url} into {self.path}",
             "",
@@ -365,7 +376,8 @@ class GitMirror:
         Return:
             Returns True on success.
         """
-        command = [self.config.get("System", "RealGit"), "remote", "update", "--prune"]
+        command = [self.config.get("System", "RealGit"),
+                   "remote", "update", "--prune"]
         return_code, stdout_buffer, stderr_buffer = pretty_call_command_retry(
             f"Update of {self.path}",
             "garbage collection error",
@@ -427,7 +439,8 @@ class GitMirror:
             Returns True if the lfs fetch was successful.
         """
         if not has_git_lfs_cmd():
-            LOG.warning("LFS fetch skipped as git-lfs is not available on this system!")
+            LOG.warning(
+                "LFS fetch skipped as git-lfs is not available on this system!")
             return True
 
         git_options = []
@@ -441,7 +454,8 @@ class GitMirror:
                 return 1
 
         command = [self.config.get("System", "RealGit")] + git_options
-        command += ["lfs", "fetch"] + (options if options else []) + ["origin", ref]
+        command += ["lfs", "fetch"] + \
+            (options if options else []) + ["origin", ref]
 
         return_code, _, _ = pretty_call_command_retry(
             f"LFS fetch of ref {ref} from {self.url} into {self.path}",
