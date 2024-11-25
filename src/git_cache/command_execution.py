@@ -90,8 +90,7 @@ def call_command_retry(
         command_str = " ".join(command)
 
     stderr_capture = True
-    LOG.debug("Retry to execute command '%s' up to %d times.",
-              command_str, num_retries)
+    LOG.debug("Retry to execute command '%s' up to %d times.", command_str, num_retries)
     for retry in range(num_retries + 1):
         return_code, stdout_buffer, stderr_buffer = call_command(
             command,
@@ -120,11 +119,9 @@ def call_command_retry(
 
         if abort_on_pattern:
             if (abort_on_pattern in stdout_buffer) or (abort_on_pattern in stderr_buffer):
-                LOG.debug("Abort pattern '%s' found in stdout/stderr.",
-                          abort_on_pattern)
+                LOG.debug("Abort pattern '%s' found in stdout/stderr.", abort_on_pattern)
                 return -3000, stdout_buffer, stderr_buffer
-            LOG.debug("Abort pattern '%s' not found in stdout/stderr.",
-                      abort_on_pattern)
+            LOG.debug("Abort pattern '%s' not found in stdout/stderr.", abort_on_pattern)
 
         if retry != num_retries:
             LOG.warning(
@@ -163,23 +160,19 @@ def pretty_call_command_retry(action, pattern_cause, command, num_retries, **kwa
     """
     LOG.info("Starting %s.", action)
     start_time = time.time()
-    return_code, stdout_buffer, stderr_buffer = call_command_retry(
-        command, num_retries, **kwargs)
+    return_code, stdout_buffer, stderr_buffer = call_command_retry(command, num_retries, **kwargs)
     run_time = time.time() - start_time
 
     if return_code == 0:
-        LOG.info("%s was successfully completed within %.1f seconds.",
-                 action, run_time)
+        LOG.info("%s was successfully completed within %.1f seconds.", action, run_time)
     elif return_code == -1000:
         LOG.error("%s timed out after %.1f seconds!", action, run_time)
     elif return_code == -2000:
         LOG.error("%s stalled after %.1f seconds!", action, run_time)
     elif return_code == -3000:
-        LOG.error("%s failed due to %s after %.1f seconds!",
-                  action, pattern_cause, run_time)
+        LOG.error("%s failed due to %s after %.1f seconds!", action, pattern_cause, run_time)
     else:
-        LOG.error("%s failed after %.1f seconds with return code %d!",
-                  action, run_time, return_code)
+        LOG.error("%s failed after %.1f seconds with return code %d!", action, run_time, return_code)
 
     return return_code, stdout_buffer, stderr_buffer
 
@@ -225,8 +218,7 @@ def getstatusoutput(cmd, shell=False, cwd=None):
     """
     try:
         # pylint: disable=subprocess-run-check
-        result = subprocess.run(cmd, shell=shell, cwd=cwd,
-                                stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+        result = subprocess.run(cmd, shell=shell, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
     except FileNotFoundError:
         return (127, "")
 
