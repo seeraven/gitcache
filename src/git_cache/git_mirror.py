@@ -141,10 +141,11 @@ class GitMirror:
 
         if self.path and self.url is None:
             self.url = self.database.get_url_for_path(self.path)
+        self.lockfile = os.path.join(self.path, "lock")
 
+        self.path = os.path.join(self.path, "content")
         self.git_dir = os.path.join(self.path, "git")
         self.git_lfs_dir = os.path.join(self.path, "lfs")
-        self.lockfile = os.path.join(self.path, "lock")
         self.configfile = os.path.join(self.path, "gitcache.config")
         os.makedirs(self.git_lfs_dir, exist_ok=True)
 
