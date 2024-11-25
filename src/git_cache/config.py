@@ -216,6 +216,9 @@ class Config:
         self.items.append(ConfigItem("Clone", "Retries", 3, converter=int))
         self.items.append(ConfigItem("Clone", "CommandTimeout", "1 hour"))
         self.items.append(ConfigItem("Clone", "OutputTimeout", "5 minutes"))
+        self.items.append(
+            ConfigItem("Clone", "CloneStyle", "Full", converter=None, env="GITCACHE_CLONE_STYLE")
+        )  # Full or PartialFirst
 
         self.items.append(ConfigItem("Update", "Retries", 3, converter=int))
         self.items.append(ConfigItem("Update", "CommandTimeout", "1 hour"))

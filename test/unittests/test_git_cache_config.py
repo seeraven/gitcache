@@ -109,6 +109,7 @@ permirrorstorage = false
 
         expected_git_cmd = git_cache.config.find_git()
         expected_config_str = f"""Clone:
+ clonestyle           = Full                 (GITCACHE_CLONE_STYLE)
  commandtimeout       = 1 hour               (GITCACHE_CLONE_COMMAND_TIMEOUT)
  outputtimeout        = 5 minutes            (GITCACHE_CLONE_OUTPUT_TIMEOUT)
  retries              = 3                    (GITCACHE_CLONE_RETRIES)
@@ -145,6 +146,7 @@ UrlPatterns:
  excluderegex         =                      (GITCACHE_URLPATTERNS_EXCLUDE_REGEX)
  includeregex         = .*                   (GITCACHE_URLPATTERNS_INCLUDE_REGEX)
 """
+        print(str(config))
         self.assertEqual(str(config), expected_config_str)
 
 
