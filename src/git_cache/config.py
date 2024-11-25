@@ -97,7 +97,8 @@ def find_git() -> str:
                 if not os.path.islink(candidate):
                     return candidate
 
-    LOG.warning("Can't find git command! Please specify manually in the config file!")
+    LOG.warning(
+        "Can't find git command! Please specify manually in the config file!")
     return "/usr/bin/git"
 
 
@@ -201,21 +202,29 @@ class Config:
         loading the global configuration file.
         """
         self.items: List[ConfigItem] = []
-        self.items.append(ConfigItem("System", "RealGit", find_git(), converter=str, env="GITCACHE_REAL_GIT"))
+        self.items.append(ConfigItem("System", "RealGit",
+                          find_git(), converter=str, env="GITCACHE_REAL_GIT"))
 
-        self.items.append(ConfigItem("MirrorHandling", "UpdateInterval", "0 seconds", env="GITCACHE_UPDATE_INTERVAL"))
-        self.items.append(ConfigItem("MirrorHandling", "CleanupAfter", "14 days", env="GITCACHE_CLEANUP_AFTER"))
+        self.items.append(ConfigItem(
+            "MirrorHandling", "UpdateInterval", "0 seconds", env="GITCACHE_UPDATE_INTERVAL"))
+        self.items.append(ConfigItem(
+            "MirrorHandling", "CleanupAfter", "14 days", env="GITCACHE_CLEANUP_AFTER"))
 
-        self.items.append(ConfigItem("UrlPatterns", "IncludeRegex", ".*", converter=str_to_regex))
-        self.items.append(ConfigItem("UrlPatterns", "ExcludeRegex", "", converter=str_to_regex))
+        self.items.append(ConfigItem(
+            "UrlPatterns", "IncludeRegex", ".*", converter=str_to_regex))
+        self.items.append(ConfigItem(
+            "UrlPatterns", "ExcludeRegex", "", converter=str_to_regex))
 
-        self.items.append(ConfigItem("Command", "WarnIfLockedFor", "10 seconds"))
+        self.items.append(ConfigItem(
+            "Command", "WarnIfLockedFor", "10 seconds"))
         self.items.append(ConfigItem("Command", "CheckInterval", "2 seconds"))
         self.items.append(ConfigItem("Command", "LockTimeout", "1 hour"))
 
         self.items.append(ConfigItem("Clone", "Retries", 3, converter=int))
         self.items.append(ConfigItem("Clone", "CommandTimeout", "1 hour"))
         self.items.append(ConfigItem("Clone", "OutputTimeout", "5 minutes"))
+        self.items.append(ConfigItem(
+            "Clone", "CloneStyle", "Full", converter=None, env="GITCACHE_CLONE_STYLE"))  # Full or PartialFirst
 
         self.items.append(ConfigItem("Update", "Retries", 3, converter=int))
         self.items.append(ConfigItem("Update", "CommandTimeout", "1 hour"))
@@ -228,7 +237,8 @@ class Config:
         self.items.append(ConfigItem("LFS", "Retries", 3, converter=int))
         self.items.append(ConfigItem("LFS", "CommandTimeout", "1 hour"))
         self.items.append(ConfigItem("LFS", "OutputTimeout", "5 minutes"))
-        self.items.append(ConfigItem("LFS", "PerMirrorStorage", True, converter=str_to_bool))
+        self.items.append(ConfigItem(
+            "LFS", "PerMirrorStorage", True, converter=str_to_bool))
 
         self.config = configparser.ConfigParser()
         self.env_keys: Dict[str, Dict[str, str]] = {}
@@ -252,7 +262,8 @@ class Config:
         """
         value = None
         env_key = self.env_keys.get(section.upper(), {}).get(option.upper())
-        converter = self.converters.get(section.upper(), {}).get(option.upper())
+        converter = self.converters.get(
+            section.upper(), {}).get(option.upper())
 
         if env_key:
             value = os.getenv(env_key, None)
@@ -278,7 +289,8 @@ class Config:
                 self.config.read_file(file_handle, source=filename)
                 return True
 
-        LOG.debug("Can't load configuration file %s as it does not exist!", filename)
+        LOG.debug(
+            "Can't load configuration file %s as it does not exist!", filename)
         return False
 
     def save(self, filename: str) -> None:
@@ -306,7 +318,8 @@ class Config:
 
             ret += f"{section}:\n"
             for option in sorted(self.config[section]):
-                env_key = self.env_keys.get(section.upper(), {}).get(option.upper())
+                env_key = self.env_keys.get(
+                    section.upper(), {}).get(option.upper())
                 if env_key:
                     ret += f" {option : <20} = {self.config[section][option] : <20} ({env_key})\n"
                 else:

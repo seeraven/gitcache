@@ -59,15 +59,18 @@ RE_URL_WITH_FILE = re.compile(r"file://(.*)")
 class Locker:
     """A lock for the mirror."""
 
-    def __init__(self, name, filename, config):
+    def __init__(self, name, filename, config, ensure_dir=True):
         """Construct a new lock object for the mirror.
 
         Args:
             name (str):     The name of the item that is locked.
             filename (str): The lock file.
             config (obj):   The config.Config object to get the settings.
+            ensure_dir(bool): Create the path to filename if not yet existed.
         """
         self.name = name
+        if ensure_dir:
+            os.makedirs(os.path.dirname(filename), exist_ok=True)
         self.lock = portalocker.Lock(filename)
         self.warn_after = config.get("Command", "WarnIfLockedFor")
         self.check_interval = config.get("Command", "CheckInterval")
@@ -167,6 +170,7 @@ class GitMirror:
         """
         mirror_exists = self.database.get(self.path) is not None
         try:
+
             with Locker(f"Mirror {self.path}", self.lockfile, self.config):
                 if not mirror_exists:
                     rmtree(self.path, ignore_errors=True)
@@ -194,7 +198,7 @@ class GitMirror:
         """
         if has_git_lfs_cmd():
             try:
-                os.makedirs(self.path, exist_ok=True)
+
                 with Locker(f"Mirror {self.path}", self.lockfile, self.config):
                     return self._fetch_lfs(ref, options)
             except portalocker.exceptions.LockException:
@@ -229,6 +233,7 @@ class GitMirror:
             Returns True if the mirror was deleted or False if the request timed out.
         """
         try:
+
             with Locker(f"Mirror {self.path}", self.lockfile, self.config):
                 LOG.debug("Deleting mirror %s", self.path)
                 self.database.remove(self.path)
@@ -345,22 +350,55 @@ class GitMirror:
         Return:
             Returns True on success.
         """
-        command = [self.config.get(
-            "System", "RealGit"), "clone", "--progress", "--mirror", self.url, self.git_dir]
-        return_code, _, _ = pretty_call_command_retry(
-            f"Initial clone of {self.url} into {self.path}",
-            "",
-            command,
-            num_retries=self.config.get("Clone", "Retries"),
-            command_timeout=self.config.get("Clone", "CommandTimeout"),
-            output_timeout=self.config.get("Clone", "OutputTimeout"),
-            remove_dir=self.git_dir,
-        )
+        if self.config.get("Clone", "CloneStyle").lower() == 'partialfirst':
+            command = [self.config.get(
+                "System", "RealGit"), "clone", "--progress", "--depth=1", self.url, self.git_dir]
+            return_code, _, _ = pretty_call_command_retry(
+                f"Partial clone of {self.url} into {self.path}",
+                "",
+                command,
+                num_retries=self.config.get("Clone", "Retries"),
+                command_timeout=self.config.get("Clone", "CommandTimeout"),
+                output_timeout=self.config.get("Clone", "OutputTimeout"),
+                remove_dir=self.git_dir,
+            )
 
-        if return_code == 0:
-            self.database.add(self.normalized_url, self.path)
+            if return_code != 0:
+                return False
+            command = [self.config.get(
+                "System", "RealGit"), "-C", self.git_dir, "fetch",  "--unshallow"]
+            return_code, _, _ = pretty_call_command_retry(
+                f"Fetching the rest of {self.url} into {self.path}",
+                "",
+                command,
+                num_retries=self.config.get("Clone", "Retries"),
+                command_timeout=self.config.get("Clone", "CommandTimeout"),
+                output_timeout=self.config.get("Clone", "OutputTimeout"),
+                # remove_dir=self.git_dir,
+            )
+            if return_code == 0:
+                self.database.add(self.normalized_url, self.path)
+            else:
+                return False
+
         else:
-            return False
+            command = [self.config.get(
+                "System", "RealGit"), "clone", "--progress", "--mirror", self.url, self.git_dir]
+
+            return_code, _, _ = pretty_call_command_retry(
+                f"Initial clone of {self.url} into {self.path}",
+                "",
+                command,
+                num_retries=self.config.get("Clone", "Retries"),
+                command_timeout=self.config.get("Clone", "CommandTimeout"),
+                output_timeout=self.config.get("Clone", "OutputTimeout"),
+                remove_dir=self.git_dir,
+            )
+
+            if return_code == 0:
+                self.database.add(self.normalized_url, self.path)
+            else:
+                return False
 
         return self._fetch_lfs(ref)
 
