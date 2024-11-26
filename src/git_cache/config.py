@@ -21,7 +21,7 @@ import logging
 import os
 import platform
 import re
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict, List, Union
 
 import pytimeparse
 
@@ -37,7 +37,7 @@ LOG = logging.getLogger(__name__)
 # -----------------------------------------------------------------------------
 # Type Definitions
 # -----------------------------------------------------------------------------
-ConverterType = Callable[[str], Any]
+ConverterType = Union[Callable[[str], Any], None]
 
 
 # -----------------------------------------------------------------------------
