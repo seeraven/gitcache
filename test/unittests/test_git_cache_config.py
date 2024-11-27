@@ -63,6 +63,7 @@ class GitCacheConfigTest(TestCase):
         self.assertEqual(config.get("LFS", "CommandTimeout"), 60 * 60)
         self.assertEqual(config.get("LFS", "OutputTimeout"), 5 * 60)
         self.assertEqual(config.get("LFS", "PerMirrorStorage"), True)
+        self.assertEqual(config.get("Clone", "CloneStyle"), "Full")
 
     @mockenv(GITCACHE_DIR="/tmp", GITCACHE_CLONE_COMMAND_TIMEOUT="a")
     def test_timeparse_error(self):

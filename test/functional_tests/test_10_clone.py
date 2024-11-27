@@ -27,8 +27,11 @@ def test_clone_error(gitcache_ifc: GitcacheIfc):
     gitcache_ifc.run_fail(["git", "clone", repo, tgt])
 
 
-def test_clone(gitcache_ifc: GitcacheIfc):
+@pytest.mark.parametrize("clone_style", ["Full", "PartialFirst"])
+def test_clone(gitcache_ifc: GitcacheIfc, clone_style: str):
     """Test the normal behaviour of "git clone"."""
+    gitcache_ifc.workspace.set_env("GITCACHE_CLONE_STYLE", clone_style)
+
     # Initial clone
     repo = "https://github.com/seeraven/gitcache"
     tgt = os.path.join(gitcache_ifc.workspace.workspace_path, "gitcache")
@@ -55,8 +58,11 @@ def test_clone(gitcache_ifc: GitcacheIfc):
     gitcache_ifc.workspace.del_env("GITCACHE_UPDATE_INTERVAL")
 
 
-def test_clone_from_local_fs(gitcache_ifc: GitcacheIfc):
+@pytest.mark.parametrize("clone_style", ["Full", "PartialFirst"])
+def test_clone_from_local_fs(gitcache_ifc: GitcacheIfc, clone_style: str):
     """Test not caching clones from local filesystem."""
+    gitcache_ifc.workspace.set_env("GITCACHE_CLONE_STYLE", clone_style)
+
     repo = "https://github.com/seeraven/gitcache.git"
     checkout = os.path.join(gitcache_ifc.workspace.workspace_path, "gitcache")
     gitcache_ifc.run_ok(["git", "-C", gitcache_ifc.workspace.workspace_path, "clone", repo])
@@ -128,8 +134,11 @@ def test_include(gitcache_ifc: GitcacheIfc):
     gitcache_ifc.workspace.del_env("GITCACHE_URLPATTERNS_EXCLUDE_REGEX")
 
 
-def test_aborted_clone(gitcache_ifc: GitcacheIfc):
+@pytest.mark.parametrize("clone_style", ["Full", "PartialFirst"])
+def test_aborted_clone(gitcache_ifc: GitcacheIfc, clone_style: str):
     """Test aborting the first clone command and cloning again."""
+    gitcache_ifc.workspace.set_env("GITCACHE_CLONE_STYLE", clone_style)
+
     repo = "https://github.com/seeraven/gitcache"
     checkout = os.path.join(gitcache_ifc.workspace.workspace_path, "gitcache")
     gitcache_ifc.run_abort(["git", "-C", gitcache_ifc.workspace.workspace_path, "clone", repo])

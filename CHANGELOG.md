@@ -2,6 +2,11 @@
 
 ## Upcoming Version
 
+- New partial clone mode available by setting the config variable `CloneStyle` (section `Clone`) to
+  `PartialFirst` or setting the environment variable `GITCACHE_CLONE_STYLE=PartialFirst`. This mode
+  creates the mirror by performing a shallow clone first followed by a `git fetch -unshallow`.
+  Thanks to An Darejkal for the implementation!
+
 ## v1.0.20
 
 - Support flags `--recursive`, `--recurse-submodules` and `--remote-submodules` of `git clone`.
