@@ -21,7 +21,7 @@ import logging
 import os
 import platform
 import re
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict, List, Union
 
 import pytimeparse
 
@@ -37,7 +37,7 @@ LOG = logging.getLogger(__name__)
 # -----------------------------------------------------------------------------
 # Type Definitions
 # -----------------------------------------------------------------------------
-ConverterType = Callable[[str], Any]
+ConverterType = Union[Callable[[str], Any], None]
 
 
 # -----------------------------------------------------------------------------
@@ -216,6 +216,9 @@ class Config:
         self.items.append(ConfigItem("Clone", "Retries", 3, converter=int))
         self.items.append(ConfigItem("Clone", "CommandTimeout", "1 hour"))
         self.items.append(ConfigItem("Clone", "OutputTimeout", "5 minutes"))
+        self.items.append(
+            ConfigItem("Clone", "CloneStyle", "Full", converter=None, env="GITCACHE_CLONE_STYLE")
+        )  # Full or PartialFirst
 
         self.items.append(ConfigItem("Update", "Retries", 3, converter=int))
         self.items.append(ConfigItem("Update", "CommandTimeout", "1 hour"))
