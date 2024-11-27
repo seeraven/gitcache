@@ -62,9 +62,9 @@ class Locker:
         """Construct a new lock object for the mirror.
 
         Args:
-            name (str):     The name of the item that is locked.
-            filename (str): The lock file.
-            config (obj):   The config.Config object to get the settings.
+            name (str):       The name of the item that is locked.
+            filename (str):   The lock file.
+            config (obj):     The config.Config object to get the settings.
             ensure_dir(bool): Create the path to filename if not yet existed.
         """
         self.name = name
@@ -168,7 +168,6 @@ class GitMirror:
         """
         mirror_exists = self.database.get(self.path) is not None
         try:
-
             with Locker(f"Mirror {self.path}", self.lockfile, self.config):
                 if not mirror_exists:
                     rmtree(self.path, ignore_errors=True)
@@ -196,7 +195,6 @@ class GitMirror:
         """
         if has_git_lfs_cmd():
             try:
-
                 with Locker(f"Mirror {self.path}", self.lockfile, self.config):
                     return self._fetch_lfs(ref, options)
             except portalocker.exceptions.LockException:
@@ -228,7 +226,6 @@ class GitMirror:
             Returns True if the mirror was deleted or False if the request timed out.
         """
         try:
-
             with Locker(f"Mirror {self.path}", self.lockfile, self.config):
                 LOG.debug("Deleting mirror %s", self.path)
                 self.database.remove(self.path)
@@ -352,9 +349,9 @@ class GitMirror:
                 output_timeout=self.config.get("Clone", "OutputTimeout"),
                 remove_dir=self.git_dir,
             )
-
             if return_code != 0:
                 return False
+
             command = [self.config.get("System", "RealGit"), "-C", self.git_dir, "fetch", "--unshallow"]
             return_code, _, _ = pretty_call_command_retry(
                 f"Fetching the rest of {self.url} into {self.path}",
@@ -365,10 +362,8 @@ class GitMirror:
                 output_timeout=self.config.get("Clone", "OutputTimeout"),
                 # remove_dir=self.git_dir,
             )
-            if return_code == 0:
-                self.database.add(self.normalized_url, self.path)
-            else:
-                return False
+            if return_code != 0:
+                rmtree(self.git_dir, ignore_errors=True)
 
         else:
             command = [self.config.get("System", "RealGit"), "clone", "--progress", "--mirror", self.url, self.git_dir]
@@ -383,10 +378,10 @@ class GitMirror:
                 remove_dir=self.git_dir,
             )
 
-            if return_code == 0:
-                self.database.add(self.normalized_url, self.path)
-            else:
-                return False
+        if return_code == 0:
+            self.database.add(self.normalized_url, self.path)
+        else:
+            return False
 
         return self._fetch_lfs(ref)
 
