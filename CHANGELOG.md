@@ -2,6 +2,11 @@
 
 ## Upcoming Version
 
+- Updated README.md section "Installation on MacOS". Thanks to Ihor Dutchak for the attribute
+  clearing command!
+- Updated README.md section "Configuration" to include the new `CloneStyle` option.
+- Added README.md section "Development".
+
 ## v1.0.21
 
 - New partial clone mode available by setting the config variable `CloneStyle` (section `Clone`) to

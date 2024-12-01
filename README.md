@@ -1,5 +1,4 @@
-gitcache
-========
+# gitcache
 
 Local cache for [git] repositories to speed up working with large repositories
 and multiple clones.
@@ -8,8 +7,7 @@ The basic idea of gitcache is to use a local bare mirror that is updated
 when needed and used as the source repository for multiple local repositories.
 
 
-Features
---------
+## Features
 
   - Wrapper for the `git` command for easy integration.
   - [git-lfs] support.
@@ -22,8 +20,7 @@ Features
     a per-configuration configuration file.
 
 
-Description
------------
+## Description
 
 gitcache is designed to be used as a wrapper to git, so in the following we
 show how gitcache translates the git commands for the individual operations.
@@ -61,8 +58,7 @@ modifies the mirror. This is crucial as simultaneous clones would easily lead
 to inconsistent behaviours and ugly race conditions.
 
 
-Mirror Update Strategy
-----------------------
+## Mirror Update Strategy
 
 The mirror update strategy is controlled using the so called update interval.
 It gives the time between two updates of a mirror in seconds and allows you to
@@ -75,8 +71,7 @@ of the mirrors are only performed if explicitly requested by a
 network usage even further.
 
 
-Installation on Linux
----------------------
+## Installation on Linux
 
 gitcache is distributed as a single executable packaged using [pyInstaller].
 So all you have to do is to download the latest executable and copy it to a
@@ -98,8 +93,7 @@ The `export` statement should be added to your `~/.bashrc` file to set
 it permanently.
 
 
-Installation on Windows
------------------------
+## Installation on Windows
 
 Download the latest executable for Windows from the release page
 https://github.com/seeraven/gitcache/releases. Rename the executable to
@@ -114,8 +108,7 @@ Please note that the directory you are putting the symlink into should be
 stated before the real git command directory in your PATH variable!
 
 
-Installation on MacOS
----------------------
+## Installation on MacOS
 
 A single [pyInstaller] executable has a huge startup delay on MacOS, therefore
 gitcache is distributed as a tar-ball (`*.tgz` file). Download the archive and
@@ -123,6 +116,7 @@ extract it at your desired target location (the archive contains a subfolder):
 
     cd /my/target/destination
     tar xfz gitcache_v1.0.21_Darwin_arm64.tgz
+    xattr -cr gitcache_v1.0.21_Darwin_arm64
     ls gitcache_v1.0.21_Darwin_arm64
 
 To use the `gitcache` command, the final installation directory should be put
@@ -132,8 +126,7 @@ is found bfore the real `git` command as described on the installation on Linux
 section.
 
 
-Configuration
--------------
+## Configuration
 
 gitcache stores all files under in the directory `~/.gitcache`. This base
 directory can be changed by setting the `GITCACHE_DIR` environment variable.
@@ -167,6 +160,7 @@ The configuration options are:
 | Clone          | commandtimeout   | `1 h`           | `GITCACHE_CLONE_COMMAND_TIMEOUT`      |
 | Clone          | outputtimeout    | `5 m`           | `GITCACHE_CLONE_OUTPUT_TIMEOUT`       |
 | Clone          | retries          | `3`             | `GITCACHE_CLONE_RETRIES`              |
+| Clone          | clonestyle       | `Full`          | `GITCACHE_CLONE_STYLE`                |
 | Update         | commandtimeout   | `1 h`           | `GITCACHE_UPDATE_COMMAND_TIMEOUT`     |
 | Update         | outputtimeout    | `5 m`           | `GITCACHE_UPDATE_OUTPUT_TIMEOUT`      |
 | Update         | retries          | `3`             | `GITCACHE_UPDATE_RETRIES`             |
@@ -223,6 +217,12 @@ The following list gives a description of the configuration options:
     _LFS/retries_ (`GITCACHE_LFS_RETRIES`), _Clone/retries_
     (`GITCACHE_CLONE_RETRIES`) and _Update/retries_ (`GITCACHE_UPDATE_RETRIES`)
     options.
+  - Using the _Clone/clonestyle_ (`GITCACHE_CLONE_STYLE`) setting you can adjust
+    the method used when cloning a remote repository into the initial bare mirror.
+    The default setting is `Full` that uses a normal `git clone` command. When
+    you are dealing with large repositories and experience problems cloning then,
+    you can switch the method to `PartialFirst`. This will perform a shallow
+    clone first, followed by a `git fetch -unshallow`.
   - _LFS/permirrorstorage_ (`GITCACHE_LFS_PER_MIRROR_STORAGE`) is a boolean
     flag that determines whether each mirror will have its own lfs storage
     directory (`True`) or whether a shared directory is used (`False`).
@@ -236,8 +236,7 @@ The following list gives a description of the configuration options:
     URLs).
 
 
-gitcache Command Usage
-----------------------
+## gitcache Command Usage
 
 The gitcache command provides the following options:
 
@@ -255,8 +254,7 @@ When called as `gitcache git ...` it wraps the given git command as described in
 the next section.
 
 
-Handled git Commands
---------------------
+## Handled git Commands
 
 The following git commands are handled specially. All other commands are
 forwarded to the real git command.
@@ -277,16 +275,14 @@ forwarded to the real git command.
   - `git submodule update` to call the gitcache for every submodule.
 
 
-Debugging
----------
+## Debugging
 
 For debugging, set the environment variable `GITCACHE_LOGLEVEL` to `Debug`:
 
     GITCACHE_LOGLEVEL=Debug gitcache
 
 
-Security Considerations
------------------------
+## Security Considerations
 
 The main idea behind gitcache is to perform the caching of the git repositories
 only for the current user. This means that you should not share the mirrored
@@ -294,8 +290,37 @@ git repositories with other users, as you do not know if another user would have
 the permission to access the remote repository.
 
 
-Notes on Releases
------------------
+## Development
+
+To start development on gitcache, you have to clone this repository first including
+all submodules:
+
+    git clone https://github.com/seeraven/gitcache.git
+    cd gitcache
+    git submodule update --init
+
+Using the [make4py] framework, we access all major steps using the good old `make`
+command. The main make targets of interest are:
+
+  - `make format` to format the source code
+  - `make check-style` to perform a static code analysis
+  - `make tests` to perform unit and functional tests
+
+The actions are executed in a virtual environment per default. You can also use
+dedicated suffixes on the targets to specify the environment to use:
+
+  - `<target>.venv` specifies explicitly to use a virtual env.
+  - `<target>.ubuntu24.04` specifies to use a Ubuntu 24.04 docker container
+  - `<target>.alpine3.20` specifies to use a Alpine 3.20 docker container
+  - `<target>.windows` specifies to use a vagrant machine running Windows
+  - `<target>.all` specifies to run the target on all variants.
+
+For example, if you want to execute the unit tests on Ubuntu 22.04, you can call
+
+    make unittests.ubuntu22.04
+
+
+## Notes on Releases
 
 Releases are now automatically built if a new tag `v<major>.<minor>.<revision>`
 is pushed to the repository. This changes the release process a little bit:
@@ -319,3 +344,4 @@ is pushed to the repository. This changes the release process a little bit:
 [git]: https://git-scm.com/
 [git-lfs]: https://git-lfs.github.com/
 [pyInstaller]: https://www.pyinstaller.org/
+[make4py]: https://github.com/seeraven/make4py
