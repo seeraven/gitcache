@@ -139,7 +139,7 @@ pygments==2.18.0
     #   sphinx
 pyinstaller==6.11.1
     # via gitcache (pyproject.toml)
-pyinstaller-hooks-contrib==2024.10
+pyinstaller-hooks-contrib==2024.11
     # via pyinstaller
 pylint==3.3.2
     # via gitcache (pyproject.toml)

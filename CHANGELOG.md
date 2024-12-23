@@ -2,6 +2,8 @@
 
 ## Upcoming Version
 
+## v1.0.22
+
 - Updated README.md section "Installation on MacOS". Thanks to Ihor Dutchak for the attribute
   clearing command!
 - Updated README.md section "Configuration" to include the new `CloneStyle` option.
