@@ -41,9 +41,7 @@ def test_update_all(gitcache_ifc: GitcacheIfc):
     mirror_dir = os.path.join(
         gitcache_ifc.workspace.gitcache_dir_path, "mirrors", "github.com", "seeraven", "gitcache", "git"
     )
-    gitcache_ifc.run_ok(
-        ["git", "remote", "set-url", "origin", "https://github.com/seeraven/gatcache.git"], cwd=mirror_dir
-    )
+    gitcache_ifc.run_ok(["git", "remote", "set-url", "origin", "https://github.com/gatcache.git"], cwd=mirror_dir)
     gitcache_ifc.run_fail(["git", "update-mirrors"])
     assert 3 == gitcache_ifc.db_field("mirror-updates", repo)
 
