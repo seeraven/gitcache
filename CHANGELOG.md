@@ -6,6 +6,10 @@
   clearing command!
 - Updated README.md section "Configuration" to include the new `CloneStyle` option.
 - Added README.md section "Development".
+- Bugfix in functional test with an invalid repository name.
+- Moved main entry point into the module to allow building a wheel.
+- Added first support in Makefile to build and test a wheel.
+- Added support to the github runner to create a wheel release.
 
 ## v1.0.21
 
