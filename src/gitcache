@@ -12,49 +12,10 @@
 # -----------------------------------------------------------------------------
 # Module Import
 # -----------------------------------------------------------------------------
-import logging
-import os
-import sys
-
-import coloredlogs
-
-from git_cache.git_cache_command import git_cache
-from git_cache.git_command import handle_git_command
-from git_cache.global_settings import GITCACHE_LOGFORMAT, GITCACHE_LOGLEVEL
+from git_cache.cli import main_cli
 
 # -----------------------------------------------------------------------------
 # Main
 # -----------------------------------------------------------------------------
 if __name__ == "__main__":
-    log_level_styles = {'debug': {'color': 'cyan'},
-                        'info': {'color': 'green'},
-                        'warning': {'color': 'yellow'},
-                        'error': {'color': 'red'},
-                        'critical': {'bold': True, 'color': 'red'}}
-    coloredlogs.install(level=GITCACHE_LOGLEVEL,
-                        level_styles=log_level_styles,
-                        fmt=GITCACHE_LOGFORMAT)
-
-    logger = logging.getLogger(__name__)
-    logger.debug("Python executable: %s", sys.executable)
-    logger.debug("Called as %s", sys.argv)
-
-    # If using an interpreter we add it as the first argument of the "called_as" array.
-    called_as_base = []
-    if not getattr(sys, "frozen", False):
-        called_as_base.append(sys.executable)
-
-    git_names = ["git", "git.exe"]
-    if os.path.basename(sys.argv[0]) in git_names:
-        # Called as "git ..."
-        handle_git_command(called_as_base + sys.argv[0:1], sys.argv[1:])
-    elif len(sys.argv) > 1 and os.path.basename(sys.argv[1]) in git_names:
-        # Called as "gitcache git ..."
-        handle_git_command(called_as_base + sys.argv[0:2], sys.argv[2:])
-    else:
-        sys.exit(0 if git_cache() else 1)
-
-
-# -----------------------------------------------------------------------------
-# EOF
-# -----------------------------------------------------------------------------
+    main_cli()

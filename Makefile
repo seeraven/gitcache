@@ -36,13 +36,69 @@ include .make4py/make4py.mk
 
 
 # ----------------------------------------------------------------------------
-#  OWN TARGETS
+#  WHEEL BUILD
 # ----------------------------------------------------------------------------
-.PHONY: precheck-releases
+.PHONY: build-wheel
 
-precheck-releases: check-style.ubuntu22.04 tests.all doc man releases test-releases
+WHEEL := dist/$(APP_NAME)-$(APP_VERSION)-py3-none-any.whl
+
+ifeq ($(SWITCH_TO_VENV),1)
+
+$(WHEEL): $(WHEEL).venv
+
+else
+
+$(WHEEL): pyproject.toml
+	@pip install --upgrade build
+	@python3 -m build
+
+endif
+
+build-wheel: $(WHEEL)
 
 
 # ----------------------------------------------------------------------------
-#  EOF
+#  WHEEL TEST INSTALLATION
 # ----------------------------------------------------------------------------
+ifeq ($(ON_WINDOWS),1)
+    PPTEST_VENV_DIR := $(BUILD_DIR)\venv_pptest_$(WIN_PLATFORM_STRING)$(PLATFORM_SUFFIX)
+    PPTEST_VENV_ACTIVATE := $(PPTEST_VENV_DIR)\Scripts\activate.bat
+    PPTEST_VENV_ACTIVATE_PLUS := $(PPTEST_VENV_ACTIVATE) &
+else
+    PPTEST_VENV_DIR := $(BUILD_DIR)/venv_pptest_$(LINUX_PLATFORM_STRING)$(PLATFORM_SUFFIX)
+    PPTEST_VENV_ACTIVATE := source $(PPTEST_VENV_DIR)/bin/activate
+    PPTEST_VENV_ACTIVATE_PLUS := $(PPTEST_VENV_ACTIVATE);
+endif
+
+$(PPTEST_VENV_DIR):
+	@$(PYTHON) -m venv $(PPTEST_VENV_DIR)
+	@$(PPTEST_VENV_ACTIVATE_PLUS) make pptest-system-setup
+
+%.pptest_venv: $(PPTEST_VENV_DIR)
+	@echo "Entering venv $(PPTEST_VENV_DIR):"
+	@$(PPTEST_VENV_ACTIVATE_PLUS) make $*
+	@echo "Leaving venv $(PPTEST_VENV_DIR)."
+
+
+.PHONY: pptest-system-setup
+
+pptest-system-setup: pip-setup
+	@echo "-------------------------------------------------------------"
+	@echo "Installing requirements for pip package test..."
+	@echo "-------------------------------------------------------------"
+	@pip install $(WHEEL)
+	@pip install pytest
+
+ifeq ($(SWITCH_TO_VENV),1)
+
+
+.PHONY: functional-tests-wheel
+
+functional-tests-wheel: functional-tests-wheel.pptest_venv
+
+else
+
+functional-tests-wheel: $(SOURCES)
+	pytest $(FUNCTEST_SELECTION) --executable $(shell which gitcache) $(FUNCTEST_DIR)
+
+endif

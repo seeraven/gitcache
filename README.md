@@ -126,6 +126,26 @@ is found bfore the real `git` command as described on the installation on Linux
 section.
 
 
+## Installation using the Wheel Package
+
+You can also install gitcache using a wheel, but please note that this
+distribution method is not very well tested. If you have problems with
+gitcache, please test first using one of the [pyInstaller] executables
+before opening a bug ticket.
+
+The latest wheel is found on the release page
+https://github.com/seeraven/gitcache/releases and is installed using pip:
+
+    pip install gitcache-1.0.22-py3-none-any.whl
+
+As with the other installation methods, you have to make sure to create a
+symlink named `git` to the location of the `gitcache` script and ensure it
+overlays the real git installation, e.g.:
+
+    ln -s $(which gitcache) ~/bin/git
+    export PATH=$HOME/bin:$PATH
+
+
 ## Configuration
 
 gitcache stores all files under in the directory `~/.gitcache`. This base
@@ -339,6 +359,20 @@ is pushed to the repository. This changes the release process a little bit:
     replace the version number:
 
         sed -i 's/1.0.21/1.0.22/g' Makefile pyproject.toml src/git_cache/git_cache_command.py doc/source/installation.rst
+
+
+## Notes on Building a Pip-Package
+
+To create a wheel suitable for the installation via `pip`, call the following
+command:
+
+    make build-wheel
+
+You will then find the wheel in the `dist` directory.
+
+To test the wheel in a separate virtual environment, call
+
+    make functional-tests-wheel
 
 
 [git]: https://git-scm.com/
