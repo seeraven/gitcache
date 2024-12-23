@@ -1,6 +1,6 @@
 [build-system]
 requires = [
-    "setuptools",
+    "setuptools>=61.0",
     "wheel",
 ]
 build-backend = 'setuptools.build_meta'
@@ -13,6 +13,11 @@ authors = [{name = "Clemens Rabe", email = "clemens.rabe@clemensrabe.de"}]
 description = "Local cache for git repositories to speed up working with large repositories and multiple clones."
 readme = "README.md"
 requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: BSD License",
+    "Operating System :: OS Independent",
+]
 dependencies = [
     "portalocker",
     "pytimeparse",
@@ -55,6 +60,15 @@ test = [
     "pytest-cov",
     "pytest-timeout"
 ]
+
+
+[project.urls]
+Homepage = "https://github.com/seeraven/gitcache"
+Issues = "https://github.com/seeraven/gitcache/issues"
+
+
+[project.scripts]
+gitcache = "git_cache.cli:main_cli"
 
 
 [tool.black]
