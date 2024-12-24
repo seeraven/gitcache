@@ -170,7 +170,7 @@ jobs:
 
   create_release:
     runs-on: ubuntu-latest
-    needs: [build-ubuntu, build-alpine, build-windows-2022, build-macos]
+    needs: [build-wheel, build-ubuntu, build-alpine, build-windows-2022, build-macos]
     steps:
       - name: Get artifacts
         uses: actions/download-artifact@v4
