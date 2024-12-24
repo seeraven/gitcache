@@ -2,11 +2,11 @@ alabaster==1.0.0
     # via sphinx
 altgraph==0.17.4
     # via pyinstaller
-astroid==3.3.5
+astroid==3.3.8
     # via pylint
-asttokens==2.4.1
+asttokens==3.0.0
     # via stack-data
-attrs==24.2.0
+attrs==24.3.0
     # via flake8-bugbear
 babel==2.16.0
     # via sphinx
@@ -14,15 +14,15 @@ black==24.10.0
     # via
     #   flake8-black
     #   gitcache (pyproject.toml)
-certifi==2024.8.30
+certifi==2024.12.14
     # via requests
 charset-normalizer==3.4.0
     # via requests
-click==8.1.7
+click==8.1.8
     # via black
 coloredlogs==15.0.1
     # via gitcache (pyproject.toml)
-coverage[toml]==7.6.8
+coverage[toml]==7.6.9
     # via
     #   gitcache (pyproject.toml)
     #   pytest-cov
@@ -53,7 +53,7 @@ flake8==7.1.1
     #   pep8-naming
 flake8-black==0.3.6
     # via gitcache (pyproject.toml)
-flake8-bugbear==24.10.31
+flake8-bugbear==24.12.12
     # via gitcache (pyproject.toml)
 flake8-comprehensions==3.16.0
     # via gitcache (pyproject.toml)
@@ -69,7 +69,7 @@ imagesize==1.4.1
     # via sphinx
 iniconfig==2.0.0
     # via pytest
-ipython==8.29.0
+ipython==8.31.0
     # via gitcache (pyproject.toml)
 isort==5.13.2
     # via
@@ -78,7 +78,7 @@ isort==5.13.2
     #   pylint
 jedi==0.19.2
     # via ipython
-jinja2==3.1.4
+jinja2==3.1.5
     # via sphinx
 markupsafe==3.0.2
     # via jinja2
@@ -90,7 +90,7 @@ mccabe==0.7.0
     #   pylint
 mock==5.1.0
     # via gitcache (pyproject.toml)
-mypy==1.13.0
+mypy==1.14.0
     # via gitcache (pyproject.toml)
 mypy-extensions==1.0.0
     # via
@@ -139,11 +139,11 @@ pygments==2.18.0
     #   sphinx
 pyinstaller==6.11.1
     # via gitcache (pyproject.toml)
-pyinstaller-hooks-contrib==2024.10
+pyinstaller-hooks-contrib==2024.11
     # via pyinstaller
-pylint==3.3.1
+pylint==3.3.3
     # via gitcache (pyproject.toml)
-pytest==8.3.3
+pytest==8.3.4
     # via
     #   gitcache (pyproject.toml)
     #   pytest-cov
@@ -156,8 +156,6 @@ pytimeparse==1.1.8
     # via gitcache (pyproject.toml)
 requests==2.32.3
     # via sphinx
-six==1.16.0
-    # via asttokens
 snowballstemmer==2.2.0
     # via sphinx
 sphinx==8.1.3
@@ -185,7 +183,7 @@ sphinxcontrib-serializinghtml==2.0.0
     # via sphinx
 stack-data==0.6.3
     # via ipython
-tomli==2.1.0
+tomli==2.2.1
     # via dom-toml
 tomlkit==0.13.2
     # via pylint
@@ -198,9 +196,8 @@ types-mock==5.1.0.20240425
 typing-extensions==4.12.2
     # via
     #   domdf-python-tools
-    #   ipython
     #   mypy
-urllib3==2.2.3
+urllib3==2.3.0
     # via requests
 wcwidth==0.2.13
     # via prompt-toolkit
