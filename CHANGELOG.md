@@ -2,6 +2,11 @@
 
 ## Upcoming Version
 
+## v1.0.23
+
+- Added support for Ubuntu 22.04 and Ubuntu 24.04 on ARM.
+- Updated pip dependencies.
+
 ## v1.0.22
 
 - Updated README.md section "Installation on MacOS". Thanks to Ihor Dutchak for the attribute
