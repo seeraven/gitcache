@@ -77,8 +77,8 @@ gitcache is distributed as a single executable packaged using [pyInstaller].
 So all you have to do is to download the latest executable and copy it to a
 location of your choice, for example `~/bin`:
 
-    wget https://github.com/seeraven/gitcache/releases/download/v1.0.22/gitcache_v1.0.22_Ubuntu22.04_x86_64
-    mv gitcache_v1.0.22_Ubuntu22.04_x86_64 ~/bin/gitcache
+    wget https://github.com/seeraven/gitcache/releases/download/v1.0.23/gitcache_v1.0.23_Ubuntu22.04_x86_64
+    mv gitcache_v1.0.23_Ubuntu22.04_x86_64 ~/bin/gitcache
     chmod +x ~/bin/gitcache
 
 gitcache can be used as a stand-alone command, but it is much easier to use
@@ -115,9 +115,9 @@ gitcache is distributed as a tar-ball (`*.tgz` file). Download the archive and
 extract it at your desired target location (the archive contains a subfolder):
 
     cd /my/target/destination
-    tar xfz gitcache_v1.0.22_Darwin_arm64.tgz
-    xattr -cr gitcache_v1.0.22_Darwin_arm64
-    ls gitcache_v1.0.22_Darwin_arm64
+    tar xfz gitcache_v1.0.23_Darwin_arm64.tgz
+    xattr -cr gitcache_v1.0.23_Darwin_arm64
+    ls gitcache_v1.0.23_Darwin_arm64
 
 To use the `gitcache` command, the final installation directory should be put
 into your `PATH` variable. To use it as a wrapper to the `git` command, you
@@ -136,7 +136,7 @@ before opening a bug ticket.
 The latest wheel is found on the release page
 https://github.com/seeraven/gitcache/releases and is installed using pip:
 
-    pip install gitcache-1.0.22-py3-none-any.whl
+    pip install gitcache-1.0.23-py3-none-any.whl
 
 As with the other installation methods, you have to make sure to create a
 symlink named `git` to the location of the `gitcache` script and ensure it
@@ -358,7 +358,7 @@ is pushed to the repository. This changes the release process a little bit:
     `src/git_cache/git_cache_command.py` and `doc/source/installation.rst` and
     replace the version number:
 
-        sed -i 's/1.0.22/1.0.23/g' Makefile pyproject.toml src/git_cache/git_cache_command.py doc/source/installation.rst
+        sed -i 's/1.0.23/1.0.24/g' Makefile pyproject.toml src/git_cache/git_cache_command.py doc/source/installation.rst
 
 
 ## Notes on Building a Pip-Package
