@@ -20,7 +20,7 @@ on:
         type: string
 
 jobs:
-  macos:
+  pipdepsupgrade:
     strategy:
       fail-fast: false
       matrix:
@@ -31,12 +31,22 @@ jobs:
         uses: actions/checkout@v4
         with:
           submodules: true
+      # Note: Keep python version in sync with pip-deps!
+      - name: Setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11.9'
       - name: Install dependencies
+        uses: crazy-max/ghaction-chocolatey@v3
+        with:
+          args: install -y make
+      - name: Refresh Environment
+        shell: cmd
         run: |
-          brew install make
+          refreshenv
       - name: Pip Deps Upgrade
         run: |
-          make pip-deps-upgrade
+          C:\ProgramData\chocolatey\bin\make pip-deps-upgrade
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
         with:
