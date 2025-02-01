@@ -4,27 +4,27 @@ altgraph==0.17.4
     # via
     #   macholib
     #   pyinstaller
-astroid==3.3.7
+astroid==3.3.8
     # via pylint
 asttokens==3.0.0
     # via stack-data
-attrs==24.3.0
+attrs==25.1.0
     # via flake8-bugbear
 babel==2.16.0
     # via sphinx
-black==24.10.0
+black==25.1.0
     # via
     #   flake8-black
     #   gitcache (pyproject.toml)
-certifi==2024.12.14
+certifi==2025.1.31
     # via requests
-charset-normalizer==3.4.0
+charset-normalizer==3.4.1
     # via requests
 click==8.1.8
     # via black
 coloredlogs==15.0.1
     # via gitcache (pyproject.toml)
-coverage[toml]==7.6.9
+coverage[toml]==7.6.10
     # via
     #   gitcache (pyproject.toml)
     #   pytest-cov
@@ -42,7 +42,7 @@ domdf-python-tools==3.9.0
     # via
     #   dom-toml
     #   sphinx-pyproject
-executing==2.1.0
+executing==2.2.0
     # via stack-data
 flake8==7.1.1
     # via
@@ -59,7 +59,7 @@ flake8-bugbear==24.12.12
     # via gitcache (pyproject.toml)
 flake8-comprehensions==3.16.0
     # via gitcache (pyproject.toml)
-flake8-isort==6.1.1
+flake8-isort==6.1.2
     # via gitcache (pyproject.toml)
 flake8-pyproject==1.2.3
     # via gitcache (pyproject.toml)
@@ -71,9 +71,9 @@ imagesize==1.4.1
     # via sphinx
 iniconfig==2.0.0
     # via pytest
-ipython==8.31.0
+ipython==8.32.0
     # via gitcache (pyproject.toml)
-isort==5.13.2
+isort==6.0.0
     # via
     #   flake8-isort
     #   gitcache (pyproject.toml)
@@ -94,7 +94,7 @@ mccabe==0.7.0
     #   pylint
 mock==5.1.0
     # via gitcache (pyproject.toml)
-mypy==1.14.0
+mypy==1.14.1
     # via gitcache (pyproject.toml)
 mypy-extensions==1.0.0
     # via
@@ -123,9 +123,9 @@ platformdirs==4.3.6
     #   pylint
 pluggy==1.5.0
     # via pytest
-portalocker==3.0.0
+portalocker==3.1.1
     # via gitcache (pyproject.toml)
-prompt-toolkit==3.0.48
+prompt-toolkit==3.0.50
     # via ipython
 ptyprocess==0.7.0
     # via pexpect
@@ -137,15 +137,15 @@ pycodestyle==2.12.1
     #   gitcache (pyproject.toml)
 pyflakes==3.2.0
     # via flake8
-pygments==2.18.0
+pygments==2.19.1
     # via
     #   ipython
     #   sphinx
 pyinstaller==6.11.1
     # via gitcache (pyproject.toml)
-pyinstaller-hooks-contrib==2024.11
+pyinstaller-hooks-contrib==2025.1
     # via pyinstaller
-pylint==3.3.2
+pylint==3.3.4
     # via gitcache (pyproject.toml)
 pytest==8.3.4
     # via
