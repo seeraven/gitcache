@@ -399,6 +399,22 @@ def test_relative_submodule_ssh_specs(
     assert 1 == gitcache_ifc.db_field("clones", final_submodule_url)
 
 
+def test_submodule_on_orphaned_commit(gitcache_ifc: GitcacheIfc):
+    """Test 'git submodule update --init' with a submodule pointing to an orphaned commit."""
+    repo = "https://github.com/seeraven/submodule-with-orphaned-commit"
+    checkout = os.path.join(gitcache_ifc.workspace.workspace_path, "submodule-with-orphaned-commit")
+    gitcache_ifc.run_ok(["git", "clone", repo, checkout])
+    assert 0 == gitcache_ifc.db_field("mirror-updates", repo)
+    assert 1 == gitcache_ifc.db_field("clones", repo)
+    assert 0 == gitcache_ifc.db_field("updates", repo)
+
+    submodule_repo = "https://github.com/seeraven/orphaned-commits"
+    gitcache_ifc.run_ok(["git", "submodule", "update", "--init"], cwd=checkout)
+    assert 1 == gitcache_ifc.db_field("mirror-updates", submodule_repo)
+    assert 1 == gitcache_ifc.db_field("clones", submodule_repo)
+    assert 1 == gitcache_ifc.db_field("updates", submodule_repo)
+
+
 # ----------------------------------------------------------------------------
 #  EOF
 # ----------------------------------------------------------------------------

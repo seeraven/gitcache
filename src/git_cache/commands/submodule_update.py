@@ -18,9 +18,10 @@ Copyright:
 # -----------------------------------------------------------------------------
 import logging
 import os
+import re
 from typing import List
 
-from ..command_execution import getstatusoutput, simple_call_command
+from ..command_execution import call_command_retry, getstatusoutput, simple_call_command
 from ..git_options import GitOptions
 from .helpers import get_mirror_url, get_pull_url, resolve_submodule_url
 
@@ -33,7 +34,7 @@ LOG = logging.getLogger(__name__)
 # -----------------------------------------------------------------------------
 # Function Definitions
 # -----------------------------------------------------------------------------
-# pylint: disable=too-many-locals,too-many-statements,too-many-branches
+# pylint: disable=too-many-locals,too-many-statements,too-many-branches,too-many-nested-blocks
 def git_submodule_update(called_as: List[str], git_options: GitOptions) -> int:
     """Handle a git submodule update command.
 
@@ -121,16 +122,39 @@ def git_submodule_update(called_as: List[str], git_options: GitOptions) -> int:
 
             simple_call_command(command, cwd=cwd)
 
-            if has_recursive and os.path.exists(os.path.join(abs_tgt_path, ".gitmodules")):
-                # Before entering the recursive update we must ensure the checked out
-                # repository is on the desired commit.
-                command = git_options.get_real_git_with_options()
-                command += ["submodule", "update"]
-                if has_remote:
-                    command += ["--remote"]
-                command += ["--", tgt_path]
-                simple_call_command(command, cwd=cwd)
+            # Ensure the checked out repository is on the desired commit.
+            command = git_options.get_real_git_with_options()
+            command += ["submodule", "update"]
+            if has_remote:
+                command += ["--remote"]
+            command += ["--", tgt_path]
+            _, stdout_buffer, stderr_buffer = call_command_retry(command, 0, cwd=cwd)
 
+            # Check for an error message containing a failed fetch of a commit
+            failed_hash = None
+            if stdout_buffer and b"fetching of that commit failed" in stdout_buffer:
+                hashes = re.findall(r"([0-9a-fA-F]{40})", stdout_buffer.decode())
+                if hashes:
+                    failed_hash = hashes[0]
+            if stderr_buffer and b"fetching of that commit failed" in stderr_buffer:
+                hashes = re.findall(r"([0-9a-fA-F]{40})", stderr_buffer.decode())
+                if hashes:
+                    failed_hash = hashes[0]
+
+            if failed_hash:
+                # Issue a manual "git fetch origin <commit>" inside the submodule
+                command = called_as + ["fetch", "origin", failed_hash]
+                if simple_call_command(command, cwd=abs_tgt_path) == 0:
+                    command = called_as + ["checkout", failed_hash]
+                    if simple_call_command(command, cwd=abs_tgt_path) == 0:
+                        command = git_options.get_real_git_with_options()
+                        command += ["submodule", "update"]
+                        if has_remote:
+                            command += ["--remote"]
+                        command += ["--", tgt_path]
+                        simple_call_command(command, cwd=cwd)
+
+            if has_recursive and os.path.exists(os.path.join(abs_tgt_path, ".gitmodules")):
                 command = called_as + ["submodule", "update", "--recursive"]
                 if has_init:
                     command.append("--init")

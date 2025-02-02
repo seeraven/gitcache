@@ -479,7 +479,7 @@ class GitMirror:
         """
         command = [self.config.get("System", "RealGit"), "fetch"] + command_args
         return_code, _, _ = pretty_call_command_retry(
-            f"Explit fetch on {self.path} with arguments {command_args}",
+            f"Explicit fetch on {self.path} with arguments {command_args}",
             "",
             command,
             num_retries=self.config.get("Update", "Retries"),
