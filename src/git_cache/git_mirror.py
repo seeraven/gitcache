@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 A single git mirror handler.
 
@@ -12,7 +11,6 @@ Copyright:
     that is included as part of this package.
 """
 
-
 # -----------------------------------------------------------------------------
 # Module Import
 # -----------------------------------------------------------------------------
@@ -20,7 +18,7 @@ import logging
 import os
 import posixpath
 import re
-from typing import Optional
+from typing import List, Optional
 
 import portalocker
 
@@ -177,6 +175,28 @@ class GitMirror:
                     return self._update(ref)
 
                 LOG.info("Update time of mirror %s not reached yet.", self.path)
+        except portalocker.exceptions.LockException:
+            LOG.error("Update timed out due to locked mirror.")
+            return False
+        return True
+
+    def fetch(self, command_args: List[str]) -> bool:
+        """Execute a fetch command with custom arguments in the mirror.
+
+        Args:
+            command_args (list): A list of strings giving additional arguments
+                                 to the fetch command executed in the mirror.
+
+        Return:
+            Returns True if the command was successfull, otherwise False.
+        """
+        mirror_exists = self.database.get(self.path) is not None
+        try:
+            with Locker(f"Mirror {self.path}", self.lockfile, self.config):
+                if not mirror_exists:
+                    LOG.error("Mirror does not exist!")
+                    return False
+                return self._fetch(command_args)
         except portalocker.exceptions.LockException:
             LOG.error("Update timed out due to locked mirror.")
             return False
@@ -445,6 +465,28 @@ class GitMirror:
             if os.path.exists(gc_log_file):
                 os.unlink(gc_log_file)
 
+        return return_code == 0
+
+    def _fetch(self, command_args: List[str]) -> bool:
+        """Execute a fetch command with custom arguments in the mirror.
+
+        Args:
+            command_args (list): A list of strings giving additional arguments
+                                 to the fetch command executed in the mirror.
+
+        Return:
+            Returns True if the command was successfull, otherwise False.
+        """
+        command = [self.config.get("System", "RealGit"), "fetch"] + command_args
+        return_code, _, _ = pretty_call_command_retry(
+            f"Explit fetch on {self.path} with arguments {command_args}",
+            "",
+            command,
+            num_retries=self.config.get("Update", "Retries"),
+            cwd=self.git_dir,
+            command_timeout=self.config.get("Update", "CommandTimeout"),
+            output_timeout=self.config.get("Update", "OutputTimeout"),
+        )
         return return_code == 0
 
     def _fetch_lfs(self, ref=None, options=None):

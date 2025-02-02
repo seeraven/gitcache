@@ -79,6 +79,23 @@ def git_fetch(git_options):
         if config.get("LFS", "PerMirrorStorage"):
             command = [real_git, "config", "--local", "lfs.storage", mirror.git_lfs_dir]
             simple_call_command(command, cwd=git_options.get_run_path())
+
+        # Try the fetch command in the checkout once.
+        original_command_args = [real_git] + new_args
+        return_code, _, _ = pretty_call_command_retry(
+            action,
+            "",
+            original_command_args,
+            num_retries=1,
+            command_timeout=config.get("Update", "CommandTimeout"),
+            output_timeout=config.get("Update", "OutputTimeout"),
+        )
+        if return_code == 0:
+            return return_code
+
+        # Try the command in the mirror, using the same command arguments (ignoring the options).
+        mirror.fetch(git_options.command_args)
+
     else:
         action = "Fetch"
         new_args = git_options.all_args
