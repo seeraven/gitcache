@@ -2,6 +2,9 @@
 
 ## Upcoming Version
 
+- To allow fetching orphaned commits, the `git fetch` command retries a failed
+  command in the mirror directory.
+
 ## v1.0.23
 
 - Added support for Ubuntu 22.04 and Ubuntu 24.04 on ARM.

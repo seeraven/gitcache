@@ -152,6 +152,26 @@ def test_include(gitcache_ifc: GitcacheIfc):
     gitcache_ifc.workspace.del_env("GITCACHE_URLPATTERNS_EXCLUDE_REGEX")
 
 
+def test_orphaned_commit(gitcache_ifc: GitcacheIfc):
+    """Test fetching an orphaned commit."""
+    repo = "https://github.com/seeraven/orphaned-commits"
+    commit = "76f718f7ea7167636bb9291b49890c063e50964f"
+    checkout = os.path.join(gitcache_ifc.workspace.workspace_path, "orphaned-commits")
+    gitcache_ifc.run_ok(["git", "clone", repo, checkout])
+    assert 0 == gitcache_ifc.db_field("mirror-updates", repo)
+    assert 1 == gitcache_ifc.db_field("clones", repo)
+    assert 0 == gitcache_ifc.db_field("updates", repo)
+
+    # Fetch the orphaned commit (this will perform an update of the mirror)
+    gitcache_ifc.run_ok(["git", "-C", checkout, "fetch", "origin", commit])
+    assert 1 == gitcache_ifc.db_field("mirror-updates", repo)
+    assert 1 == gitcache_ifc.db_field("clones", repo)
+    assert 1 == gitcache_ifc.db_field("updates", repo)
+
+    # Checkout the orphaned commit
+    gitcache_ifc.run_ok(["git", "-C", checkout, "checkout", commit])
+
+
 # ----------------------------------------------------------------------------
 #  EOF
 # ----------------------------------------------------------------------------
