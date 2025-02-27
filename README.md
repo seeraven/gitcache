@@ -293,6 +293,7 @@ forwarded to the real git command.
   - `git fetch` to update the mirror before updating the clone.
   - `git submodule init` to allow correct initialization of the submodules.
   - `git submodule update` to call the gitcache for every submodule.
+  - `git remote add origin` for a delayed initialization of a git repository.
 
 
 ## Debugging

@@ -180,6 +180,29 @@ class GitMirror:
             return False
         return True
 
+    def ensure_exists(self, ref=None) -> bool:
+        """Create the mirror if it does not exist.
+
+        If the mirror path does not exist, a bare mirror is created.
+
+        Args:
+            ref (str):    The ref to use for the fetch of the lfs data. If None,
+                          the default branch is determined and used.
+
+        Return:
+            Returns True if the mirror exists now or False if the request timed out.
+        """
+        mirror_exists = self.database.get(self.path) is not None
+        try:
+            with Locker(f"Mirror {self.path}", self.lockfile, self.config):
+                if not mirror_exists:
+                    rmtree(self.path, ignore_errors=True)
+                    return self._clone(ref)
+        except portalocker.exceptions.LockException:
+            LOG.error("Clone timed out due to locked mirror.")
+            return False
+        return True
+
     def fetch(self, command_args: List[str]) -> bool:
         """Execute a fetch command with custom arguments in the mirror.
 
@@ -258,6 +281,30 @@ class GitMirror:
             LOG.error("Delete timed out due to locked mirror.")
             return False
         return True
+
+    def configure_git_for_mirror(self, git_options: GitOptions) -> int:
+        """Configure the local git repository to use the mirror."""
+        git_lfs_url = self.url + "/info/lfs"
+        real_git = self.config.get("System", "RealGit")
+
+        LOG.info("Setting push URL to %s and configure LFS.", self.url)
+        paths = [path for path in git_options.get_global_group_values("run_path") if path is not None]
+        cwd = os.path.abspath(os.path.join(*paths))
+        commands = [
+            [real_git, "remote", "add", "origin", self.git_dir],
+            [real_git, "remote", "set-url", "--push", "origin", self.url],
+            [real_git, "config", "--local", "lfs.url", git_lfs_url],
+        ]
+        if self.config.get("LFS", "PerMirrorStorage"):
+            commands.append([real_git, "config", "--local", "lfs.storage", self.git_lfs_dir])
+
+        retval = 0
+        for command in commands:
+            cmd_retval = simple_call_command(command, cwd=cwd)
+            if cmd_retval != 0:
+                LOG.error("Command '%s' with working directory %s gave return code of %d!", command, cwd, cmd_retval)
+                retval = cmd_retval
+        return retval
 
     def clone_from_mirror(self, git_options: GitOptions) -> int:
         """Clone from the mirror.
