@@ -247,6 +247,15 @@ SUBMODULE_UPDATE_OPTIONS = [
     Option(short_name="j", long_name="jobs"),
 ]
 
+REMOTE_ADD_OPTIONS = [
+    Option(short_name="f", long_name="fetch", has_arg=False),
+    Option(long_name="tags", has_arg=False),
+    Option(long_name="no-tags", has_arg=False),
+    Option(short_name="t", long_name="track"),
+    Option(short_name="m", long_name="master"),
+    Option(long_name="mirror"),
+]
+
 COMMAND_OPTIONS = {
     "lfs": [],  # Options between 'lfs' and the subcommand
     "submodule": [],  # Options between 'submodule' and the subcommand
@@ -262,6 +271,7 @@ COMMAND_OPTIONS = {
     "fetch": FETCH_OPTIONS,
     "submodule_init": SUBMODULE_INIT_OPTIONS,
     "submodule_update": SUBMODULE_UPDATE_OPTIONS,
+    "remote_add": REMOTE_ADD_OPTIONS,
 }
 
 
@@ -396,7 +406,7 @@ class GitOptions:
             self.command = args[argv]
             argv += 1
 
-        if self.command in ["lfs", "submodule"]:
+        if self.command in ["lfs", "submodule", "remote"]:
             # Consume options until the subcommand is found
             while (argv < len(args)) and args[argv].startswith("-"):
                 argv += self._parse_any_option(

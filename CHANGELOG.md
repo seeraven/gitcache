@@ -2,6 +2,11 @@
 
 ## Upcoming Version
 
+## v1.0.25
+
+- Handle `git remote add origin` by cloning the remote if it was not mirrored
+  before and configure the mirror for the remote origin fetch.
+
 ## v1.0.24
 
 - To allow fetching orphaned commits, the `git fetch` command retries a failed

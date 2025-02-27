@@ -30,6 +30,7 @@ from .commands.lfs_fetch import git_lfs_fetch
 from .commands.lfs_pull import git_lfs_pull
 from .commands.ls_remote import git_ls_remote
 from .commands.pull import git_pull
+from .commands.remote_add import git_remote_add
 from .commands.submodule_init import git_submodule_init
 from .commands.submodule_update import git_submodule_update
 from .commands.update_all import git_update_all_mirrors
@@ -116,6 +117,9 @@ def handle_git_command(called_as: List[str], args: List[str]) -> None:
 
     elif git_options.get_command() == "submodule_update":
         sys.exit(git_submodule_update(called_as, git_options))
+
+    elif git_options.get_command() == "remote_add":
+        sys.exit(git_remote_add(git_options))
 
     LOG.debug("Command '%s' is not handled by gitcache. Calling the real git command.", git_options.get_command())
     sys.exit(call_real_git(args))
