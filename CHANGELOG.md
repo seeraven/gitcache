@@ -2,6 +2,8 @@
 
 ## Upcoming Version
 
+## v1.0.26
+
 - Bugfix: Fix command line handling when using the `git remote` command.
 
 ## v1.0.25
