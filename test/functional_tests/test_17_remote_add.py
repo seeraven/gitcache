@@ -41,3 +41,16 @@ def test_remote_add_after_clone(gitcache_ifc: GitcacheIfc):
 
     # Configure remote
     gitcache_ifc.run_fail(["git", "-C", checkout, "remote", "add", "origin", repo])
+
+
+def test_remote_v(gitcache_ifc: GitcacheIfc):
+    """Test the 'git remote -v' command after a clone to still work."""
+    repo = "https://github.com/seeraven/gitcache"
+    checkout = os.path.join(gitcache_ifc.workspace.workspace_path, "gitcache")
+
+    # Create initial local git repository
+    gitcache_ifc.run_ok(["git", "clone", repo, checkout])
+
+    # Execute git remote -v
+    result = gitcache_ifc.run_ok(["git", "remote", "-v"], checkout)
+    assert "(fetch)" in result.stdout
