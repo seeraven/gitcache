@@ -2,6 +2,10 @@
 
 ## Upcoming Version
 
+## v1.0.26
+
+- Bugfix: Fix command line handling when using the `git remote` command.
+
 ## v1.0.25
 
 - Handle `git remote add origin` by cloning the remote if it was not mirrored

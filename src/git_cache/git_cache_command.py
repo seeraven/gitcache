@@ -53,7 +53,7 @@ If called with the first argument 'git' or when called as 'git' using a symlink,
 it acts as a wrapper for the git command and intercepts the commands required
 for the mirror handling.
 """
-GITCACHE_VERSION = "1.0.26"
+GITCACHE_VERSION = "1.0.27"
 
 
 # -----------------------------------------------------------------------------

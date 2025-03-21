@@ -259,6 +259,7 @@ REMOTE_ADD_OPTIONS = [
 COMMAND_OPTIONS = {
     "lfs": [],  # Options between 'lfs' and the subcommand
     "submodule": [],  # Options between 'submodule' and the subcommand
+    "remote": [],  # Options between 'remote' and the subcommand
     "cleanup": [],
     "update-mirrors": [],
     "delete-mirror": [],
