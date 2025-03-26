@@ -2,6 +2,8 @@
 
 ## Upcoming Version
 
+- Bugfix: Fix `git remote add origin` command when not using the `-C` option.
+
 ## v1.0.26
 
 - Bugfix: Fix command line handling when using the `git remote` command.
