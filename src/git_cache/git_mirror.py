@@ -289,7 +289,7 @@ class GitMirror:
 
         LOG.info("Setting push URL to %s and configure LFS.", self.url)
         paths = [path for path in git_options.get_global_group_values("run_path") if path is not None]
-        cwd = os.path.abspath(os.path.join(*paths))
+        cwd = os.path.abspath(os.path.join(*paths)) if paths else None
         commands = [
             [real_git, "remote", "add", "origin", self.git_dir],
             [real_git, "remote", "set-url", "--push", "origin", self.url],
