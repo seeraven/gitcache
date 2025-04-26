@@ -8,7 +8,7 @@ build-backend = 'setuptools.build_meta'
 
 [project]
 name = "gitcache"
-version = "1.0.28"
+version = "1.0.29"
 authors = [{name = "Clemens Rabe", email = "clemens.rabe@clemensrabe.de"}]
 description = "Local cache for git repositories to speed up working with large repositories and multiple clones."
 readme = "README.md"

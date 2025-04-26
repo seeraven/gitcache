@@ -14,7 +14,7 @@ black==25.1.0
     # via
     #   flake8-black
     #   gitcache (pyproject.toml)
-certifi==2025.1.31
+certifi==2025.4.26
     # via requests
 charset-normalizer==3.4.1
     # via requests
@@ -22,13 +22,13 @@ click==8.1.8
     # via black
 coloredlogs==15.0.1
     # via gitcache (pyproject.toml)
-coverage[toml]==7.7.0
+coverage[toml]==7.8.0
     # via
     #   gitcache (pyproject.toml)
     #   pytest-cov
 decorator==5.2.1
     # via ipython
-dill==0.3.9
+dill==0.4.0
     # via pylint
 docutils==0.21.2
     # via
@@ -42,7 +42,7 @@ domdf-python-tools==3.10.0
     #   sphinx-pyproject
 executing==2.2.0
     # via stack-data
-flake8==7.1.2
+flake8==7.2.0
     # via
     #   flake8-black
     #   flake8-bugbear
@@ -69,7 +69,7 @@ imagesize==1.4.1
     # via sphinx
 iniconfig==2.1.0
     # via pytest
-ipython==9.0.2
+ipython==9.2.0
     # via gitcache (pyproject.toml)
 ipython-pygments-lexers==1.1.1
     # via ipython
@@ -94,13 +94,13 @@ mock==5.2.0
     # via gitcache (pyproject.toml)
 mypy==1.15.0
     # via gitcache (pyproject.toml)
-mypy-extensions==1.0.0
+mypy-extensions==1.1.0
     # via
     #   black
     #   mypy
 natsort==8.4.0
     # via domdf-python-tools
-packaging==24.2
+packaging==25.0
     # via
     #   black
     #   pyinstaller
@@ -123,26 +123,26 @@ pluggy==1.5.0
     # via pytest
 portalocker==3.1.1
     # via gitcache (pyproject.toml)
-prompt-toolkit==3.0.50
+prompt-toolkit==3.0.51
     # via ipython
 ptyprocess==0.7.0
     # via pexpect
 pure-eval==0.2.3
     # via stack-data
-pycodestyle==2.12.1
+pycodestyle==2.13.0
     # via
     #   flake8
     #   gitcache (pyproject.toml)
-pyflakes==3.2.0
+pyflakes==3.3.2
     # via flake8
 pygments==2.19.1
     # via
     #   ipython
     #   ipython-pygments-lexers
     #   sphinx
-pyinstaller==6.12.0
+pyinstaller==6.13.0
     # via gitcache (pyproject.toml)
-pyinstaller-hooks-contrib==2025.1
+pyinstaller-hooks-contrib==2025.3
     # via pyinstaller
 pylint==3.3.6
     # via gitcache (pyproject.toml)
@@ -151,7 +151,7 @@ pytest==8.3.5
     #   gitcache (pyproject.toml)
     #   pytest-cov
     #   pytest-timeout
-pytest-cov==6.0.0
+pytest-cov==6.1.1
     # via gitcache (pyproject.toml)
 pytest-timeout==2.3.1
     # via gitcache (pyproject.toml)
@@ -198,11 +198,11 @@ traitlets==5.14.3
     #   matplotlib-inline
 types-mock==5.2.0.20250306
     # via gitcache (pyproject.toml)
-typing-extensions==4.12.2
+typing-extensions==4.13.2
     # via
     #   domdf-python-tools
     #   mypy
-urllib3==2.3.0
+urllib3==2.4.0
     # via requests
 wcwidth==0.2.13
     # via prompt-toolkit

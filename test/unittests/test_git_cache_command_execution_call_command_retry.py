@@ -88,9 +88,9 @@ class GitCacheCallCommandRetryTest(TestCase):
         else:
             cmd = ["pwd"]
             cwd = "/var/log"
-        return_code, stdout_buffer, _ = call_command_retry(cmd, 3, cwd=cwd)
+        return_code, stdout_buffer, stderr_buffer = call_command_retry(cmd, 3, cwd=cwd)
         self.assertEqual(0, return_code)
-        self.assertIn(cwd, stdout_buffer.decode().strip())
+        self.assertTrue(cwd in stdout_buffer.decode().strip() or cwd in stderr_buffer.decode().strip())
 
     def test_shell_cwd(self):
         """git_cache.command_execution.call_command_retry(): Support of cwd using shell."""

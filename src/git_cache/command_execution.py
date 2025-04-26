@@ -18,6 +18,7 @@ Copyright:
 # -----------------------------------------------------------------------------
 import logging
 import platform
+import signal
 import subprocess
 import time
 
@@ -191,12 +192,17 @@ def simple_call_command(cmd, shell=False, cwd=None):
         Returns the return code of the command.
     """
     try:
-        # pylint: disable=subprocess-run-check
-        result = subprocess.run(cmd, shell=shell, cwd=cwd)
+        # pylint: disable=consider-using-with
+        process = subprocess.Popen(cmd, shell=shell, cwd=cwd)
     except FileNotFoundError:
         return 127
 
-    return result.returncode
+    while process.poll() is None:
+        try:
+            process.wait()
+        except KeyboardInterrupt:
+            process.send_signal(signal.SIGINT)
+    return process.poll()
 
 
 def getstatusoutput(cmd, shell=False, cwd=None):
