@@ -286,13 +286,14 @@ class GitMirror:
         """Configure the local git repository to use the mirror."""
         git_lfs_url = self.url + "/info/lfs"
         real_git = self.config.get("System", "RealGit")
+        remote_name = git_options.command_args[0]
 
-        LOG.info("Setting push URL to %s and configure LFS.", self.url)
+        LOG.info("Setting push URL for %s to %s and configure LFS.", remote_name, self.url)
         paths = [path for path in git_options.get_global_group_values("run_path") if path is not None]
         cwd = os.path.abspath(os.path.join(*paths)) if paths else None
         commands = [
-            [real_git, "remote", "add", "origin", self.git_dir],
-            [real_git, "remote", "set-url", "--push", "origin", self.url],
+            [real_git, "remote", "add", remote_name, self.git_dir],
+            [real_git, "remote", "set-url", "--push", remote_name, self.url],
             [real_git, "config", "--local", "lfs.url", git_lfs_url],
         ]
         if self.config.get("LFS", "PerMirrorStorage"):
