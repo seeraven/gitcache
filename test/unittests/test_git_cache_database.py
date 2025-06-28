@@ -62,57 +62,58 @@ class GitCacheDatabaseTest(TestCase):
         database = git_cache.database.Database()
         self.assertFalse(database.database)
 
-        database.add("http://dummy/git", "/tmp/dummy-dir")
-        self.assertIn("/tmp/dummy-dir", database.get_all())
-        self.assertEqual("http://dummy/git", database.get("/tmp/dummy-dir")["url"])
-        self.assertNotEqual(0, database.get("/tmp/dummy-dir")["last-update-time"])
-        self.assertEqual(0, database.get("/tmp/dummy-dir")["mirror-updates"])
-        self.assertEqual(0, database.get("/tmp/dummy-dir")["clones"])
-        self.assertEqual(0, database.get("/tmp/dummy-dir")["updates"])
+        repo_abs_path = os.path.normpath(os.path.join("/tmp", "dummy-dir"))
+        database.add("http://dummy/git", repo_abs_path)
+        self.assertIn(repo_abs_path, database.get_all())
+        self.assertEqual("http://dummy/git", database.get(repo_abs_path)["url"])
+        self.assertNotEqual(0, database.get(repo_abs_path)["last-update-time"])
+        self.assertEqual(0, database.get(repo_abs_path)["mirror-updates"])
+        self.assertEqual(0, database.get(repo_abs_path)["clones"])
+        self.assertEqual(0, database.get(repo_abs_path)["updates"])
 
         # Ensure written database uses relative paths
         with open("/tmp/db", "r", encoding="utf-8") as handle:
             raw_database = json.load(handle)
-        self.assertNotIn("/tmp/dummy-dir", raw_database)
+        self.assertNotIn(repo_abs_path, raw_database)
         self.assertIn("dummy-dir", raw_database)
 
-        database.increment_counter("/tmp/dummy-dir", "mirror-updates")
-        self.assertEqual(1, database.get("/tmp/dummy-dir")["mirror-updates"])
-        self.assertEqual(0, database.get("/tmp/dummy-dir")["clones"])
-        self.assertEqual(0, database.get("/tmp/dummy-dir")["updates"])
+        database.increment_counter(repo_abs_path, "mirror-updates")
+        self.assertEqual(1, database.get(repo_abs_path)["mirror-updates"])
+        self.assertEqual(0, database.get(repo_abs_path)["clones"])
+        self.assertEqual(0, database.get(repo_abs_path)["updates"])
 
-        database.increment_counter("/tmp/dummy-dir", "clones")
-        self.assertEqual(1, database.get("/tmp/dummy-dir")["mirror-updates"])
-        self.assertEqual(1, database.get("/tmp/dummy-dir")["clones"])
-        self.assertEqual(0, database.get("/tmp/dummy-dir")["updates"])
+        database.increment_counter(repo_abs_path, "clones")
+        self.assertEqual(1, database.get(repo_abs_path)["mirror-updates"])
+        self.assertEqual(1, database.get(repo_abs_path)["clones"])
+        self.assertEqual(0, database.get(repo_abs_path)["updates"])
 
-        database.increment_counter("/tmp/dummy-dir", "updates")
-        self.assertEqual(1, database.get("/tmp/dummy-dir")["mirror-updates"])
-        self.assertEqual(1, database.get("/tmp/dummy-dir")["clones"])
-        self.assertEqual(1, database.get("/tmp/dummy-dir")["updates"])
+        database.increment_counter(repo_abs_path, "updates")
+        self.assertEqual(1, database.get(repo_abs_path)["mirror-updates"])
+        self.assertEqual(1, database.get(repo_abs_path)["clones"])
+        self.assertEqual(1, database.get(repo_abs_path)["updates"])
 
-        database.clear_counters("/tmp/dummy-dir")
-        self.assertEqual(0, database.get("/tmp/dummy-dir")["mirror-updates"])
-        self.assertEqual(0, database.get("/tmp/dummy-dir")["clones"])
-        self.assertEqual(0, database.get("/tmp/dummy-dir")["updates"])
+        database.clear_counters(repo_abs_path)
+        self.assertEqual(0, database.get(repo_abs_path)["mirror-updates"])
+        self.assertEqual(0, database.get(repo_abs_path)["clones"])
+        self.assertEqual(0, database.get(repo_abs_path)["updates"])
 
-        old_update_time = database.get("/tmp/dummy-dir")["last-update-time"]
+        old_update_time = database.get(repo_abs_path)["last-update-time"]
         time.sleep(0.1)
-        database.save_update_time("/tmp/dummy-dir")
+        database.save_update_time(repo_abs_path)
         time.sleep(0.1)
-        self.assertNotEqual(old_update_time, database.get("/tmp/dummy-dir")["last-update-time"])
-        self.assertTrue(database.get_time_since_last_update("/tmp/dummy-dir") < 10.0)
-        self.assertNotEqual(0.0, database.get_time_since_last_update("/tmp/dummy-dir"))
+        self.assertNotEqual(old_update_time, database.get(repo_abs_path)["last-update-time"])
+        self.assertTrue(database.get_time_since_last_update(repo_abs_path) < 10.0)
+        self.assertNotEqual(0.0, database.get_time_since_last_update(repo_abs_path))
 
-        # self.assertTrue(database.update_time_reached("/tmp/dummy-dir"))
-        # self.assertFalse(database.cleanup_time_reached("/tmp/dummy-dir"))
+        # self.assertTrue(database.update_time_reached(repo_abs_path))
+        # self.assertFalse(database.cleanup_time_reached(repo_abs_path))
 
-        database.remove("/tmp/dummy-dir")
-        self.assertNotIn("/tmp/dummy-dir", database.get_all())
-        self.assertEqual(None, database.get("/tmp/dummy-dir"))
-        self.assertEqual(0.0, database.get_time_since_last_update("/tmp/dummy-dir"))
+        database.remove(repo_abs_path)
+        self.assertNotIn(repo_abs_path, database.get_all())
+        self.assertEqual(None, database.get(repo_abs_path))
+        self.assertEqual(0.0, database.get_time_since_last_update(repo_abs_path))
 
-        self.assertEqual(None, database.get_url_for_path("/tmp/dummy-dir"))
+        self.assertEqual(None, database.get_url_for_path(repo_abs_path))
 
     # @mockenv(GITCACHE_DIR="/tmp",
     #          GITCACHE_UPDATE_INTERVAL="-1")
@@ -123,8 +124,8 @@ class GitCacheDatabaseTest(TestCase):
     #     importlib.reload(git_cache.database)
 
     #     database = git_cache.database.Database()
-    #     database.add("http://dummy/git", "/tmp/dummy-dir")
-    #     self.assertFalse(database.update_time_reached("/tmp/dummy-dir"))
+    #     database.add("http://dummy/git", repo_abs_path)
+    #     self.assertFalse(database.update_time_reached(repo_abs_path))
 
     # @mockenv(GITCACHE_DIR="/tmp",
     #          GITCACHE_UPDATE_INTERVAL="1000")
@@ -135,13 +136,13 @@ class GitCacheDatabaseTest(TestCase):
     #     importlib.reload(git_cache.database)
 
     #     database = git_cache.database.Database()
-    #     database.add("http://dummy/git", "/tmp/dummy-dir")
-    #     self.assertFalse(database.update_time_reached("/tmp/dummy-dir"))
+    #     database.add("http://dummy/git", repo_abs_path)
+    #     self.assertFalse(database.update_time_reached(repo_abs_path))
 
-    #     database.database["/tmp/dummy-dir"]["last-update-time"] -= 2000
+    #     database.database[repo_abs_path]["last-update-time"] -= 2000
     #     # pylint: disable=protected-access
     #     database._save()
-    #     self.assertTrue(database.update_time_reached("/tmp/dummy-dir"))
+    #     self.assertTrue(database.update_time_reached(repo_abs_path))
     #     self.assertFalse(database.update_time_reached("non-existant"))
 
     # @mockenv(GITCACHE_DIR="/tmp",
@@ -153,13 +154,13 @@ class GitCacheDatabaseTest(TestCase):
     #     importlib.reload(git_cache.database)
 
     #     database = git_cache.database.Database()
-    #     database.add("http://dummy/git", "/tmp/dummy-dir")
-    #     self.assertFalse(database.cleanup_time_reached("/tmp/dummy-dir"))
+    #     database.add("http://dummy/git", repo_abs_path)
+    #     self.assertFalse(database.cleanup_time_reached(repo_abs_path))
 
-    #     database.database["/tmp/dummy-dir"]["last-update-time"] -= 2000
+    #     database.database[repo_abs_path]["last-update-time"] -= 2000
     #     # pylint: disable=protected-access
     #     database._save()
-    #     self.assertTrue(database.cleanup_time_reached("/tmp/dummy-dir"))
+    #     self.assertTrue(database.cleanup_time_reached(repo_abs_path))
     #     self.assertFalse(database.cleanup_time_reached("non-existant"))
 
 
