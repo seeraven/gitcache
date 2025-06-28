@@ -1,5 +1,8 @@
 name: Check Style
 
+permissions:
+  contents: read
+
 on: [push]
 
 # A list of available runners is available on
