@@ -1,5 +1,8 @@
 name: Unit and Functional Tests
 
+permissions:
+  contents: read
+
 on:
   pull_request:
 

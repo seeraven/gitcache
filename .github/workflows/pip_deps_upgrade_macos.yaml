@@ -5,6 +5,10 @@
 
 name: Pip Dependencies Upgrade on MacOS
 
+permissions:
+  contents: read
+  pull-requests: write
+
 on:
   workflow_dispatch:
     inputs:
