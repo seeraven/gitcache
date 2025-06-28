@@ -184,14 +184,27 @@ class Database:
 
         if os.path.exists(GITCACHE_DB):
             with open(GITCACHE_DB, "r", encoding="utf-8") as handle:
-                self.database = json.load(handle)
-                for path in self.database:
-                    self.database[path].setdefault("lfs-updates", 0)
+                database = json.load(handle)
+                for path in database:
+                    database[path].setdefault("lfs-updates", 0)
+
+                # Internal database uses absolute paths
+                for key, entry in database.items():
+                    if not os.path.isabs(key):
+                        path = os.path.normpath(os.path.join(GITCACHE_DIR, key))
+                    else:
+                        path = key
+                    self.database[path] = entry
 
     def _save(self) -> None:
         """Save the database to disc."""
+        # Convert keys to relative paths
+        database = {}
+        for key, entry in self.database.items():
+            database[os.path.relpath(key, GITCACHE_DIR)] = entry
+
         with open(GITCACHE_DB, "w", encoding="utf-8") as handle:
-            json.dump(self.database, handle)
+            json.dump(database, handle)
 
 
 # -----------------------------------------------------------------------------

@@ -2,6 +2,8 @@
 
 ## Upcoming Version
 
+- Feature: Use relative paths in database.
+
 ## v1.0.28
 
 - Bugfix: Capture CTRL-C and forward it to the `git` subprocess.
