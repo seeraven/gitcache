@@ -43,8 +43,8 @@ def git_delete_mirror(mirror_list: List[str]) -> int:
     database = Database()
     db_map = database.get_all()
     known_urls = []
-    for path in db_map.keys():
-        known_urls.append(db_map[path]["url"])
+    for _, entry in db_map.items():
+        known_urls.append(entry["url"])
 
     num_deleted = 0
     num_failed = 0
