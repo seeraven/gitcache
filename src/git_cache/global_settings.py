@@ -43,7 +43,7 @@ import os
 # -----------------------------------------------------------------------------
 # Settings
 # -----------------------------------------------------------------------------
-GITCACHE_DIR = os.getenv("GITCACHE_DIR", os.path.join(os.getenv("HOME", "/"), ".gitcache"))
+GITCACHE_DIR = os.path.normpath(os.getenv("GITCACHE_DIR", os.path.join(os.getenv("HOME", "/"), ".gitcache")))
 GITCACHE_DB = os.path.join(GITCACHE_DIR, "db")
 GITCACHE_DB_LOCK = os.path.join(GITCACHE_DIR, "db.lock")
 GITCACHE_LOGLEVEL = os.getenv("GITCACHE_LOGLEVEL", "INFO")
