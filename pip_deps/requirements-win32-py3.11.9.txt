@@ -8,5 +8,5 @@ pyreadline3==3.5.4
     # via humanfriendly
 pytimeparse==1.1.8
     # via gitcache (pyproject.toml)
-pywin32==310
+pywin32==311
     # via portalocker
