@@ -6,7 +6,7 @@
 name: Pip Dependencies Upgrade on MacOS
 
 permissions:
-  contents: read
+  contents: write
   pull-requests: write
 
 on:
