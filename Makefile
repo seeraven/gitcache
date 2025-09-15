@@ -28,6 +28,8 @@ PYINSTALLER_ARGS_LINUX   := --clean --onefile
 PYINSTALLER_ARGS_DARWIN  := --clean --onedir
 PYINSTALLER_ARGS_WINDOWS := --clean --onefile
 
+VARS_TO_PROPAGATE        := UNITTESTS FUNCTESTS IN_GITHUB_ACTION
+
 
 # ----------------------------------------------------------------------------
 #  MAKE4PY INTEGRATION

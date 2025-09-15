@@ -5,12 +5,14 @@
 # ----------------------------------------------------------------------------
 import os
 
+import pytest
 from helpers.gitcache_ifc import GitcacheIfc
 
 
 # ----------------------------------------------------------------------------
 #  TESTS
 # ----------------------------------------------------------------------------
+@pytest.mark.skipif(os.getenv("IN_GITHUB_ACTION", "0") != "0", reason="Requires working git-lfs environment")
 def test_lfs_fetch(gitcache_ifc: GitcacheIfc):
     """Test the 'git lfs fetch' command."""
     # Initial clone
@@ -53,6 +55,7 @@ def test_lfs_fetch(gitcache_ifc: GitcacheIfc):
     assert not gitcache_ifc.str_in_file(b"oid sha256", os.path.join(checkout, "excluded", "first.png"))
 
 
+@pytest.mark.skipif(os.getenv("IN_GITHUB_ACTION", "0") != "0", reason="Requires working git-lfs environment")
 def test_lfs_pull(gitcache_ifc: GitcacheIfc):
     """Test not caching ls-remotes from local filesystem."""
     repo = "https://github.com/seeraven/lfs-example"

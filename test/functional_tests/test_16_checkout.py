@@ -5,12 +5,14 @@
 # ----------------------------------------------------------------------------
 import os
 
+import pytest
 from helpers.gitcache_ifc import GitcacheIfc
 
 
 # ----------------------------------------------------------------------------
 #  TESTS
 # ----------------------------------------------------------------------------
+@pytest.mark.skipif(os.getenv("IN_GITHUB_ACTION", "0") != "0", reason="Requires working git-lfs environment")
 def test_checkout(gitcache_ifc: GitcacheIfc):
     """Test the 'git checkout' command."""
     # Initial clone
