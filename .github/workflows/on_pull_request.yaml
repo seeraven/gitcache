@@ -6,6 +6,9 @@ permissions:
 on:
   pull_request:
 
+env:
+  IN_GITHUB_ACTION: 1
+
 # A list of available runners is available on
 # https://docs.github.com/de/actions/using-github-hosted-runners/about-github-hosted-runners/about-github-hosted-runners
 
