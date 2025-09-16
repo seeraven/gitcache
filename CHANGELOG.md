@@ -3,6 +3,7 @@
 ## Upcoming Version
 
 - Feature: Use relative paths in database.
+- Bugfix: Ensure `GITCACHE_DIR` is normalized (thanks to guoh27)
 
 ## v1.0.28
 
