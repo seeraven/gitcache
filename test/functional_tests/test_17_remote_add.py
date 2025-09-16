@@ -54,3 +54,20 @@ def test_remote_v(gitcache_ifc: GitcacheIfc):
     # Execute git remote -v
     result = gitcache_ifc.run_ok(["git", "remote", "-v"], checkout)
     assert "(fetch)" in result.stdout
+
+
+def test_remote_add_non_origin(gitcache_ifc: GitcacheIfc):
+    """Test the 'git remote add <other>' command."""
+    repo = "https://github.com/seeraven/gitcache"
+    checkout = os.path.join(gitcache_ifc.workspace.workspace_path, "gitcache")
+
+    # Create initial local git repository
+    gitcache_ifc.run_ok(["git", "clone", repo, checkout])
+
+    # Configure additional remote
+    repo2 = "https://github.com/seeraven/dmdcache"
+    gitcache_ifc.run_ok(["git", "-C", checkout, "remote", "add", "remote2", repo2])
+
+    # Ensure the additional remote is not handled by gitcache, as we have no support for it yet
+    assert gitcache_ifc.db_field("mirror-updates", repo2) is None
+    assert gitcache_ifc.db_field("clones", repo2) is None
