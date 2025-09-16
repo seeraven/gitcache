@@ -105,63 +105,12 @@ class GitCacheDatabaseTest(TestCase):
         self.assertTrue(database.get_time_since_last_update(repo_abs_path) < 10.0)
         self.assertNotEqual(0.0, database.get_time_since_last_update(repo_abs_path))
 
-        # self.assertTrue(database.update_time_reached(repo_abs_path))
-        # self.assertFalse(database.cleanup_time_reached(repo_abs_path))
-
         database.remove(repo_abs_path)
         self.assertNotIn(repo_abs_path, database.get_all())
         self.assertEqual(None, database.get(repo_abs_path))
         self.assertEqual(0.0, database.get_time_since_last_update(repo_abs_path))
 
         self.assertEqual(None, database.get_url_for_path(repo_abs_path))
-
-    # @mockenv(GITCACHE_DIR="/tmp",
-    #          GITCACHE_UPDATE_INTERVAL="-1")
-    # def test_negative_update_interval(self):
-    #     """git_cache.database.Database: Test negative update interval."""
-    #     importlib.reload(git_cache.global_settings)
-    #     importlib.reload(git_cache.settings)
-    #     importlib.reload(git_cache.database)
-
-    #     database = git_cache.database.Database()
-    #     database.add("http://dummy/git", repo_abs_path)
-    #     self.assertFalse(database.update_time_reached(repo_abs_path))
-
-    # @mockenv(GITCACHE_DIR="/tmp",
-    #          GITCACHE_UPDATE_INTERVAL="1000")
-    # def test_large_update_interval(self):
-    #     """git_cache.database.Database: Test large update interval."""
-    #     importlib.reload(git_cache.global_settings)
-    #     importlib.reload(git_cache.settings)
-    #     importlib.reload(git_cache.database)
-
-    #     database = git_cache.database.Database()
-    #     database.add("http://dummy/git", repo_abs_path)
-    #     self.assertFalse(database.update_time_reached(repo_abs_path))
-
-    #     database.database[repo_abs_path]["last-update-time"] -= 2000
-    #     # pylint: disable=protected-access
-    #     database._save()
-    #     self.assertTrue(database.update_time_reached(repo_abs_path))
-    #     self.assertFalse(database.update_time_reached("non-existant"))
-
-    # @mockenv(GITCACHE_DIR="/tmp",
-    #          GITCACHE_CLEANUP_INTERVAL="1000")
-    # def test_cleanup_time_reached(self):
-    #     """git_cache.database.Database: Test cleanup time."""
-    #     importlib.reload(git_cache.global_settings)
-    #     importlib.reload(git_cache.settings)
-    #     importlib.reload(git_cache.database)
-
-    #     database = git_cache.database.Database()
-    #     database.add("http://dummy/git", repo_abs_path)
-    #     self.assertFalse(database.cleanup_time_reached(repo_abs_path))
-
-    #     database.database[repo_abs_path]["last-update-time"] -= 2000
-    #     # pylint: disable=protected-access
-    #     database._save()
-    #     self.assertTrue(database.cleanup_time_reached(repo_abs_path))
-    #     self.assertFalse(database.cleanup_time_reached("non-existant"))
 
 
 # -----------------------------------------------------------------------------
