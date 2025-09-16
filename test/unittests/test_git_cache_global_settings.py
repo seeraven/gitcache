@@ -28,7 +28,7 @@ class GitCacheSettingsTest(TestCase):
         """git_cache.settings: Valid entries."""
         self.assertEqual(
             git_cache.global_settings.GITCACHE_DIR,
-            os.getenv("GITCACHE_DIR", os.path.join(os.getenv("HOME", "/"), ".gitcache")),
+            os.path.normpath(os.getenv("GITCACHE_DIR", os.path.join(os.getenv("HOME", "/"), ".gitcache"))),
         )
         self.assertEqual(
             git_cache.global_settings.GITCACHE_DB, os.path.join(git_cache.global_settings.GITCACHE_DIR, "db")

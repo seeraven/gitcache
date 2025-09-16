@@ -63,6 +63,16 @@ def test_pull(gitcache_ifc: GitcacheIfc):
     assert 6 == gitcache_ifc.db_field("updates", repo)
 
 
+def test_pull_with_non_normalized_gitcache_dir(gitcache_ifc: GitcacheIfc):
+    """Test the "git pull" command using a non-normalized GITCACHE_DIR variable."""
+    # Replace all single slashes with double slashes in GITCACHE_DIR
+    gitcache_ifc.workspace.env["GITCACHE_DIR"] = gitcache_ifc.workspace.env["GITCACHE_DIR"].replace("/", "//")
+
+    repo = "https://github.com/seeraven/gitcache"
+    checkout = os.path.join(gitcache_ifc.workspace.workspace_path, "gitcache")
+    gitcache_ifc.run_ok(["git", "clone", repo, checkout])
+
+
 # ----------------------------------------------------------------------------
 #  EOF
 # ----------------------------------------------------------------------------
