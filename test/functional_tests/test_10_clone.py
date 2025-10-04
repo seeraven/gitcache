@@ -97,6 +97,21 @@ def test_clone_branch(gitcache_ifc: GitcacheIfc):
     assert branch == gitcache_ifc.get_branch(checkout)
 
 
+def test_clone_depth(gitcache_ifc: GitcacheIfc):
+    """Test cloning a repository with a limited depth."""
+    repo = "https://github.com/seeraven/gitcache"
+    checkout = os.path.join(gitcache_ifc.workspace.workspace_path, "gitcache")
+    gitcache_ifc.run_ok(["git", "-C", gitcache_ifc.workspace.workspace_path, "clone", repo])
+    full_depth = gitcache_ifc.get_depth(checkout)
+
+    checkout = os.path.join(gitcache_ifc.workspace.workspace_path, "gitcache2")
+    gitcache_ifc.run_ok(["git", "clone", "--depth", "1", repo, checkout])
+    limited_depth = gitcache_ifc.get_depth(checkout)
+    assert limited_depth < full_depth
+    assert 1 == gitcache_ifc.db_field("mirror-updates", repo)
+    assert 2 == gitcache_ifc.db_field("clones", repo)
+
+
 def test_clone_tag(gitcache_ifc: GitcacheIfc):
     """Test cloning an explicit tag."""
     repo = "https://github.com/seeraven/scm-autologin-plugin"
