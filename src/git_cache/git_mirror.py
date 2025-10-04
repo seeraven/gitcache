@@ -325,7 +325,7 @@ class GitMirror:
         git_lfs_url = self.url + "/info/lfs"
         real_git = self.config.get("System", "RealGit")
 
-        new_args = [x if x != self.url else self.git_dir for x in git_options.all_args]
+        new_args = [x if x != self.url else f"file://{self.git_dir}" for x in git_options.all_args]
         for option in ["--recursive", "--recurse-submodules", "--remote-submodules"]:
             if option in new_args:
                 new_args.remove(option)

@@ -135,6 +135,12 @@ class GitcacheIfc:
         result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=False, check=True)
         return result.stdout.decode().strip()
 
+    def get_depth(self, checkout_dir: str) -> int:
+        """Get the depth of the given checkout directory as the number of entries in the log."""
+        command = ["git", "-C", checkout_dir, "log", "--pretty=format:%h", "-n", "100"]
+        result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=False, check=True)
+        return len(result.stdout.decode().strip().split())
+
     def get_tag(self, checkout_dir: str) -> str:
         """Get the current tag of the given checkout directory."""
         command = ["git", "-C", checkout_dir, "describe", "--tags"]
@@ -143,7 +149,9 @@ class GitcacheIfc:
 
     def remote_points_to_gitcache(self, checkout_dir: str) -> bool:
         """Check if the remote of the given checkout directory points to the gitcache dir."""
-        return self.get_remote(checkout_dir).startswith(self.workspace.gitcache_dir_path)
+        return self.get_remote(checkout_dir).startswith(self.workspace.gitcache_dir_path) or self.get_remote(
+            checkout_dir
+        ).startswith(f"file://{self.workspace.gitcache_dir_path}")
 
     def str_in_file(self, needle: bytes, filename: str) -> bool:
         """Check for the given needle string in the file."""
