@@ -4,6 +4,7 @@
 
 - Feature: Use relative paths in database.
 - Bugfix: Ensure `GITCACHE_DIR` is normalized (thanks to guoh27)
+- Feature: Support shallow cloning from local mirror with the `--depth` option
 
 ## v1.0.28
 
