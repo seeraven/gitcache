@@ -60,7 +60,7 @@ def get_mirror_url(git_options):
         a mirror.
     """
     pull_url = get_pull_url(git_options)
-    if pull_url and pull_url.startswith(GITCACHE_DIR):
+    if pull_url and (pull_url.startswith(GITCACHE_DIR) or pull_url.startswith(f"file://{GITCACHE_DIR}")):
         command = git_options.get_real_git_with_options()
         command += ["remote", "get-url", "--push", "origin"]
         retval, push_url = getstatusoutput(command)
