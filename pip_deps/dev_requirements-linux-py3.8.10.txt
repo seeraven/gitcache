@@ -16,7 +16,7 @@ black==24.8.0
     # via
     #   flake8-black
     #   gitcache (pyproject.toml)
-certifi==2025.8.3
+certifi==2025.10.5
     # via requests
 charset-normalizer==3.4.3
     # via requests
@@ -55,7 +55,7 @@ flake8==7.1.2
     #   flake8-pyproject
     #   gitcache (pyproject.toml)
     #   pep8-naming
-flake8-black==0.3.6
+flake8-black==0.3.7
     # via gitcache (pyproject.toml)
 flake8-bugbear==24.12.12
     # via gitcache (pyproject.toml)
@@ -153,7 +153,7 @@ pygments==2.19.2
     #   sphinx
 pyinstaller==6.16.0
     # via gitcache (pyproject.toml)
-pyinstaller-hooks-contrib==2025.8
+pyinstaller-hooks-contrib==2025.9
     # via pyinstaller
 pylint==3.2.7
     # via gitcache (pyproject.toml)
@@ -228,7 +228,7 @@ typing-extensions==4.13.2
     #   pylint
 urllib3==2.2.3
     # via requests
-wcwidth==0.2.13
+wcwidth==0.2.14
     # via prompt-toolkit
 zipp==3.20.2
     # via
