@@ -1,6 +1,6 @@
 # Changelog of gitcache
 
-## Upcoming Version
+## v1.0.29
 
 - Feature: Use relative paths in database.
 - Bugfix: Ensure `GITCACHE_DIR` is normalized (thanks to guoh27)
