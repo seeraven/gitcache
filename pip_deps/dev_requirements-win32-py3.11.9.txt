@@ -10,15 +10,15 @@ attrs==25.3.0
     # via flake8-bugbear
 babel==2.17.0
     # via sphinx
-black==25.1.0
+black==25.9.0
     # via
     #   flake8-black
     #   gitcache (pyproject.toml)
-certifi==2025.8.3
+certifi==2025.10.5
     # via requests
 charset-normalizer==3.4.3
     # via requests
-click==8.2.1
+click==8.3.0
     # via black
 colorama==0.4.6
     # via
@@ -29,7 +29,7 @@ colorama==0.4.6
     #   sphinx
 coloredlogs==15.0.1
     # via gitcache (pyproject.toml)
-coverage[toml]==7.10.6
+coverage[toml]==7.10.7
     # via
     #   gitcache (pyproject.toml)
     #   pytest-cov
@@ -58,7 +58,7 @@ flake8==7.3.0
     #   flake8-pyproject
     #   gitcache (pyproject.toml)
     #   pep8-naming
-flake8-black==0.3.6
+flake8-black==0.4.0
     # via gitcache (pyproject.toml)
 flake8-bugbear==24.12.12
     # via gitcache (pyproject.toml)
@@ -76,11 +76,11 @@ imagesize==1.4.1
     # via sphinx
 iniconfig==2.1.0
     # via pytest
-ipython==9.5.0
+ipython==9.6.0
     # via gitcache (pyproject.toml)
 ipython-pygments-lexers==1.1.1
     # via ipython
-isort==6.0.1
+isort==6.1.0
     # via
     #   flake8-isort
     #   gitcache (pyproject.toml)
@@ -89,7 +89,7 @@ jedi==0.19.2
     # via ipython
 jinja2==3.1.6
     # via sphinx
-markupsafe==3.0.2
+markupsafe==3.0.3
     # via jinja2
 matplotlib-inline==0.1.7
     # via ipython
@@ -99,7 +99,7 @@ mccabe==0.7.0
     #   pylint
 mock==5.2.0
     # via gitcache (pyproject.toml)
-mypy==1.18.1
+mypy==1.18.2
     # via gitcache (pyproject.toml)
 mypy-extensions==1.1.0
     # via
@@ -152,7 +152,7 @@ pygments==2.19.2
     #   sphinx
 pyinstaller==6.16.0
     # via gitcache (pyproject.toml)
-pyinstaller-hooks-contrib==2025.8
+pyinstaller-hooks-contrib==2025.9
     # via pyinstaller
 pylint==3.3.8
     # via gitcache (pyproject.toml)
@@ -169,6 +169,8 @@ pytest-timeout==2.4.0
     # via gitcache (pyproject.toml)
 pytimeparse==1.1.8
     # via gitcache (pyproject.toml)
+pytokens==0.1.10
+    # via black
 pywin32==311
     # via portalocker
 pywin32-ctypes==0.2.3
@@ -210,7 +212,7 @@ traitlets==5.14.3
     # via
     #   ipython
     #   matplotlib-inline
-types-mock==5.2.0.20250809
+types-mock==5.2.0.20250924
     # via gitcache (pyproject.toml)
 typing-extensions==4.15.0
     # via
@@ -219,7 +221,7 @@ typing-extensions==4.15.0
     #   mypy
 urllib3==2.5.0
     # via requests
-wcwidth==0.2.13
+wcwidth==0.2.14
     # via prompt-toolkit
 
 # The following packages are considered to be unsafe in a requirements file:
