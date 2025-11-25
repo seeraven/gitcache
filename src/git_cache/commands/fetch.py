@@ -50,11 +50,11 @@ def git_fetch(git_options):
     remote_url = None
     mirror_path = None
     if git_options.command_args:
-        for arg in git_options.command_args:
-            mirror_path = GitMirror.get_mirror_path(arg)
-            if mirror_path:
-                remote_url = arg
-                break
+        # Only check the first argument - subsequent args are refspecs
+        first_arg = git_options.command_args[0]
+        mirror_path = GitMirror.get_mirror_path(first_arg)
+        if mirror_path:
+            remote_url = first_arg
 
     if remote_url is None:
         remote_url = get_mirror_url(git_options)

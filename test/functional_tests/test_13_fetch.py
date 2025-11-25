@@ -172,6 +172,25 @@ def test_orphaned_commit(gitcache_ifc: GitcacheIfc):
     gitcache_ifc.run_ok(["git", "-C", checkout, "checkout", commit])
 
 
+def test_fetch_with_refspecs(gitcache_ifc: GitcacheIfc):
+    """Test git fetch with refspec arguments (e.g., main:main)."""
+    repo = "https://github.com/seeraven/gitcache"
+    checkout = os.path.join(gitcache_ifc.workspace.workspace_path, "gitcache")
+    gitcache_ifc.run_ok(["git", "clone", repo, checkout])
+
+    # Fetch with simple refspec (branch:branch)
+    gitcache_ifc.run_ok(["git", "-C", checkout, "fetch", "origin", "main:main"])
+    assert 1 == gitcache_ifc.db_field("mirror-updates", repo)
+
+    # Fetch with full refspec
+    gitcache_ifc.run_ok(["git", "-C", checkout, "fetch", "origin", "refs/heads/main:refs/remotes/origin/main"])
+    assert 2 == gitcache_ifc.db_field("mirror-updates", repo)
+
+    # Fetch with multiple refspecs
+    gitcache_ifc.run_ok(["git", "-C", checkout, "fetch", "origin", "main", "master"])
+    assert 3 == gitcache_ifc.db_field("mirror-updates", repo)
+
+
 # ----------------------------------------------------------------------------
 #  EOF
 # ----------------------------------------------------------------------------
