@@ -91,7 +91,7 @@ jobs:
   macos:
     strategy:
       matrix:
-        os: [macos-13, macos-15]
+        os: [macos-15]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Check out repository code

@@ -8,7 +8,6 @@
 #
 """Unit tests of the git_cache.command_execution module testing simple_call_command()."""
 
-
 # -----------------------------------------------------------------------------
 # Module Import
 # -----------------------------------------------------------------------------

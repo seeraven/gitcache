@@ -8,7 +8,6 @@
 #
 """Unit tests of the git_cache.config module."""
 
-
 # -----------------------------------------------------------------------------
 # Module Import
 # -----------------------------------------------------------------------------
@@ -88,15 +87,13 @@ class GitCacheConfigTest(TestCase):
         importlib.reload(git_cache.global_settings)
         importlib.reload(git_cache.config)
         with open("/tmp/config", "w", encoding="utf-8") as file_handle:
-            file_handle.write(
-                """
+            file_handle.write("""
 [MirrorHandling]
 UpdateInterval = -1
 
 [LFS]
 permirrorstorage = false
-"""
-            )
+""")
         config = git_cache.config.Config()
         self.assertEqual(config.get("MirrorHandling", "UpdateInterval"), -1)
         self.assertEqual(config.get("LFS", "PerMirrorStorage"), False)

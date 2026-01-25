@@ -8,7 +8,6 @@
 #
 """Unit tests of the git_cache.command_execution module testing pretty_call_command_retry()."""
 
-
 # -----------------------------------------------------------------------------
 # Module Import
 # -----------------------------------------------------------------------------
