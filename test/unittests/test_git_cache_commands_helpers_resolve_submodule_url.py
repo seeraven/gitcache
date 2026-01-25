@@ -7,7 +7,6 @@
 #
 """Unit tests of the git_cache.commands.helpers module testing resolve_submodule_url()."""
 
-
 # -----------------------------------------------------------------------------
 # Module Import
 # -----------------------------------------------------------------------------
