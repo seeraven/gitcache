@@ -1,5 +1,9 @@
 # Changelog of gitcache
 
+## Upcoming Version
+
+- Bugfix: Fix `git fetch` incorrectly treating refspecs as repository URLs.
+
 ## v1.0.29
 
 - Feature: Use relative paths in database.
