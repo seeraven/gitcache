@@ -179,15 +179,15 @@ def test_fetch_with_refspecs(gitcache_ifc: GitcacheIfc):
     gitcache_ifc.run_ok(["git", "clone", repo, checkout])
 
     # Fetch with simple refspec (branch:branch)
-    gitcache_ifc.run_ok(["git", "-C", checkout, "fetch", "origin", "main:main"])
+    gitcache_ifc.run_ok(["git", "-C", checkout, "fetch", "origin", "master:main"])
     assert 1 == gitcache_ifc.db_field("mirror-updates", repo)
 
     # Fetch with full refspec
-    gitcache_ifc.run_ok(["git", "-C", checkout, "fetch", "origin", "refs/heads/main:refs/remotes/origin/main"])
+    gitcache_ifc.run_ok(["git", "-C", checkout, "fetch", "origin", "refs/heads/master:refs/remotes/origin/main"])
     assert 2 == gitcache_ifc.db_field("mirror-updates", repo)
 
     # Fetch with multiple refspecs
-    gitcache_ifc.run_ok(["git", "-C", checkout, "fetch", "origin", "main", "master"])
+    gitcache_ifc.run_ok(["git", "-C", checkout, "fetch", "origin", "master", "master:main"])
     assert 3 == gitcache_ifc.db_field("mirror-updates", repo)
 
 
