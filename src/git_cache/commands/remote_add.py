@@ -42,8 +42,7 @@ def git_remote_add(git_options: GitOptions) -> int:
         Returns 0 on success, otherwise the return code of the last failed
         command.
     """
-    # Handle only a "git remote add origin"
-    if len(git_options.command_args) >= 2 and git_options.command_args[0] == "origin":
+    if len(git_options.command_args) >= 2:
         # Do not handle when the "--mirror" option is used
         if not any(option.startswith("--mirror") for option in git_options.command_options):
             remote_url = git_options.command_args[1]
