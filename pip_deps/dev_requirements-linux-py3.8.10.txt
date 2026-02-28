@@ -8,7 +8,7 @@ asttokens==3.0.1
     # via stack-data
 attrs==25.3.0
     # via flake8-bugbear
-babel==2.17.0
+babel==2.18.0
     # via sphinx
 backcall==0.2.0
     # via ipython
@@ -16,7 +16,7 @@ black==24.8.0
     # via
     #   flake8-black
     #   gitcache (pyproject.toml)
-certifi==2026.1.4
+certifi==2026.2.25
     # via requests
 charset-normalizer==3.4.4
     # via requests
@@ -117,7 +117,7 @@ packaging==26.0
     #   pyinstaller-hooks-contrib
     #   pytest
     #   sphinx
-parso==0.8.5
+parso==0.8.6
     # via jedi
 pathspec==0.12.1
     # via black
@@ -151,9 +151,9 @@ pygments==2.19.2
     # via
     #   ipython
     #   sphinx
-pyinstaller==6.18.0
+pyinstaller==6.19.0
     # via gitcache (pyproject.toml)
-pyinstaller-hooks-contrib==2026.0
+pyinstaller-hooks-contrib==2026.1
     # via pyinstaller
 pylint==3.2.7
     # via gitcache (pyproject.toml)
@@ -228,7 +228,7 @@ typing-extensions==4.13.2
     #   pylint
 urllib3==2.2.3
     # via requests
-wcwidth==0.3.5
+wcwidth==0.6.0
     # via prompt-toolkit
 zipp==3.20.2
     # via
