@@ -17,7 +17,7 @@ Copyright:
 # -----------------------------------------------------------------------------
 import logging
 
-from ..command_execution import pretty_call_command_retry, simple_call_command
+from ..command_execution import getstatusoutput, pretty_call_command_retry, simple_call_command
 from ..config import Config
 from ..database import Database
 from ..git_mirror import GitMirror
@@ -32,7 +32,7 @@ LOG = logging.getLogger(__name__)
 # -----------------------------------------------------------------------------
 # Function Definitions
 # -----------------------------------------------------------------------------
-# pylint: disable=too-many-locals,too-many-statements
+# pylint: disable=too-many-locals,too-many-statements,too-many-branches
 def git_fetch(git_options):
     """Handle a git fetch command.
 
@@ -55,8 +55,27 @@ def git_fetch(git_options):
         if mirror_path:
             remote_url = first_arg
 
+    remote_name = None
+
     if remote_url is None:
         remote_url = get_mirror_url(git_options)
+
+        if remote_url is None:
+            # Maybe it's not managed by gitcache yet
+            remote_candidate = "origin"
+            if git_options.command_args:
+                for arg in git_options.command_args:
+                    if not arg.startswith("-") and not arg.startswith("+") and ":" not in arg:
+                        remote_candidate = arg
+                        break
+
+            command = git_options.get_real_git_with_options() + ["remote", "get-url", remote_candidate]
+            retval, output = getstatusoutput(command)
+            if retval == 0 and output:
+                if use_mirror_for_remote_url(output):
+                    if GitMirror.get_mirror_path(output) is not None:
+                        remote_url = output
+                        remote_name = remote_candidate
     elif not use_mirror_for_remote_url(remote_url):
         remote_url = None
 
@@ -68,6 +87,14 @@ def git_fetch(git_options):
         config = mirror.config
         action = f"Fetch from mirror {mirror.path}"
         new_args = [x if x != remote_url else mirror.git_dir for x in git_options.all_args]
+
+        if remote_name:
+            LOG.info("Configuring remote %s to use gitcache mirror.", remote_name)
+            command = [real_git, "remote", "set-url", remote_name, mirror.git_dir]
+            simple_call_command(command, cwd=git_options.get_run_path())
+
+            command = [real_git, "remote", "set-url", "--push", remote_name, remote_url]
+            simple_call_command(command, cwd=git_options.get_run_path())
 
         # We configure the LFS storage here to support the Jenkins way
         # of cloning git repositories.
