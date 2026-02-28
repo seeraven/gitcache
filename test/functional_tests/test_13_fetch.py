@@ -71,6 +71,31 @@ def test_fetch_in_empty_repo(gitcache_ifc: GitcacheIfc, remote_url: str, mirror_
     assert mirror_dir.replace("/", os.path.sep) in gitcache_ifc.db_field("mirror-dir", remote_url[:-4])
 
 
+@pytest.mark.parametrize(
+    "remote_name,remote_url",
+    [
+        ("origin", "https://github.com/seeraven/gitcache.git"),
+        ("external", "https://github.com/seeraven/gitcache.git"),
+    ],
+)
+def test_fetch_in_empty_repo_with_remote(gitcache_ifc: GitcacheIfc, remote_name: str, remote_url: str):
+    """Test fetching in a newly initialized git repo using a configured remote."""
+    checkout = os.path.join(gitcache_ifc.workspace.workspace_path, "gitcache")
+    gitcache_ifc.run_ok(["git", "init", checkout])
+    gitcache_ifc.run_ok(["git", "-C", checkout, "remote", "add", remote_name, remote_url])
+    gitcache_ifc.run_ok(["git", "-C", checkout, "fetch", remote_name])
+    # If the remote was named "origin" we handled the "git remote add origin ..." call
+    # and the fetch call:
+    if remote_name == "origin":
+        assert 1 == gitcache_ifc.db_field("mirror-updates", remote_url[:-4])
+        assert 0 == gitcache_ifc.db_field("clones", remote_url[:-4])
+        assert 1 == gitcache_ifc.db_field("updates", remote_url[:-4])
+    else:
+        assert 0 == gitcache_ifc.db_field("mirror-updates", remote_url[:-4])
+        assert 0 == gitcache_ifc.db_field("clones", remote_url[:-4])
+        assert 1 == gitcache_ifc.db_field("updates", remote_url[:-4])
+
+
 @pytest.mark.skipif(platform.node() != "Workhorse", reason="Requires known ssh environment")
 @pytest.mark.parametrize(
     "remote_url,mirror_dir",
