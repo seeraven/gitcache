@@ -2,7 +2,8 @@
 
 ## Upcoming Version
 
-- Bugfix: Fix `git fetch` incorrectly treating refspecs as repository URLs.
+- Bugfix: Fix `git fetch` incorrectly treating refspecs as repository URLs (thanks to colinodell).
+- Feature: Intercept fetch for unmanaged repositories (thanks to fkollmann)
 
 ## v1.0.29
 
