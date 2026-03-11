@@ -58,7 +58,9 @@ test = [
     "mock",
     "pytest",
     "pytest-cov",
-    "pytest-timeout"
+    "pytest-timeout",
+    "fastapi",
+    "uvicorn",
 ]
 
 
@@ -103,6 +105,7 @@ show_error_codes = true
 module = [
     "coloredlogs.*",
     "pytimeparse.*",
+    "pfluent.*",
 ]
 ignore_missing_imports = true
 
@@ -110,6 +113,9 @@ ignore_missing_imports = true
 [tool.pytest.ini_options]
 minversion = "6.0"
 pythonpath = ["src"]
+# log_cli = true
+# log_cli_level = "DEBUG"
+# addopts = "-s"
 
 
 [tool.coverage.paths]
