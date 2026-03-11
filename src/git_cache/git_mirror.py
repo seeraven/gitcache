@@ -551,6 +551,19 @@ class GitMirror:
             LOG.warning("LFS fetch skipped as git-lfs is not available on this system!")
             return True
 
+        command = [
+            self.config.get("System", "RealGit"),
+            "rev-list",
+            "--all",
+            "--",
+            ".gitattributes",
+            "**/.gitattributes",
+        ]
+        return_code, refs = getstatusoutput(command, cwd=self.git_dir)
+        if not refs:
+            LOG.info("Repository seems not to use LFS. Skipping LFS fetch.")
+            return True
+
         git_options = []
         if self.config.get("LFS", "PerMirrorStorage"):
             git_options = ["-c", f"lfs.storage={self.git_lfs_dir}"]

@@ -2,6 +2,8 @@
 
 ## Upcoming Version
 
+- Skip git-lfs fetch if the repository does not contain a `.gitattributes`.
+
 ## v1.0.30
 
 - Bugfix: Fix `git fetch` incorrectly treating refspecs as repository URLs (thanks to colinodell).
