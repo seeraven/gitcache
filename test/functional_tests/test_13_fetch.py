@@ -113,10 +113,11 @@ def test_fetch_in_empty_repo_on_workhorse(gitcache_ifc: GitcacheIfc, remote_url:
     checkout = os.path.join(gitcache_ifc.workspace.workspace_path, "gitcache")
     gitcache_ifc.run_ok(["git", "init", checkout])
     gitcache_ifc.run_ok(["git", "-C", checkout, "fetch", remote_url])
-    assert 0 == gitcache_ifc.db_field("mirror-updates", remote_url[:-4])
-    assert 0 == gitcache_ifc.db_field("clones", remote_url[:-4])
-    assert 1 == gitcache_ifc.db_field("updates", remote_url[:-4])
-    assert mirror_dir.replace("/", os.path.sep) in gitcache_ifc.db_field("mirror-dir", remote_url[:-4])
+    db_url = remote_url[:-4].replace("git@", "")
+    assert 0 == gitcache_ifc.db_field("mirror-updates", db_url)
+    assert 0 == gitcache_ifc.db_field("clones", db_url)
+    assert 1 == gitcache_ifc.db_field("updates", db_url)
+    assert mirror_dir.replace("/", os.path.sep) in gitcache_ifc.db_field("mirror-dir", db_url)
 
 
 def test_fetch_from_local_fs(gitcache_ifc: GitcacheIfc):

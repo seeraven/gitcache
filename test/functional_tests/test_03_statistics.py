@@ -39,13 +39,13 @@ def test_statistics_output_after_clone(gitcache_ifc: GitcacheIfc):
     result = gitcache_ifc.run_ok(["-s"])
     clone_stats_output = """Mirror of https://github.com/seeraven/gitcache:
   Mirror Updates:       0
-  Mirror Updates (LFS): 1
+  Mirror Updates (LFS): 0
   Clones from Mirror:   1
   Updates from Mirror:  0
 
 Total:
   Mirror Updates:       0
-  Mirror Updates (LFS): 1
+  Mirror Updates (LFS): 0
   Clones from Mirror:   1
   Updates from Mirror:  0
 """

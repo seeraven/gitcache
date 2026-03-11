@@ -396,7 +396,7 @@ def test_relative_submodule_ssh_specs(
         gitmodules.write("\tpath = gitcache\n")
         gitmodules.write(f"\turl = {submodule_url}\n")
     gitcache_ifc.run_ok(["git", "-C", checkout, "submodule", "update", "--init"])
-    assert 1 == gitcache_ifc.db_field("clones", final_submodule_url)
+    assert 1 == gitcache_ifc.db_field("clones", final_submodule_url.replace("git@", ""))
 
 
 def test_submodule_on_orphaned_commit(gitcache_ifc: GitcacheIfc):

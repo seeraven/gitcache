@@ -450,7 +450,52 @@ class GitMirror:
         else:
             return False
 
-        return self._fetch_lfs(ref)
+        if not self._fetch_lfs(ref):
+            return False
+
+        return self._remove_credentials_from_remote()
+
+    def _remove_credentials_from_remote(self):
+        """Remove any credentials from the mirror remote URLs."""
+        safe_url = self.strip_credentials(self.url)
+        if self.url != safe_url:
+            LOG.info("Removing credentials from the mirror remote URLs.")
+            command = [
+                self.config.get("System", "RealGit"),
+                "-C",
+                self.git_dir,
+                "remote",
+                "set-url",
+                "origin",
+                safe_url,
+            ]
+            cmd_retval = simple_call_command(command)
+            if cmd_retval != 0:
+                LOG.error("Command '%s' gave return code of %d!", command, cmd_retval)
+                return False
+
+        return True
+
+    def _add_credentials_to_remote(self):
+        """Set the credentials to the mirror remote URLs."""
+        safe_url = self.strip_credentials(self.url)
+        if self.url != safe_url:
+            LOG.info("Temporarily restoring credentials on the mirror remote URLs.")
+            command = [
+                self.config.get("System", "RealGit"),
+                "-C",
+                self.git_dir,
+                "remote",
+                "set-url",
+                "origin",
+                self.url,
+            ]
+            cmd_retval = simple_call_command(command)
+            if cmd_retval != 0:
+                LOG.error("Command '%s' gave return code of %d!", command, cmd_retval)
+                return False
+
+        return True
 
     def _update(self, ref=None, handle_gc_error=True):
         """Update the mirror.
@@ -464,6 +509,9 @@ class GitMirror:
         Return:
             Returns True on success.
         """
+        if not self._add_credentials_to_remote():
+            return False
+
         command = [self.config.get("System", "RealGit"), "remote", "update", "--prune"]
         return_code, stdout_buffer, stderr_buffer = pretty_call_command_retry(
             f"Update of {self.path}",
@@ -476,6 +524,7 @@ class GitMirror:
             abort_on_pattern=b"remove gc.log" if handle_gc_error else None,
         )
 
+        retval = True
         if return_code == 0:
             if handle_gc_error:
                 if (b"remove gc.log" in stdout_buffer) or (b"remove gc.log" in stderr_buffer):
@@ -484,11 +533,15 @@ class GitMirror:
         elif handle_gc_error and return_code == -3000:
             if self._run_gc():
                 return self._update(ref, False)
-            return False
+            retval = False
         else:
-            return False
+            retval = False
 
-        return self._fetch_lfs(ref)
+        if retval:
+            retval = self._fetch_lfs(ref)
+
+        self._remove_credentials_from_remote()
+        return retval
 
     def _run_gc(self):
         """Run the garbage collection.
@@ -524,6 +577,9 @@ class GitMirror:
         Return:
             Returns True if the command was successfull, otherwise False.
         """
+        if not self._add_credentials_to_remote():
+            return False
+
         command = [self.config.get("System", "RealGit"), "fetch"] + command_args
         return_code, _, _ = pretty_call_command_retry(
             f"Explicit fetch on {self.path} with arguments {command_args}",
@@ -534,6 +590,7 @@ class GitMirror:
             command_timeout=self.config.get("Update", "CommandTimeout"),
             output_timeout=self.config.get("Update", "OutputTimeout"),
         )
+        self._remove_credentials_from_remote()
         return return_code == 0
 
     def _fetch_lfs(self, ref=None, options=None):
@@ -551,6 +608,19 @@ class GitMirror:
             LOG.warning("LFS fetch skipped as git-lfs is not available on this system!")
             return True
 
+        command = [
+            self.config.get("System", "RealGit"),
+            "rev-list",
+            "--all",
+            "--",
+            ".gitattributes",
+            "**/.gitattributes",
+        ]
+        return_code, refs = getstatusoutput(command, cwd=self.git_dir)
+        if not refs:
+            LOG.info("Repository seems not to use LFS. Skipping LFS fetch.")
+            return True
+
         git_options = []
         if self.config.get("LFS", "PerMirrorStorage"):
             git_options = ["-c", f"lfs.storage={self.git_lfs_dir}"]
@@ -561,6 +631,7 @@ class GitMirror:
                 LOG.error("Can't determine default ref of git repository!")
                 return 1
 
+        self._add_credentials_to_remote()
         command = [self.config.get("System", "RealGit")] + git_options
         command += ["lfs", "fetch"] + (options if options else []) + ["origin", ref]
 
@@ -573,6 +644,7 @@ class GitMirror:
             command_timeout=self.config.get("LFS", "CommandTimeout"),
             output_timeout=self.config.get("LFS", "OutputTimeout"),
         )
+        self._remove_credentials_from_remote()
 
         if return_code == 0:
             self.database.increment_counter(self.path, "lfs-updates")
@@ -614,7 +686,7 @@ class GitMirror:
                 path = path[:-1]
             if path.endswith(".git"):
                 path = path[:-4]
-            return f"{match.group(1)}://{match.group(2) or ''}{match.group(3)}{match.group(4) or ''}/{path}"
+            return f"{match.group(1)}://{match.group(3)}{match.group(4) or ''}/{path}"
 
         if match := RE_URL_WITHOUT_PROTO.match(url):
             path = posixpath.normpath(match.group(3))
@@ -624,7 +696,28 @@ class GitMirror:
                 path = path[:-1]
             if path.endswith(".git"):
                 path = path[:-4]
-            return f"{match.group(1) or ''}{match.group(2)}:{path}"
+            return f"{match.group(2)}:{path}"
+
+        return url
+
+    @staticmethod
+    def strip_credentials(url: str) -> str:
+        """Remove any credentials from the specified url.
+
+        Args:
+            url (str): The URL of the repository.
+
+        Return:
+            Returns the URL without credentials.
+        """
+        if match := RE_URL_WITH_FILE.match(url):
+            return url
+
+        if match := RE_URL_WITH_PROTO.match(url):
+            return f"{match.group(1)}://{match.group(3)}{match.group(4) or ''}/{match.group(5)}"
+
+        if match := RE_URL_WITHOUT_PROTO.match(url):
+            return f"{match.group(2)}:{match.group(3)}"
 
         return url
 

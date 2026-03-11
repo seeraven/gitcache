@@ -10,6 +10,7 @@ import shutil
 from typing import List
 
 import helpers.gitcache_ifc
+import helpers.gitserver_ifc
 import helpers.workspace
 import pytest
 
@@ -51,6 +52,13 @@ def workspace():
 def gitcache_ifc(executable: List[str], workspace: helpers.workspace.Workspace) -> helpers.gitcache_ifc.GitcacheIfc:
     """Return the high-level interface to gitcache."""
     return helpers.gitcache_ifc.GitcacheIfc(executable, workspace)
+
+
+@pytest.fixture
+def gitserver():
+    """Start a local git server and initialize it with the gitcache repository."""
+    with helpers.gitserver_ifc.GitserverIfc() as new_gitserver:
+        yield new_gitserver
 
 
 # ----------------------------------------------------------------------------

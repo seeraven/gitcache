@@ -5,9 +5,11 @@
 # ----------------------------------------------------------------------------
 import os
 import platform
+from pathlib import Path
 
 import pytest
 from helpers.gitcache_ifc import GitcacheIfc
+from helpers.gitserver_ifc import GitserverIfc
 
 
 # ----------------------------------------------------------------------------
@@ -245,7 +247,8 @@ def test_clone_recurse_submodules_remote_submodules(gitcache_ifc: GitcacheIfc):
 def test_clone_via_ssh(gitcache_ifc: GitcacheIfc, remote_url: str):
     """Test clone via ssh URLs."""
     gitcache_ifc.run_ok(["git", "-C", gitcache_ifc.workspace.workspace_path, "clone", remote_url])
-    assert "github.com/seeraven/gitcache" in gitcache_ifc.db_field("mirror-dir", remote_url[:-4])
+    db_url = remote_url[:-4].replace("git@", "")
+    assert "github.com/seeraven/gitcache" in gitcache_ifc.db_field("mirror-dir", db_url)
 
 
 @pytest.mark.skipif(platform.node() != "Workhorse", reason="Requires known ssh environment")
@@ -259,7 +262,56 @@ def test_clone_via_ssh(gitcache_ifc: GitcacheIfc, remote_url: str):
 def test_clone_via_ssh_and_port(gitcache_ifc: GitcacheIfc, remote_url: str):
     """Test clone via ssh URLs."""
     gitcache_ifc.run_ok(["git", "-C", gitcache_ifc.workspace.workspace_path, "clone", remote_url])
-    assert "github.com_22/seeraven/gitcache" in gitcache_ifc.db_field("mirror-dir", remote_url[:-4])
+    db_url = remote_url[:-4].replace("git@", "")
+    assert "github.com_22/seeraven/gitcache" in gitcache_ifc.db_field("mirror-dir", db_url)
+
+
+def test_clone_with_credentials(gitcache_ifc: GitcacheIfc, gitserver: GitserverIfc):
+    """Test clone with credentials in the URL."""
+    # Ensure we don't save credentials using a credential helper for our local
+    # git server
+    gitcache_ifc.set_credential_helper("http://localhost:7698")
+
+    gitserver.initialize("https://github.com/seeraven/gitcache", "gitcache")
+
+    # Ensure local gitserver works as expected
+    remote_url = gitserver.get_localserver_url("gitcache")
+    filtered_url = gitserver.get_filtered_url("gitcache")
+    checkout_dir = Path(gitcache_ifc.workspace.workspace_path) / "gitcache"
+    gitcache_ifc.run_fail(
+        [
+            "git",
+            "-C",
+            gitcache_ifc.workspace.workspace_path,
+            "clone",
+            remote_url.replace("passWord", "PPassword"),
+        ]
+    )
+    gitcache_ifc.run_ok(["git", "-C", gitcache_ifc.workspace.workspace_path, "clone", remote_url])
+
+    # We need to do the checkout manually, probably due to the light-weight local
+    # git server.
+    gitcache_ifc.run_ok(["git", "-C", str(checkout_dir), "checkout", "master"])
+
+    # The database must use the URL without the credentials
+    assert gitcache_ifc.db_field("mirror-dir", filtered_url) is not None
+
+    # The remote stored in the mirror must use the URL without the credentials
+    mirror_dir = (
+        Path(gitcache_ifc.workspace.gitcache_dir_path) / gitcache_ifc.db_field("mirror-dir", filtered_url) / "git"
+    )
+    assert gitcache_ifc.get_remote(str(mirror_dir)) == filtered_url
+    assert 0 == gitcache_ifc.db_field("updates", filtered_url)
+
+    # Nevertheless, a fetch must work by restoring the URL with credentials for the update
+    gitcache_ifc.run_ok(["git", "-C", str(checkout_dir), "fetch"])
+    assert 1 == gitcache_ifc.db_field("mirror-updates", filtered_url)
+
+    gitcache_ifc.run_ok(["git", "-C", str(checkout_dir), "pull"])
+    assert 2 == gitcache_ifc.db_field("mirror-updates", filtered_url)
+
+    # Remove the special setting for the credential helper again
+    gitcache_ifc.set_credential_helper("http://localhost:7698", remove=True)
 
 
 # ----------------------------------------------------------------------------
