@@ -82,7 +82,7 @@ class GitserverIfc:
                 raise ChildProcessError()
 
             tgt_url = self.get_localserver_url(repo_name)
-            command = ["git", "-C", tmp_dir, "remote", "set-url", "origin", tgt_url]
+            command = ["git", "-C", tmp_dir, "remote", "set-url", "--push", "origin", tgt_url]
             result = subprocess.run(command, shell=False, check=True)
 
             if result.returncode != 0:
