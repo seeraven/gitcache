@@ -5,9 +5,11 @@
 # ----------------------------------------------------------------------------
 import os
 import platform
+from pathlib import Path
 
 import pytest
 from helpers.gitcache_ifc import GitcacheIfc
+from helpers.gitserver_ifc import GitserverIfc
 
 
 # ----------------------------------------------------------------------------
@@ -260,6 +262,44 @@ def test_clone_via_ssh_and_port(gitcache_ifc: GitcacheIfc, remote_url: str):
     """Test clone via ssh URLs."""
     gitcache_ifc.run_ok(["git", "-C", gitcache_ifc.workspace.workspace_path, "clone", remote_url])
     assert "github.com_22/seeraven/gitcache" in gitcache_ifc.db_field("mirror-dir", remote_url[:-4])
+
+
+def test_clone_with_credentials(gitcache_ifc: GitcacheIfc, gitserver: GitserverIfc):
+    """Test clone with credentials in the URL."""
+    gitserver.initialize("https://github.com/seeraven/gitcache", "gitcache")
+
+    # Ensure local gitserver works as expected
+    remote_url = gitserver.get_localserver_url("gitcache")
+    filtered_url = gitserver.get_filtered_url("gitcache")
+    gitcache_ifc.run_fail(
+        [
+            "git",
+            "-C",
+            gitcache_ifc.workspace.workspace_path,
+            "-c",
+            "credential.helper=",
+            "clone",
+            remote_url.replace("passWord", "PPassword"),
+        ]
+    )
+    gitcache_ifc.run_ok(
+        ["git", "-C", gitcache_ifc.workspace.workspace_path, "-c", "credential.helper=", "clone", remote_url]
+    )
+
+    # The database must use the URL without the credentials
+    assert gitcache_ifc.db_field("mirror-dir", filtered_url) is not None
+
+    # The remote stored in the mirror must use the URL without the credentials
+    mirror_dir = (
+        Path(gitcache_ifc.workspace.gitcache_dir_path) / gitcache_ifc.db_field("mirror-dir", filtered_url) / "git"
+    )
+    assert gitcache_ifc.get_remote(str(mirror_dir)) == filtered_url
+    assert 0 == gitcache_ifc.db_field("updates", filtered_url)
+
+    # Nevertheless, a fetch must work by restoring the URL with credentials temporarily
+    checkout_dir = Path(gitcache_ifc.workspace.workspace_path) / "gitcache"
+    gitcache_ifc.run_ok(["git", "-C", str(checkout_dir), "fetch"])
+    assert 1 == gitcache_ifc.db_field("updates", filtered_url)
 
 
 # ----------------------------------------------------------------------------
