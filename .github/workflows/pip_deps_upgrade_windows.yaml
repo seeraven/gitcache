@@ -32,16 +32,16 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           submodules: true
       # Note: Keep python version in sync with pip-deps!
       - name: Setup python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11.9'
       - name: Install dependencies
-        uses: crazy-max/ghaction-chocolatey@v3
+        uses: crazy-max/ghaction-chocolatey@v4
         with:
           args: install -y make
       - name: Refresh Environment
@@ -52,7 +52,7 @@ jobs:
         run: |
           C:\ProgramData\chocolatey\bin\make pip-deps-upgrade
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           commit-message: "${{ inputs.commit_message }}"
           committer: "${{ inputs.committer }}"

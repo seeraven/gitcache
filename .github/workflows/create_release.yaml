@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           submodules: true
       - name: Install dependencies
@@ -36,7 +36,7 @@ jobs:
           mkdir -p releases
           mv dist/gitcache*.whl releases/
       - name: Create Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: release-wheel
           retention-days: 1
@@ -51,7 +51,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           submodules: true
       - name: Install dependencies
@@ -67,7 +67,7 @@ jobs:
         run: |
           make test-current-release
       - name: Create Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: release-${{ matrix.os }}
           retention-days: 1
@@ -82,7 +82,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           submodules: true
       - name: Install dependencies
@@ -98,7 +98,7 @@ jobs:
         run: |
           make test-current-release.${{ matrix.os }}
       - name: Create Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: release-${{ matrix.os }}
           retention-days: 1
@@ -110,16 +110,16 @@ jobs:
     runs-on: windows-2022
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           submodules: true
       # Note: Keep python version in sync with pip-deps!
       - name: Setup python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.11.9'
       - name: Install dependencies
-        uses: crazy-max/ghaction-chocolatey@v3
+        uses: crazy-max/ghaction-chocolatey@v4
         with:
           args: install -y make
       - name: Refresh Environment
@@ -135,7 +135,7 @@ jobs:
         run: |
           C:\ProgramData\chocolatey\bin\make test-current-release
       - name: Create Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: release-windows
           retention-days: 1
@@ -150,7 +150,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Check out repository code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           submodules: true
       - name: Install dependencies
@@ -163,7 +163,7 @@ jobs:
         run: |
           make test-current-release
       - name: Create Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: release-${{ matrix.os }}
           retention-days: 1
