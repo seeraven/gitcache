@@ -77,8 +77,8 @@ gitcache is distributed as a single executable packaged using [pyInstaller].
 So all you have to do is to download the latest executable and copy it to a
 location of your choice, for example `~/bin`:
 
-    wget https://github.com/seeraven/gitcache/releases/download/v1.0.30/gitcache_v1.0.30_Ubuntu22.04_x86_64
-    mv gitcache_v1.0.30_Ubuntu22.04_x86_64 ~/bin/gitcache
+    wget https://github.com/seeraven/gitcache/releases/download/v1.0.31/gitcache_v1.0.31_Ubuntu22.04_x86_64
+    mv gitcache_v1.0.31_Ubuntu22.04_x86_64 ~/bin/gitcache
     chmod +x ~/bin/gitcache
 
 gitcache can be used as a stand-alone command, but it is much easier to use
@@ -115,9 +115,9 @@ gitcache is distributed as a tar-ball (`*.tgz` file). Download the archive and
 extract it at your desired target location (the archive contains a subfolder):
 
     cd /my/target/destination
-    tar xfz gitcache_v1.0.30_Darwin_arm64.tgz
-    xattr -cr gitcache_v1.0.30_Darwin_arm64
-    ls gitcache_v1.0.30_Darwin_arm64
+    tar xfz gitcache_v1.0.31_Darwin_arm64.tgz
+    xattr -cr gitcache_v1.0.31_Darwin_arm64
+    ls gitcache_v1.0.31_Darwin_arm64
 
 To use the `gitcache` command, the final installation directory should be put
 into your `PATH` variable. To use it as a wrapper to the `git` command, you

@@ -89,7 +89,7 @@ pptest-system-setup: pip-setup
 	@echo "Installing requirements for pip package test..."
 	@echo "-------------------------------------------------------------"
 	@pip install $(WHEEL)
-	@pip install pytest
+	@pip install pytest fastapi uvicorn
 
 ifeq ($(SWITCH_TO_VENV),1)
 
