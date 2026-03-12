@@ -55,6 +55,7 @@ class Workspace:
         self.env["GITCACHE_DIR"] = self.gitcache_dir_path
         self.env["GITCACHE_LOGLEVEL"] = "Debug"
         self.env["GITCACHE_LOGFORMAT"] = "%(message)s"
+        self.env["GIT_TERMINAL_PROMPT"] = "0"
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):

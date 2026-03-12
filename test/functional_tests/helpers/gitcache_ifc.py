@@ -159,6 +159,15 @@ class GitcacheIfc:
             content = file_handle.read()
         return needle in content
 
+    def set_credential_helper(self, url: str, helper: str = "", remove: bool = False) -> None:
+        """Set the credential helper for the specified url."""
+        command = ["git", "config", "--global"]
+        if remove:
+            command += ["--unset", f"credential.{url}.helper"]
+        else:
+            command += [f"credential.{url}.helper", helper]
+        subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=False, check=True)
+
 
 # -----------------------------------------------------------------------------
 # EOF

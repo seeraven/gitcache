@@ -84,10 +84,11 @@ def test_ls_remote_without_initial_clone(gitcache_ifc: GitcacheIfc, remote_url: 
 def test_ls_remote_without_initial_clone_on_workhorse(gitcache_ifc: GitcacheIfc, remote_url: str, mirror_dir: str):
     """Test the 'git ls-remote' command without an initial checkout."""
     gitcache_ifc.run_ok(["git", "ls-remote", remote_url])
-    assert 0 == gitcache_ifc.db_field("mirror-updates", remote_url[:-4])
-    assert 0 == gitcache_ifc.db_field("clones", remote_url[:-4])
-    assert 0 == gitcache_ifc.db_field("updates", remote_url[:-4])
-    assert mirror_dir.replace("/", os.path.sep) in gitcache_ifc.db_field("mirror-dir", remote_url[:-4])
+    db_url = remote_url[:-4].replace("git@", "")
+    assert 0 == gitcache_ifc.db_field("mirror-updates", db_url)
+    assert 0 == gitcache_ifc.db_field("clones", db_url)
+    assert 0 == gitcache_ifc.db_field("updates", db_url)
+    assert mirror_dir.replace("/", os.path.sep) in gitcache_ifc.db_field("mirror-dir", db_url)
 
 
 def test_ls_remote_from_local_fs(gitcache_ifc: GitcacheIfc):
