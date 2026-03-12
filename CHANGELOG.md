@@ -1,6 +1,6 @@
 # Changelog of gitcache
 
-## Upcoming Version
+## v1.0.31
 
 - Skip git-lfs fetch if the repository does not contain a `.gitattributes`.
 - Strip credentials from mirror URLs and temporarily restore them for fetch and pull actions.
