@@ -1,5 +1,10 @@
 # Changelog of gitcache
 
+## Upcoming changes
+
+- Drop support for Ubuntu 20.04 completely.
+- Mask credentials in URLs when printing them on stdout.
+
 ## v1.0.31
 
 - Skip git-lfs fetch if the repository does not contain a `.gitattributes`.
