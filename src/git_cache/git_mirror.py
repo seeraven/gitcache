@@ -139,6 +139,7 @@ class GitMirror:
             self.url = self.database.get_url_for_path(self.path)
         self.lockfile = os.path.join(os.path.dirname(self.path), ".lock", os.path.basename(self.path))
 
+        self.masked_url = self.strip_credentials(self.url, True)
         self.git_dir = os.path.join(self.path, "git")
         self.git_lfs_dir = os.path.join(self.path, "lfs")
         self.configfile = os.path.join(self.path, "gitcache.config")
@@ -287,7 +288,7 @@ class GitMirror:
         git_lfs_url = self.url + "/info/lfs"
         real_git = self.config.get("System", "RealGit")
 
-        LOG.info("Setting push URL to %s and configure LFS.", self.url)
+        LOG.info("Setting push URL to %s and configure LFS.", self.masked_url)
         paths = [path for path in git_options.get_global_group_values("run_path") if path is not None]
         cwd = os.path.abspath(os.path.join(*paths)) if paths else None
         commands = [
@@ -357,7 +358,7 @@ class GitMirror:
 
         self.database.increment_counter(self.path, "clones")
 
-        LOG.info("Setting push URL to %s and configure LFS.", self.url)
+        LOG.info("Setting push URL to %s and configure LFS.", self.masked_url)
         paths = [path for path in git_options.get_global_group_values("run_path") if path is not None] + [target_dir]
         cwd = os.path.abspath(os.path.join(*paths))
         commands = [
@@ -408,7 +409,7 @@ class GitMirror:
         if self.config.get("Clone", "CloneStyle").lower() == "partialfirst":
             command = [self.config.get("System", "RealGit"), "clone", "--progress", "--depth=1", self.url, self.git_dir]
             return_code, _, _ = pretty_call_command_retry(
-                f"Partial clone of {self.url} into {self.path}",
+                f"Partial clone of {self.masked_url} into {self.path}",
                 "",
                 command,
                 num_retries=self.config.get("Clone", "Retries"),
@@ -421,7 +422,7 @@ class GitMirror:
 
             command = [self.config.get("System", "RealGit"), "-C", self.git_dir, "fetch", "--unshallow"]
             return_code, _, _ = pretty_call_command_retry(
-                f"Fetching the rest of {self.url} into {self.path}",
+                f"Fetching the rest of {self.masked_url} into {self.path}",
                 "",
                 command,
                 num_retries=self.config.get("Clone", "Retries"),
@@ -436,7 +437,7 @@ class GitMirror:
             command = [self.config.get("System", "RealGit"), "clone", "--progress", "--mirror", self.url, self.git_dir]
 
             return_code, _, _ = pretty_call_command_retry(
-                f"Initial clone of {self.url} into {self.path}",
+                f"Initial clone of {self.masked_url} into {self.path}",
                 "",
                 command,
                 num_retries=self.config.get("Clone", "Retries"),
@@ -701,11 +702,13 @@ class GitMirror:
         return url
 
     @staticmethod
-    def strip_credentials(url: str) -> str:
+    def strip_credentials(url: str, mask: bool = False) -> str:
         """Remove any credentials from the specified url.
 
         Args:
-            url (str): The URL of the repository.
+            url (str):   The URL of the repository.
+            mask (bool): If set to True the credentials are
+                         replaced with the string [MASKED].
 
         Return:
             Returns the URL without credentials.
@@ -714,10 +717,12 @@ class GitMirror:
             return url
 
         if match := RE_URL_WITH_PROTO.match(url):
-            return f"{match.group(1)}://{match.group(3)}{match.group(4) or ''}/{match.group(5)}"
+            masked_creds = "[MASKED]@" if match.group(2) and mask else ""
+            return f"{match.group(1)}://{masked_creds}{match.group(3)}{match.group(4) or ''}/{match.group(5)}"
 
         if match := RE_URL_WITHOUT_PROTO.match(url):
-            return f"{match.group(2)}:{match.group(3)}"
+            masked_creds = "[MASKED]@" if match.group(1) and mask else ""
+            return f"{masked_creds}{match.group(2)}:{match.group(3)}"
 
         return url
 
