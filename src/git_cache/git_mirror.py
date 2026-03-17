@@ -283,9 +283,25 @@ class GitMirror:
             return False
         return True
 
+    def get_lfs_url(self):
+        """Get the LFS URL for the upstream repository.
+
+        For HTTP(S) and FTP(S) URLs, this appends '/info/lfs' to the URL.
+        For SSH URLs (both protocol and SCP-style), returns the original
+        URL so git-lfs can handle server discovery on its own.
+
+        Return:
+            Returns the LFS URL string.
+        """
+        if match := RE_URL_WITH_PROTO.match(self.url):
+            proto = match.group(1).lower()
+            if proto in ("http", "https", "ftp", "ftps"):
+                return self.url + "/info/lfs"
+        return self.url
+
     def configure_git_for_mirror(self, git_options: GitOptions) -> int:
         """Configure the local git repository to use the mirror."""
-        git_lfs_url = self.url + "/info/lfs"
+        git_lfs_url = self.get_lfs_url()
         real_git = self.config.get("System", "RealGit")
 
         LOG.info("Setting push URL to %s and configure LFS.", self.masked_url)
@@ -323,7 +339,7 @@ class GitMirror:
         if not self.update(ref):
             return 1
 
-        git_lfs_url = self.url + "/info/lfs"
+        git_lfs_url = self.get_lfs_url()
         real_git = self.config.get("System", "RealGit")
 
         new_args = [x if x != self.url else f"file://{self.git_dir}" for x in git_options.all_args]

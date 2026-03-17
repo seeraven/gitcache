@@ -99,7 +99,8 @@ def git_fetch(git_options):
         # We configure the LFS storage here to support the Jenkins way
         # of cloning git repositories.
         LOG.info("Configuring LFS.")
-        command = [real_git, "config", "--local", "lfs.url", f"{mirror.url}/info/lfs"]
+        git_lfs_url = mirror.get_lfs_url()
+        command = [real_git, "config", "--local", "lfs.url", git_lfs_url]
         simple_call_command(command, cwd=git_options.get_run_path())
 
         if config.get("LFS", "PerMirrorStorage"):
