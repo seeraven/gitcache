@@ -234,7 +234,7 @@ def test_clone_recurse_submodules_remote_submodules(gitcache_ifc: GitcacheIfc):
     assert "master" == gitcache_ifc.get_branch(os.path.join(checkout, "gitcache"))
 
 
-@pytest.mark.skipif(platform.node() != "Workhorse", reason="Requires known ssh environment")
+@pytest.mark.skipif(platform.node() not in ["Workhorse", "hermes"], reason="Requires known ssh environment")
 @pytest.mark.parametrize(
     "remote_url",
     [
@@ -251,7 +251,7 @@ def test_clone_via_ssh(gitcache_ifc: GitcacheIfc, remote_url: str):
     assert "github.com/seeraven/gitcache" in gitcache_ifc.db_field("mirror-dir", db_url)
 
 
-@pytest.mark.skipif(platform.node() != "Workhorse", reason="Requires known ssh environment")
+@pytest.mark.skipif(platform.node() not in ["Workhorse", "hermes"], reason="Requires known ssh environment")
 @pytest.mark.parametrize(
     "remote_url",
     [

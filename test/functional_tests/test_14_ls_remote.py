@@ -69,7 +69,7 @@ def test_ls_remote_without_initial_clone(gitcache_ifc: GitcacheIfc, remote_url: 
     assert mirror_dir.replace("/", os.path.sep) in gitcache_ifc.db_field("mirror-dir", remote_url[:-4])
 
 
-@pytest.mark.skipif(platform.node() != "Workhorse", reason="Requires known ssh environment")
+@pytest.mark.skipif(platform.node() not in ["Workhorse", "hermes"], reason="Requires known ssh environment")
 @pytest.mark.parametrize(
     "remote_url,mirror_dir",
     [

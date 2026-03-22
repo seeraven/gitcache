@@ -4,6 +4,7 @@
 
 - Drop support for Ubuntu 20.04 completely.
 - Mask credentials in URLs when printing them on stdout.
+- Bugfix: Fix LFS when using ssh (thanks to Youw)
 
 ## v1.0.31
 

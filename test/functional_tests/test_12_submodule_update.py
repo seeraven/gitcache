@@ -279,7 +279,7 @@ def test_relative_submodule_specs(
     assert 1 == gitcache_ifc.db_field("clones", final_submodule_url)
 
 
-@pytest.mark.skipif(platform.node() != "Workhorse", reason="Requires known ssh environment")
+@pytest.mark.skipif(platform.node() not in ["Workhorse", "hermes"], reason="Requires known ssh environment")
 @pytest.mark.parametrize(
     "repo_url,submodule_url,final_submodule_url",
     [
