@@ -96,7 +96,7 @@ def test_fetch_in_empty_repo_with_remote(gitcache_ifc: GitcacheIfc, remote_name:
         assert 1 == gitcache_ifc.db_field("updates", remote_url[:-4])
 
 
-@pytest.mark.skipif(platform.node() != "Workhorse", reason="Requires known ssh environment")
+@pytest.mark.skipif(platform.node() not in ["Workhorse", "hermes"], reason="Requires known ssh environment")
 @pytest.mark.parametrize(
     "remote_url,mirror_dir",
     [
