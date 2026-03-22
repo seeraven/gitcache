@@ -14,7 +14,7 @@ astroid==4.0.4
     # via pylint
 asttokens==3.0.1
     # via stack-data
-attrs==25.4.0
+attrs==26.1.0
     # via flake8-bugbear
 babel==2.18.0
     # via sphinx
@@ -24,7 +24,7 @@ black==26.3.1
     #   gitcache (pyproject.toml)
 certifi==2026.2.25
     # via requests
-charset-normalizer==3.4.5
+charset-normalizer==3.4.6
     # via requests
 click==8.3.1
     # via
@@ -32,7 +32,7 @@ click==8.3.1
     #   uvicorn
 coloredlogs==15.0.1
     # via gitcache (pyproject.toml)
-coverage[toml]==7.13.4
+coverage[toml]==7.13.5
     # via
     #   gitcache (pyproject.toml)
     #   pytest-cov
@@ -180,7 +180,7 @@ pytest==9.0.2
     #   gitcache (pyproject.toml)
     #   pytest-cov
     #   pytest-timeout
-pytest-cov==7.0.0
+pytest-cov==7.1.0
     # via gitcache (pyproject.toml)
 pytest-timeout==2.4.0
     # via gitcache (pyproject.toml)
@@ -243,7 +243,7 @@ typing-inspection==0.4.2
     #   pydantic
 urllib3==2.6.3
     # via requests
-uvicorn==0.41.0
+uvicorn==0.42.0
     # via gitcache (pyproject.toml)
 wcwidth==0.6.0
     # via prompt-toolkit
