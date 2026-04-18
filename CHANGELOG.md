@@ -1,5 +1,7 @@
 # Changelog of gitcache
 
+## Upcoming version
+
 ## v1.0.32
 
 - Drop support for Ubuntu 20.04 completely.
