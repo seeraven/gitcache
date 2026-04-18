@@ -6,7 +6,7 @@ annotated-doc==0.0.4
     # via fastapi
 annotated-types==0.7.0
     # via pydantic
-anyio==4.12.1
+anyio==4.13.0
     # via starlette
 astroid==4.0.4
     # via pylint
@@ -22,9 +22,9 @@ black==26.3.1
     #   gitcache (pyproject.toml)
 certifi==2026.2.25
     # via requests
-charset-normalizer==3.4.6
+charset-normalizer==3.4.7
     # via requests
-click==8.3.1
+click==8.3.2
     # via
     #   black
     #   uvicorn
@@ -57,7 +57,7 @@ domdf-python-tools==3.10.0
     #   sphinx-pyproject
 executing==2.2.1
     # via stack-data
-fastapi==0.135.1
+fastapi==0.136.0
     # via gitcache (pyproject.toml)
 flake8==7.3.0
     # via
@@ -90,7 +90,7 @@ imagesize==2.0.0
     # via sphinx
 iniconfig==2.3.0
     # via pytest
-ipython==9.10.0
+ipython==9.10.1
     # via gitcache (pyproject.toml)
 ipython-pygments-lexers==1.1.1
     # via ipython
@@ -103,7 +103,7 @@ jedi==0.19.2
     # via ipython
 jinja2==3.1.6
     # via sphinx
-librt==0.8.1
+librt==0.9.0
     # via mypy
 markupsafe==3.0.3
     # via jinja2
@@ -115,7 +115,7 @@ mccabe==0.7.0
     #   pylint
 mock==5.2.0
     # via gitcache (pyproject.toml)
-mypy==1.19.1
+mypy==1.20.1
     # via gitcache (pyproject.toml)
 mypy-extensions==1.1.0
     # via
@@ -123,7 +123,7 @@ mypy-extensions==1.1.0
     #   mypy
 natsort==8.4.0
     # via domdf-python-tools
-packaging==26.0
+packaging==26.1
     # via
     #   black
     #   pyinstaller
@@ -140,7 +140,7 @@ pefile==2024.8.26
     # via pyinstaller
 pep8-naming==0.15.1
     # via gitcache (pyproject.toml)
-platformdirs==4.9.4
+platformdirs==4.9.6
     # via
     #   black
     #   pylint
@@ -158,13 +158,13 @@ pycodestyle==2.14.0
     # via
     #   flake8
     #   gitcache (pyproject.toml)
-pydantic==2.12.5
+pydantic==2.13.2
     # via fastapi
-pydantic-core==2.41.5
+pydantic-core==2.46.2
     # via pydantic
 pyflakes==3.4.0
     # via flake8
-pygments==2.19.2
+pygments==2.20.0
     # via
     #   ipython
     #   ipython-pygments-lexers
@@ -172,13 +172,13 @@ pygments==2.19.2
     #   sphinx
 pyinstaller==6.19.0
     # via gitcache (pyproject.toml)
-pyinstaller-hooks-contrib==2026.3
+pyinstaller-hooks-contrib==2026.4
     # via pyinstaller
 pylint==4.0.5
     # via gitcache (pyproject.toml)
 pyreadline3==3.5.4
     # via humanfriendly
-pytest==9.0.2
+pytest==9.0.3
     # via
     #   gitcache (pyproject.toml)
     #   pytest-cov
@@ -195,7 +195,7 @@ pywin32==311
     # via portalocker
 pywin32-ctypes==0.2.3
     # via pyinstaller
-requests==2.32.5
+requests==2.33.1
     # via sphinx
 roman-numerals==4.1.0
     # via sphinx
@@ -226,7 +226,7 @@ sphinxcontrib-serializinghtml==2.0.0
     # via sphinx
 stack-data==0.6.3
     # via ipython
-starlette==0.52.1
+starlette==1.0.0
     # via fastapi
 tomlkit==0.14.0
     # via pylint
@@ -234,7 +234,7 @@ traitlets==5.14.3
     # via
     #   ipython
     #   matplotlib-inline
-types-mock==5.2.0.20250924
+types-mock==5.2.0.20260408
     # via gitcache (pyproject.toml)
 typing-extensions==4.15.0
     # via
@@ -253,7 +253,7 @@ typing-inspection==0.4.2
     #   pydantic
 urllib3==2.6.3
     # via requests
-uvicorn==0.42.0
+uvicorn==0.44.0
     # via gitcache (pyproject.toml)
 wcwidth==0.6.0
     # via prompt-toolkit
