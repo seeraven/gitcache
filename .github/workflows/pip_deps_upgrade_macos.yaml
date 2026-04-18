@@ -28,7 +28,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-15]
+        os: [macos-26]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Check out repository code
