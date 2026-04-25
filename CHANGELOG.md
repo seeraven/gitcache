@@ -1,10 +1,13 @@
 # Changelog of gitcache
 
-## Upcoming changes
+## Upcoming version
+
+## v1.0.32
 
 - Drop support for Ubuntu 20.04 completely.
 - Mask credentials in URLs when printing them on stdout.
 - Bugfix: Fix LFS when using ssh (thanks to Youw)
+- Create binaries for MacOS 15 and 26 including x86_64.
 
 ## v1.0.31
 
