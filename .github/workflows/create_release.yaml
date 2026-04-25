@@ -146,7 +146,7 @@ jobs:
   build-macos:
     strategy:
       matrix:
-        os: [macos-15, macos-26, macos-15-intel, macos-26-intel]
+        os: [macos-26, macos-26-intel]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Check out repository code
