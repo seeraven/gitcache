@@ -2,6 +2,8 @@
 
 ## Upcoming version
 
+- Bugfix: Avoid database destruction when disc-is-full.
+
 ## v1.0.32
 
 - Drop support for Ubuntu 20.04 completely.
