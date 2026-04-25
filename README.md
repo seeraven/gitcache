@@ -360,7 +360,7 @@ is pushed to the repository. This changes the release process a little bit:
     `src/git_cache/git_cache_command.py` and `doc/source/installation.rst` and
     replace the version number:
 
-        sed -i 's/1.0.32/1.0.33/g' Makefile pyproject.toml src/git_cache/git_cache_command.py doc/source/installation.rst
+        sed -i 's/1.0.33/1.0.34/g' Makefile pyproject.toml src/git_cache/git_cache_command.py doc/source/installation.rst
 
 
 ## Notes on Building a Pip-Package

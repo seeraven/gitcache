@@ -13,7 +13,7 @@
 #  SETTINGS
 # ----------------------------------------------------------------------------
 APP_NAME             := gitcache
-APP_VERSION          := 1.0.33
+APP_VERSION          := 1.0.34
 
 ALL_TARGET           := check-style.venv
 SCRIPT               := src/gitcache
