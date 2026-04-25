@@ -2,6 +2,8 @@
 
 ## Upcoming version
 
+## v1.0.33
+
 - Bugfix: Avoid database destruction when disc-is-full.
 
 ## v1.0.32
