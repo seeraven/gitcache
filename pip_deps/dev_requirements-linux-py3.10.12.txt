@@ -20,11 +20,11 @@ black==26.3.1
     # via
     #   flake8-black
     #   gitcache (pyproject.toml)
-certifi==2026.2.25
+certifi==2026.4.22
     # via requests
 charset-normalizer==3.4.7
     # via requests
-click==8.3.2
+click==8.3.3
     # via
     #   black
     #   uvicorn
@@ -55,7 +55,7 @@ exceptiongroup==1.3.1
     #   pytest
 executing==2.2.1
     # via stack-data
-fastapi==0.136.0
+fastapi==0.136.1
     # via gitcache (pyproject.toml)
 flake8==7.3.0
     # via
@@ -80,7 +80,7 @@ h11==0.16.0
     # via uvicorn
 humanfriendly==10.0
     # via coloredlogs
-idna==3.11
+idna==3.13
     # via
     #   anyio
     #   requests
@@ -111,7 +111,7 @@ mccabe==0.7.0
     #   pylint
 mock==5.2.0
     # via gitcache (pyproject.toml)
-mypy==1.20.1
+mypy==1.20.2
     # via gitcache (pyproject.toml)
 mypy-extensions==1.1.0
     # via
@@ -119,7 +119,7 @@ mypy-extensions==1.1.0
     #   mypy
 natsort==8.4.0
     # via domdf-python-tools
-packaging==26.1
+packaging==26.2
     # via
     #   black
     #   pyinstaller
@@ -128,7 +128,7 @@ packaging==26.1
     #   sphinx
 parso==0.8.6
     # via jedi
-pathspec==1.0.4
+pathspec==1.1.0
     # via
     #   black
     #   mypy
@@ -156,9 +156,9 @@ pycodestyle==2.14.0
     # via
     #   flake8
     #   gitcache (pyproject.toml)
-pydantic==2.13.2
+pydantic==2.13.3
     # via fastapi
-pydantic-core==2.46.2
+pydantic-core==2.46.3
     # via pydantic
 pyflakes==3.4.0
     # via flake8
@@ -167,7 +167,7 @@ pygments==2.20.0
     #   ipython
     #   pytest
     #   sphinx
-pyinstaller==6.19.0
+pyinstaller==6.20.0
     # via gitcache (pyproject.toml)
 pyinstaller-hooks-contrib==2026.4
     # via pyinstaller
@@ -257,7 +257,7 @@ typing-inspection==0.4.2
     #   pydantic
 urllib3==2.6.3
     # via requests
-uvicorn==0.44.0
+uvicorn==0.46.0
     # via gitcache (pyproject.toml)
 wcwidth==0.6.0
     # via prompt-toolkit

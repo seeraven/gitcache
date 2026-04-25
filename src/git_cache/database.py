@@ -202,8 +202,10 @@ class Database:
         for key, entry in self.database.items():
             database[os.path.relpath(key, GITCACHE_DIR)] = entry
 
-        with open(GITCACHE_DB, "w", encoding="utf-8") as handle:
+        tmp_filename = GITCACHE_DB + ".new"
+        with open(tmp_filename, "w", encoding="utf-8") as handle:
             json.dump(database, handle)
+        os.replace(tmp_filename, GITCACHE_DB)
 
 
 # -----------------------------------------------------------------------------
