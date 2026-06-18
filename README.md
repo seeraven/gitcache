@@ -165,6 +165,7 @@ The configuration options are:
 | Category       | Config Item      | Default Value   | Environment Variable                  |
 |----------------|------------------|-----------------|---------------------------------------|
 | System         | realgit          | `/usr/bin/git`  | `GITCACHE_REAL_GIT`                   |
+| System         | disable          | `False`         | `GITCACHE_DISABLE`                    |
 | MirrorHandling | updateinterval   | `0 s`           | `GITCACHE_UPDATE_INTERVAL`            |
 | MirrorHandling | cleanupafter     | `14 days`       | `GITCACHE_CLEANUP_AFTER`              |
 | Command        | checkinterval    | `2 s`           | `GITCACHE_COMMAND_CHECK_INTERVAL`     |
@@ -200,6 +201,10 @@ The following list gives a description of the configuration options:
 
   - _System/realgit_ (`GITCACHE_REAL_GIT`) specifies the real git command. This
     is usually `/usr/bin/git` but can be changed as you like.
+  - _System/disable_ (`GITCACHE_DISABLE`) disables gitcache command wrapping and
+    forwards all wrapped `git` commands directly to the real git executable.
+    This is useful for CI/pipeline jobs. The values `1`, `true`, `yes` and `on`
+    (case-insensitive) enable this behavior.
   - _MirrorHandling/updateinterval_ (`GITCACHE_UPDATE_INTERVAL`) gives the
     minimum time between two mirror updates. If this is set to 0, the mirror is
     updated always when needed. If you set this to something like `10 minutes`
