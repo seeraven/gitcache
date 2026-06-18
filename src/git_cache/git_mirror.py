@@ -286,9 +286,11 @@ class GitMirror:
     def get_lfs_url(self):
         """Get the LFS URL for the upstream repository.
 
-        For HTTP(S) and FTP(S) URLs, this appends '/info/lfs' to the URL.
-        For SSH URLs (both protocol and SCP-style), returns the original
-        URL so git-lfs can handle server discovery on its own.
+        For HTTP(S) and FTP(S) URLs, this derives the LFS batch endpoint the
+        same way git-lfs does, i.e. '<repo>.git/info/lfs', regardless of
+        whether the clone URL carries a '.git' suffix. For SSH URLs (both
+        protocol and SCP-style), returns the original URL so git-lfs can
+        handle server discovery on its own.
 
         Return:
             Returns the LFS URL string.
@@ -296,8 +298,36 @@ class GitMirror:
         if match := RE_URL_WITH_PROTO.match(self.url):
             proto = match.group(1).lower()
             if proto in ("http", "https", "ftp", "ftps"):
-                return self.url + "/info/lfs"
+                return self.normalize_lfs_endpoint(self.url)
         return self.url
+
+    @staticmethod
+    def normalize_lfs_endpoint(url: str) -> str:
+        """Derive the canonical Git-LFS batch endpoint for the given URL.
+
+        git-lfs derives the LFS endpoint by appending '/info/lfs' to the
+        repository URL including its '.git' segment, e.g.
+        '<repo>.git/info/lfs'. gitcache previously appended '/info/lfs'
+        without inserting the '.git' segment, which for clone URLs lacking a
+        '.git' suffix produced a broken endpoint that the server answers with
+        a 302 redirect to /login (surfaced as an Authorization error). This
+        normalizes the trailing slash, ensures exactly one '.git' segment and
+        then appends '/info/lfs' so the result is correct for both '<repo>'
+        and '<repo>.git' input URLs.
+
+        Args:
+            url (str): The repository URL (http(s)/ftp(s)).
+
+        Return:
+            Returns the normalized '<repo>.git/info/lfs' endpoint.
+        """
+        url = url.rstrip("/")
+        if url.endswith("/info/lfs"):
+            url = url[: -len("/info/lfs")]
+        url = url.rstrip("/")
+        if url.endswith(".git"):
+            url = url[:-4]
+        return f"{url}.git/info/lfs"
 
     def configure_git_for_mirror(self, git_options: GitOptions) -> int:
         """Configure the local git repository to use the mirror."""
