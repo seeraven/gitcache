@@ -86,7 +86,7 @@ class GitCacheCallCommandRetryTest(TestCase):
             cwd = r"C:\Windows"
         else:
             cmd = ["pwd"]
-            cwd = "/var/log"
+            cwd = "/tmp"
         return_code, stdout_buffer, stderr_buffer = call_command_retry(cmd, 3, cwd=cwd)
         self.assertEqual(0, return_code)
         self.assertTrue(cwd in stdout_buffer.decode().strip() or cwd in stderr_buffer.decode().strip())
@@ -98,7 +98,7 @@ class GitCacheCallCommandRetryTest(TestCase):
             cwd = r"C:\Windows"
         else:
             cmd = ["pwd"]
-            cwd = "/var/log"
+            cwd = "/tmp"
         return_code, stdout_buffer, _ = call_command_retry(cmd, 3, cwd=cwd, shell=True)
         self.assertEqual(0, return_code)
         self.assertIn(cwd, stdout_buffer.decode().strip())

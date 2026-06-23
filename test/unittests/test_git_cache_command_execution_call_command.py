@@ -85,7 +85,7 @@ class GitCacheCallCommandTest(TestCase):
             cwd = r"C:\Windows"
         else:
             cmd = ["pwd"]
-            cwd = "/var/log"
+            cwd = "/tmp"
         return_code, stdout_buffer, _ = call_command(cmd, cwd=cwd)
         self.assertEqual(0, return_code)
         self.assertIn(cwd, stdout_buffer.decode().strip())
@@ -97,7 +97,7 @@ class GitCacheCallCommandTest(TestCase):
             cwd = r"C:\Windows"
         else:
             cmd = ["pwd"]
-            cwd = "/var/log"
+            cwd = "/tmp"
         return_code, stdout_buffer, _ = call_command(cmd, cwd=cwd, shell=True)
         self.assertEqual(0, return_code)
         self.assertIn(cwd, stdout_buffer.decode().strip())
