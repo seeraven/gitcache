@@ -2,6 +2,9 @@
 
 ## Upcoming version
 
+- Bugfix: Normalize explicit `lfs.url` for HTTP(S)/FTP(S) remotes to the canonical `<repo>.git/info/lfs` endpoint.
+  This fixes broken LFS auth flows when clone URLs omit `.git` (seen on GHES) while keeping SSH/SCP/file-style remotes unchanged.
+
 ## v1.0.33
 
 - Bugfix: Avoid database destruction when disc-is-full.
