@@ -131,6 +131,7 @@ def _perform_submodule_update_module_test(gitcache_ifc: GitcacheIfc, c_option=No
     assert 1 == gitcache_ifc.db_field("clones", repo_sub2)
 
 
+@pytest.mark.skipif(os.getenv("IN_GITHUB_ACTION", "0") != "0", reason="Test exceeds github runners disc quota")
 def test_recursive_init(gitcache_ifc: GitcacheIfc):
     """Test 'git submodule update --recursive --init'."""
     repo = "https://github.com/aws/aws-sdk-cpp"
