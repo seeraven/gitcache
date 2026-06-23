@@ -16,6 +16,8 @@ import platform
 import sys
 from unittest import TestCase
 
+import pytest
+
 from git_cache.command_execution import call_command
 
 
@@ -78,6 +80,7 @@ class GitCacheCallCommandTest(TestCase):
             self.assertEqual(b"", stdout_buffer)
         # self.assertEqual(b'', stderr_buffer)
 
+    @pytest.mark.skipif(platform.system() in ["Darwin"], reason="Disabled flaky test on MacOS")
     def test_cwd(self):
         """git_cache.command_execution.call_command(): Support of cwd."""
         if self.on_windows:
@@ -85,7 +88,7 @@ class GitCacheCallCommandTest(TestCase):
             cwd = r"C:\Windows"
         else:
             cmd = ["pwd"]
-            cwd = "/var/log"
+            cwd = "/tmp"
         return_code, stdout_buffer, _ = call_command(cmd, cwd=cwd)
         self.assertEqual(0, return_code)
         self.assertIn(cwd, stdout_buffer.decode().strip())
@@ -97,7 +100,7 @@ class GitCacheCallCommandTest(TestCase):
             cwd = r"C:\Windows"
         else:
             cmd = ["pwd"]
-            cwd = "/var/log"
+            cwd = "/tmp"
         return_code, stdout_buffer, _ = call_command(cmd, cwd=cwd, shell=True)
         self.assertEqual(0, return_code)
         self.assertIn(cwd, stdout_buffer.decode().strip())

@@ -94,7 +94,7 @@ class GitCachePrettyCallCommandRetryTest(TestCase):
             cwd = r"C:\Windows"
         else:
             cmd = ["pwd"]
-            cwd = "/var/log"
+            cwd = "/tmp"
         return_code, stdout_buffer, _ = pretty_call_command_retry("Current working directory", "", cmd, 3, cwd=cwd)
         self.assertEqual(0, return_code)
         self.assertIn(cwd, stdout_buffer.decode().strip())
@@ -106,7 +106,7 @@ class GitCachePrettyCallCommandRetryTest(TestCase):
             cwd = r"C:\Windows"
         else:
             cmd = ["pwd"]
-            cwd = "/var/log"
+            cwd = "/tmp"
         return_code, stdout_buffer, _ = pretty_call_command_retry(
             "Current working directory", "", cmd, 3, cwd=cwd, shell=True
         )

@@ -95,8 +95,8 @@ class GitCacheGetStatusOutputTest(TestCase):
             expected_outputs = [cwd]
         else:
             cmd = ["pwd"]
-            cwd = "/var/log"
-            expected_outputs = [cwd, "/private/var/log"]
+            cwd = "/tmp"
+            expected_outputs = [cwd, "/private/tmp"]
         return_code, output = getstatusoutput(cmd, cwd=cwd)
         self.assertEqual(0, return_code)
         self.assertIn(output, expected_outputs)
@@ -109,8 +109,8 @@ class GitCacheGetStatusOutputTest(TestCase):
             expected_outputs = [cwd]
         else:
             cmd = ["pwd"]
-            cwd = "/var/log"
-            expected_outputs = [cwd, "/private/var/log"]
+            cwd = "/tmp"
+            expected_outputs = [cwd, "/private/tmp"]
         return_code, output = getstatusoutput(cmd, cwd=cwd, shell=True)
         self.assertEqual(0, return_code)
         self.assertIn(output, expected_outputs)
