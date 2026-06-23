@@ -139,6 +139,27 @@ def call_command(command, cwd=None, shell=False, command_timeout=None, output_ti
 
             # To cleanup any pending resources
             proc.wait()
+
+            # Drain any remaining data in case select did miss it
+            def _drain_fd(read_fd, output_stream):
+                buffer = b""
+                while True:
+                    try:
+                        chunk = os.read(read_fd, buffer_size)
+                    except OSError as exception:
+                        if exception.errno != errno.EIO:
+                            raise
+                        break
+                    if not chunk:
+                        break
+                    buffer += chunk
+                    output_stream.buffer.write(chunk)
+                    output_stream.buffer.flush()
+                return buffer
+
+            stdout_buffer += _drain_fd(stdout_r, sys.stdout)
+            stderr_buffer += _drain_fd(stderr_r, sys.stderr)
+
             os.close(stdout_r)
             os.close(stderr_r)
             sys.stdout.buffer.flush()
