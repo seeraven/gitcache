@@ -12,8 +12,7 @@
 # Module Import
 # -----------------------------------------------------------------------------
 import os
-from unittest import TestCase
-from unittest import mock
+from unittest import TestCase, mock
 
 import git_cache.git_command
 

@@ -201,6 +201,7 @@ class Config:
         """
         self.items: List[ConfigItem] = []
         self.items.append(ConfigItem("System", "RealGit", find_git(), converter=str, env="GITCACHE_REAL_GIT"))
+        self.items.append(ConfigItem("System", "Disable", False, converter=str_to_bool, env="GITCACHE_DISABLE"))
 
         self.items.append(ConfigItem("MirrorHandling", "UpdateInterval", "0 seconds", env="GITCACHE_UPDATE_INTERVAL"))
         self.items.append(ConfigItem("MirrorHandling", "CleanupAfter", "14 days", env="GITCACHE_CLEANUP_AFTER"))
