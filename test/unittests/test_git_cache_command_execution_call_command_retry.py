@@ -84,24 +84,29 @@ class GitCacheCallCommandRetryTest(TestCase):
         if self.on_windows:
             cmd = ["cmd.exe", "/C", "echo %CD%"]
             cwd = r"C:\Windows"
+            expected_outputs = [cwd]
         else:
             cmd = ["pwd"]
             cwd = "/tmp"
+            expected_outputs = [cwd, "/private/tmp"]
         return_code, stdout_buffer, stderr_buffer = call_command_retry(cmd, 3, cwd=cwd)
         self.assertEqual(0, return_code)
-        self.assertTrue(cwd in stdout_buffer.decode().strip() or cwd in stderr_buffer.decode().strip())
+        output = stdout_buffer.decode().strip() or stderr_buffer.decode().strip()
+        self.assertIn(output, expected_outputs)
 
     def test_shell_cwd(self):
         """git_cache.command_execution.call_command_retry(): Support of cwd using shell."""
         if self.on_windows:
             cmd = "echo %CD%"
             cwd = r"C:\Windows"
+            expected_outputs = [cwd]
         else:
             cmd = ["pwd"]
             cwd = "/tmp"
+            expected_outputs = [cwd, "/private/tmp"]
         return_code, stdout_buffer, _ = call_command_retry(cmd, 3, cwd=cwd, shell=True)
         self.assertEqual(0, return_code)
-        self.assertIn(cwd, stdout_buffer.decode().strip())
+        self.assertIn(stdout_buffer.decode().strip(), expected_outputs)
 
     def test_timeout(self):
         """git_cache.command_execution.call_command_retry(): Command timeout."""
