@@ -90,10 +90,12 @@ def _write_block(path: Optional[str], text: str) -> None:
         with portalocker.Lock(path, "a", timeout=60) as log_file:
             log_file.write(text)
             log_file.flush()
-            try:
-                os.fchmod(log_file.fileno(), 0o600)
-            except (AttributeError, OSError):
-                pass
+            fchmod = getattr(os, "fchmod", None)
+            if fchmod is not None:
+                try:
+                    fchmod(log_file.fileno(), 0o600)
+                except OSError:
+                    pass
     except OSError as error:
         if not _write_error_reported:
             _write_error_reported = True
