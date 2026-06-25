@@ -39,6 +39,11 @@ class GitCacheSettingsTest(TestCase):
         self.assertEqual(
             git_cache.global_settings.GITCACHE_LOGFORMAT, os.getenv("GITCACHE_LOGFORMAT", "%(asctime)s %(message)s")
         )
+        self.assertEqual(git_cache.global_settings.GITCACHE_DETAIL_LOG, os.getenv("GITCACHE_DETAIL_LOG"))
+        self.assertEqual(
+            git_cache.global_settings.GITCACHE_DETAIL_LOG_LEVEL, os.getenv("GITCACHE_DETAIL_LOG_LEVEL", "INFO")
+        )
+        self.assertEqual(git_cache.global_settings.GITCACHE_SUMMARY_LOG, os.getenv("GITCACHE_SUMMARY_LOG"))
 
 
 # -----------------------------------------------------------------------------

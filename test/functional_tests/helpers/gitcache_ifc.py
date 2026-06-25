@@ -168,6 +168,22 @@ class GitcacheIfc:
             command += [f"credential.{url}.helper", helper]
         subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, shell=False, check=True)
 
+    def setup_invocation_logs(self) -> tuple[str, str]:
+        """Configure summary and detail log files in the workspace."""
+        summary_log = os.path.join(self.workspace.workspace_path, "gitcache.summary.log")
+        detail_log = os.path.join(self.workspace.workspace_path, "gitcache.detail.log")
+        self.workspace.set_env("GITCACHE_SUMMARY_LOG", summary_log)
+        self.workspace.set_env("GITCACHE_DETAIL_LOG", detail_log)
+        return summary_log, detail_log
+
+    def read_summary_lines(self) -> List[str]:
+        """Return non-empty lines from the configured summary log."""
+        summary_log = self.workspace.env.get("GITCACHE_SUMMARY_LOG")
+        if not summary_log or not os.path.exists(summary_log):
+            return []
+        with open(summary_log, "r", encoding="utf-8") as file_handle:
+            return [line.strip() for line in file_handle if line.strip()]
+
 
 # -----------------------------------------------------------------------------
 # EOF
