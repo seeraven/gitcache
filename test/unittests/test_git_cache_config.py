@@ -56,6 +56,7 @@ class GitCacheConfigTest(TestCase):
         config = git_cache.config.Config()
 
         self.assertEqual(config.get("System", "RealGit"), git_cache.config.find_git())
+        self.assertEqual(config.get("System", "Disable"), False)
         self.assertEqual(config.get("MirrorHandling", "UpdateInterval"), 0)
         self.assertEqual(config.get("MirrorHandling", "CleanupAfter"), 14 * 24 * 60 * 60)
         self.assertEqual(config.get("LFS", "Retries"), 3)
@@ -72,7 +73,9 @@ class GitCacheConfigTest(TestCase):
         config = git_cache.config.Config()
         self.assertEqual(config.get("Clone", "CommandTimeout"), 0)
 
-    @mockenv(GITCACHE_DIR="/tmp", GITCACHE_UPDATE_INTERVAL="-1", GITCACHE_LFS_PER_MIRROR_STORAGE="0")
+    @mockenv(
+        GITCACHE_DIR="/tmp", GITCACHE_UPDATE_INTERVAL="-1", GITCACHE_LFS_PER_MIRROR_STORAGE="0", GITCACHE_DISABLE="1"
+    )
     def test_env_default(self):
         """git_cache.config.Config: Test overwrite using environment variable."""
         importlib.reload(git_cache.global_settings)
@@ -80,6 +83,7 @@ class GitCacheConfigTest(TestCase):
         config = git_cache.config.Config()
         self.assertEqual(config.get("MirrorHandling", "UpdateInterval"), -1)
         self.assertEqual(config.get("LFS", "PerMirrorStorage"), False)
+        self.assertEqual(config.get("System", "Disable"), True)
 
     @mockenv(GITCACHE_DIR="/tmp")
     def test_load(self):
@@ -93,10 +97,14 @@ UpdateInterval = -1
 
 [LFS]
 permirrorstorage = false
+
+[System]
+Disable = true
 """)
         config = git_cache.config.Config()
         self.assertEqual(config.get("MirrorHandling", "UpdateInterval"), -1)
         self.assertEqual(config.get("LFS", "PerMirrorStorage"), False)
+        self.assertEqual(config.get("System", "Disable"), True)
 
     @mockenv(GITCACHE_DIR="/tmp")
     def test_str_rep(self):
@@ -133,6 +141,7 @@ MirrorHandling:
  updateinterval       = 0 seconds            (GITCACHE_UPDATE_INTERVAL)
 
 System:
+ disable              = False                (GITCACHE_DISABLE)
  realgit              = {expected_git_cmd : <20} (GITCACHE_REAL_GIT)
 
 Update:

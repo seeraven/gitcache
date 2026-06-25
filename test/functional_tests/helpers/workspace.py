@@ -17,12 +17,52 @@ Copyright:
 import copy
 import logging
 import os
+import shutil
 import tempfile
+import time
 
 # -----------------------------------------------------------------------------
 # Logger
 # -----------------------------------------------------------------------------
 LOG = logging.getLogger(__name__)
+
+
+# -----------------------------------------------------------------------------
+# Helpers
+# -----------------------------------------------------------------------------
+def _configure_git_for_tests(env: dict) -> None:
+    """Configure git to avoid background tasks interfering with test cleanup."""
+    config_pairs = [
+        ("gc.auto", "0"),
+        ("maintenance.auto", "false"),
+    ]
+    env["GIT_CONFIG_COUNT"] = str(len(config_pairs))
+    for idx, (key, value) in enumerate(config_pairs):
+        env[f"GIT_CONFIG_KEY_{idx}"] = key
+        env[f"GIT_CONFIG_VALUE_{idx}"] = value
+
+
+def _cleanup_temporary_directory(tmp_dir: tempfile.TemporaryDirectory) -> None:
+    """Delete a temporary directory, retrying on races with background git tasks."""
+    path = tmp_dir.name
+    try:
+        tmp_dir.cleanup()
+    except OSError as exc:
+        LOG.warning("Initial cleanup of %s failed: %s. Retrying.", path, exc)
+
+    if not os.path.exists(path):
+        return
+
+    for attempt in range(5):
+        try:
+            shutil.rmtree(path)
+            return
+        except OSError as exc:
+            if attempt == 4:
+                LOG.warning("Cleanup of %s still failing after retries: %s", path, exc)
+                shutil.rmtree(path, ignore_errors=True)
+                return
+            time.sleep(0.2)
 
 
 # -----------------------------------------------------------------------------
@@ -56,16 +96,17 @@ class Workspace:
         self.env["GITCACHE_LOGLEVEL"] = "Debug"
         self.env["GITCACHE_LOGFORMAT"] = "%(message)s"
         self.env["GIT_TERMINAL_PROMPT"] = "0"
+        _configure_git_for_tests(self.env)
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         """Exit the context."""
         if self._tmp_workspace_dir:
-            self._tmp_workspace_dir.cleanup()
+            _cleanup_temporary_directory(self._tmp_workspace_dir)
             self._tmp_workspace_dir = None
             self.workspace_path = None
         if self._tmp_gitcache_dir:
-            self._tmp_gitcache_dir.cleanup()
+            _cleanup_temporary_directory(self._tmp_gitcache_dir)
             self._tmp_gitcache_dir = None
             self.gitcache_dir_path = None
         self.env = None

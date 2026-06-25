@@ -45,6 +45,18 @@ LOG = logging.getLogger(__name__)
 # -----------------------------------------------------------------------------
 # Function Definitions
 # -----------------------------------------------------------------------------
+def is_gitcache_disabled() -> bool:
+    """Return whether gitcache command wrapping is disabled.
+
+    The setting can be configured via :code:`System/Disable` in the configuration
+    file or the environment variable :code:`GITCACHE_DISABLE`. Values
+    :code:`1`, :code:`true`, :code:`yes` and :code:`on` (case-insensitive) enable
+    this behavior.
+    """
+    config = Config()
+    return config.get("System", "Disable")
+
+
 def call_real_git(args: List[str]) -> int:
     """Call the real git command with the given arguments.
 
@@ -67,6 +79,10 @@ def handle_git_command(called_as: List[str], args: List[str]) -> None:
         args (list):      The arguments to git.
     """
     LOG.debug("handle_git_command(%s, %s) started", called_as, args)
+
+    if is_gitcache_disabled():
+        LOG.debug("gitcache disabled by configuration. Calling real git command.")
+        sys.exit(call_real_git(args))
 
     git_options = GitOptions(args)
     if git_options.has_bail_out():

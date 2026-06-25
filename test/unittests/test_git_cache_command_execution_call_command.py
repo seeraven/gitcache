@@ -98,12 +98,14 @@ class GitCacheCallCommandTest(TestCase):
         if self.on_windows:
             cmd = "echo %CD%"
             cwd = r"C:\Windows"
+            expected_outputs = [cwd]
         else:
             cmd = ["pwd"]
             cwd = "/tmp"
+            expected_outputs = [cwd, "/private/tmp"]
         return_code, stdout_buffer, _ = call_command(cmd, cwd=cwd, shell=True)
         self.assertEqual(0, return_code)
-        self.assertIn(cwd, stdout_buffer.decode().strip())
+        self.assertIn(stdout_buffer.decode().strip(), expected_outputs)
 
     def test_timeout(self):
         """git_cache.command_execution.call_command(): Command timeout."""
