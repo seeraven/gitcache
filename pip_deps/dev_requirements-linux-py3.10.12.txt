@@ -6,7 +6,7 @@ annotated-doc==0.0.4
     # via fastapi
 annotated-types==0.7.0
     # via pydantic
-anyio==4.14.0
+anyio==4.14.1
     # via starlette
 ast-serialize==0.5.0
     # via mypy
@@ -26,7 +26,7 @@ certifi==2026.6.17
     # via requests
 charset-normalizer==3.4.7
     # via requests
-click==8.4.1
+click==8.4.2
     # via
     #   black
     #   uvicorn
