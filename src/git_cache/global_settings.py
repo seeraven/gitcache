@@ -25,6 +25,15 @@ Attributes:
         The value is retrieved from the environment variable :code:`GITCACHE_LOGFORMAT`. If this
         variable does not exist, the default value :code:`%(asctime)s %(message)s` is used.
 
+    GITCACHE_DETAIL_LOG (str): Path to the detail log file. If unset, no detail log is written.
+
+    GITCACHE_DETAIL_LOG_LEVEL (str): Minimum log level mirrored into the detail log file.
+
+        The value is retrieved from the environment variable :code:`GITCACHE_DETAIL_LOG_LEVEL`. If this
+        variable does not exist, the default value :code:`INFO` is used.
+
+    GITCACHE_SUMMARY_LOG (str): Path to the summary log file. If unset, no summary log is written.
+
 Copyright:
     2020 by Clemens Rabe <clemens.rabe@clemensrabe.de>
 
@@ -48,6 +57,9 @@ GITCACHE_DB = os.path.join(GITCACHE_DIR, "db")
 GITCACHE_DB_LOCK = os.path.join(GITCACHE_DIR, "db.lock")
 GITCACHE_LOGLEVEL = os.getenv("GITCACHE_LOGLEVEL", "INFO")
 GITCACHE_LOGFORMAT = os.getenv("GITCACHE_LOGFORMAT", "%(asctime)s %(message)s")
+GITCACHE_DETAIL_LOG = os.getenv("GITCACHE_DETAIL_LOG")
+GITCACHE_DETAIL_LOG_LEVEL = os.getenv("GITCACHE_DETAIL_LOG_LEVEL", "INFO")
+GITCACHE_SUMMARY_LOG = os.getenv("GITCACHE_SUMMARY_LOG")
 
 
 # -----------------------------------------------------------------------------

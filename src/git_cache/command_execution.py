@@ -21,7 +21,8 @@ import signal
 import subprocess
 import time
 
-from .helpers import rmtree
+from .helpers import rmtree, subprocess_env
+from .invocation_log import is_detail_log_enabled, log_subprocess
 
 if platform.system().lower().startswith("win"):
     # pylint: disable=import-error
@@ -162,6 +163,7 @@ def pretty_call_command_retry(action, pattern_cause, command, num_retries, **kwa
     start_time = time.time()
     return_code, stdout_buffer, stderr_buffer = call_command_retry(command, num_retries, **kwargs)
     run_time = time.time() - start_time
+    duration_ms = int(run_time * 1000)
 
     if return_code == 0:
         LOG.info("%s was successfully completed within %.1f seconds.", action, run_time)
@@ -173,6 +175,8 @@ def pretty_call_command_retry(action, pattern_cause, command, num_retries, **kwa
         LOG.error("%s failed due to %s after %.1f seconds!", action, pattern_cause, run_time)
     else:
         LOG.error("%s failed after %.1f seconds with return code %d!", action, run_time, return_code)
+
+    log_subprocess(command, return_code, duration_ms, kwargs.get("cwd"), stdout_buffer, stderr_buffer)
 
     return return_code, stdout_buffer, stderr_buffer
 
@@ -190,9 +194,21 @@ def simple_call_command(cmd, shell=False, cwd=None):
     Return:
         Returns the return code of the command.
     """
+    if is_detail_log_enabled():
+        start_time = time.time()
+        try:
+            return_code, stdout_buffer, stderr_buffer = call_command(cmd, cwd=cwd, shell=shell)
+        except FileNotFoundError:
+            return_code = 127
+            stdout_buffer = b""
+            stderr_buffer = b""
+        duration_ms = int((time.time() - start_time) * 1000)
+        log_subprocess(cmd, return_code, duration_ms, cwd, stdout_buffer, stderr_buffer)
+        return return_code
+
     try:
         # pylint: disable=consider-using-with
-        process = subprocess.Popen(cmd, shell=shell, cwd=cwd)
+        process = subprocess.Popen(cmd, shell=shell, cwd=cwd, env=subprocess_env())
     except FileNotFoundError:
         return 127
 
@@ -223,7 +239,9 @@ def getstatusoutput(cmd, shell=False, cwd=None):
     """
     try:
         # pylint: disable=subprocess-run-check
-        result = subprocess.run(cmd, shell=shell, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+        result = subprocess.run(
+            cmd, shell=shell, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, env=subprocess_env()
+        )
     except FileNotFoundError:
         return (127, "")
 

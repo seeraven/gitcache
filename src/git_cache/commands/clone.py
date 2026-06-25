@@ -22,6 +22,7 @@ from typing import List
 from ..command_execution import simple_call_command
 from ..git_mirror import GitMirror
 from ..git_options import GitOptions
+from ..invocation_log import set_mode_realgit
 from .helpers import use_mirror_for_remote_url
 
 # -----------------------------------------------------------------------------
@@ -73,8 +74,10 @@ def git_clone(called_as: List[str], git_options: GitOptions) -> int:
             return retval
 
         LOG.debug("Remote URL does not match the UrlPatterns. Using original git command.")
+        set_mode_realgit("url_pattern")
     else:
-        LOG.debug("No (mirrorable) remote URL found. Falling back to orginal git command.")
+        LOG.debug("No (mirrorable) remote URL found. Falling back to original git command.")
+        set_mode_realgit("no_mirrorable_url")
 
     return simple_call_command(git_options.get_real_git_all_args())
 

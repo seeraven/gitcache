@@ -27,6 +27,7 @@ from .commands.update_all import git_update_all_mirrors
 from .config import Config
 from .database import Database
 from .global_settings import GITCACHE_DB, GITCACHE_DB_LOCK, GITCACHE_DIR
+from .invocation_log import set_mode_admin
 
 # -----------------------------------------------------------------------------
 # Logger
@@ -85,6 +86,7 @@ def git_cache():
     Return:
         Returns True on success, otherwise False.
     """
+    set_mode_admin()
     parser = get_parser()
     args = parser.parse_args()
     success = True
