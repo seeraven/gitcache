@@ -55,6 +55,24 @@ class InvocationLogTest(unittest.TestCase):
         self.assertIn("[MASKED]", command)
         self.assertNotIn("secret", command)
 
+    def test_format_command_line_masks_credentials_in_git_config_option(self):
+        """git_cache.invocation_log: Mask credentials in -c key=url arguments."""
+        command = invocation_log.format_command_line(
+            [
+                "git",
+                "-c",
+                "lfs.url=https://user:secret@github.com/org/repo.git/info/lfs",
+                "-c",
+                "lfs.storage=/tmp/lfs",
+                "clone",
+                "file:///mirror",
+                "/dest",
+            ]
+        )
+        self.assertIn("[MASKED]", command)
+        self.assertNotIn("secret", command)
+        self.assertIn("lfs.storage=/tmp/lfs", command)
+
     def test_format_command_line_normalizes_git_launcher_path(self):
         """git_cache.invocation_log: Normalize git launcher paths."""
         command = invocation_log.format_command_line(["/opt/gitcache/bin/git", "status", "-sb"])
@@ -93,6 +111,26 @@ class InvocationLogTest(unittest.TestCase):
                     0,
                     10,
                 )
+                context.set_exit_code(0)
+
+        detail = self._read_file(self._detail_log)
+        self.assertIn("[MASKED]", detail)
+        self.assertNotIn("secret", detail)
+
+    def test_log_subprocess_masks_credentials_in_git_config_option(self):
+        """git_cache.invocation_log: Mask credentials in -c key=url subprocess logs."""
+        argv = [
+            "git",
+            "-c",
+            "lfs.url=https://user:secret@github.com/org/repo.git/info/lfs",
+            "clone",
+            "file:///mirror",
+            "/dest",
+        ]
+        with mock.patch.object(sys, "argv", argv):
+            with invocation_log.invocation_context() as context:
+                context.set_mode("gitcache")
+                invocation_log.log_subprocess(argv, 0, 10)
                 context.set_exit_code(0)
 
         detail = self._read_file(self._detail_log)

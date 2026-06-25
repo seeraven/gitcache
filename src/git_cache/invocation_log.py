@@ -102,20 +102,23 @@ def _write_block(path: Optional[str], text: str) -> None:
             print(f"gitcache: failed to write log file '{path}': {error}", file=sys.stderr)
 
 
-def _mask_argument(argument: str) -> str:
-    if "://" in argument or argument.startswith("git@"):
-        return strip_credentials(argument, mask=True)
-    return argument
+def _mask_credentials_in_text(text: str) -> str:
+    """Mask credentials in URL-like substrings anywhere within text."""
+    if "://" not in text and "git@" not in text:
+        return text
 
-
-def _mask_log_message(message: str) -> str:
-    if "://" not in message and "git@" not in message:
-        return message
-
-    parts = re.split(r"(\S+://\S+|git@\S+)", message)
+    parts = re.split(r"([a-zA-Z]+://\S+|git@\S+)", text)
     return "".join(
         strip_credentials(part, mask=True) if ("://" in part or part.startswith("git@")) else part for part in parts
     )
+
+
+def _mask_argument(argument: str) -> str:
+    return _mask_credentials_in_text(argument)
+
+
+def _mask_log_message(message: str) -> str:
+    return _mask_credentials_in_text(message)
 
 
 def _should_mirror_log_record(record: logging.LogRecord) -> bool:
