@@ -22,6 +22,8 @@ import time
 from queue import Empty, Queue
 from threading import Thread
 
+from .helpers import subprocess_env
+
 # -----------------------------------------------------------------------------
 # Logger
 # -----------------------------------------------------------------------------
@@ -136,6 +138,7 @@ def call_command(command, cwd=None, shell=False, command_timeout=None, output_ti
             stderr=subprocess.PIPE if stderr_capture else None,
             cwd=cwd,
             shell=shell,
+            env=subprocess_env(),
         ) as proc:
             output_start_time = time.time()
             command_start_time = output_start_time

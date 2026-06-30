@@ -157,8 +157,8 @@ The current configuration can be shown by calling
 
     gitcache
 
-For every item, you'll see a corresponding environment variable that
-can be used to overwrite the setting of the configuration file.
+For every item in the configuration file, you'll see a corresponding environment
+variable that can be used to overwrite the setting of the configuration file.
 
 The configuration options are:
 
@@ -187,6 +187,18 @@ The configuration options are:
 | Update         | retries          | `3`             | `GITCACHE_UPDATE_RETRIES`             |
 | UrlPatterns    | includeregex     | `.*`            | `GITCACHE_URLPATTERNS_INCLUDE_REGEX`  |
 | UrlPatterns    | excluderegex     | (empty)         | `GITCACHE_URLPATTERNS_EXCLUDE_REGEX`  |
+
+The following settings are controlled by environment variables only and are not
+stored in `GITCACHE_DIR/config`:
+
+| Category | Default Value              | Environment Variable        |
+|----------|----------------------------|-----------------------------|
+| Paths    | `~/.gitcache`              | `GITCACHE_DIR`              |
+| Logging  | `INFO`                     | `GITCACHE_LOGLEVEL`         |
+| Logging  | `%(asctime)s %(message)s`  | `GITCACHE_LOGFORMAT`        |
+| Logging  | (empty)                    | `GITCACHE_SUMMARY_LOG`      |
+| Logging  | (empty)                    | `GITCACHE_DETAIL_LOG`       |
+| Logging  | `INFO`                     | `GITCACHE_DETAIL_LOG_LEVEL` |
 
 Configuration items that expect a time support the following values:
 
@@ -306,6 +318,28 @@ forwarded to the real git command.
 For debugging, set the environment variable `GITCACHE_LOGLEVEL` to `Debug`:
 
     GITCACHE_LOGLEVEL=Debug gitcache
+
+
+## Log files
+
+Set `GITCACHE_SUMMARY_LOG` and/or `GITCACHE_DETAIL_LOG` to enable structured
+invocation logging (see table above). The summary log writes one grep-friendly
+`key=value` line per invocation. The detail log adds subprocess blocks, failure
+output, and internal messages mirrored at `GITCACHE_DETAIL_LOG_LEVEL`.
+
+Summary lines use fields such as `mode=gitcache`, `mode=realgit`, `mode=disabled`,
+`mode=admin`, `cache=miss_create`, `exit=0`, and `fail_reason=git_error`.
+`mode=admin` applies when gitcache is invoked directly (for example
+`gitcache --show-statistics`), not as a `git` wrapper; admin invocations do not
+mirror internal log lines into the detail log.
+
+Example:
+
+    export GITCACHE_SUMMARY_LOG=/tmp/gitcache.summary.log
+    export GITCACHE_DETAIL_LOG=/tmp/gitcache.detail.log
+
+URLs in log files are masked, but log files may still contain sensitive paths —
+restrict file permissions and retention accordingly.
 
 
 ## Security Considerations

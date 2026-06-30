@@ -24,6 +24,8 @@ import subprocess
 import sys
 import time
 
+from .helpers import subprocess_env
+
 # -----------------------------------------------------------------------------
 # Logger
 # -----------------------------------------------------------------------------
@@ -87,7 +89,13 @@ def call_command(command, cwd=None, shell=False, command_timeout=None, output_ti
     stderr_buffer = b""
     try:
         with subprocess.Popen(
-            command, bufsize=0, cwd=cwd, shell=shell, stdout=stdout_w, stderr=stderr_w if stderr_capture else None
+            command,
+            bufsize=0,
+            cwd=cwd,
+            shell=shell,
+            stdout=stdout_w,
+            stderr=stderr_w if stderr_capture else None,
+            env=subprocess_env(),
         ) as proc:
             os.close(stdout_w)
             os.close(stderr_w)

@@ -23,6 +23,7 @@ import coloredlogs
 from .git_cache_command import git_cache
 from .git_command import handle_git_command
 from .global_settings import GITCACHE_LOGFORMAT, GITCACHE_LOGLEVEL
+from .invocation_log import invocation_context
 
 
 # -----------------------------------------------------------------------------
@@ -49,11 +50,17 @@ def main_cli() -> None:
         called_as_base.append(sys.executable)
 
     git_names = ["git", "git.exe"]
-    if os.path.basename(sys.argv[0]) in git_names:
-        # Called as "git ..."
-        handle_git_command(called_as_base + sys.argv[0:1], sys.argv[1:])
-    elif len(sys.argv) > 1 and os.path.basename(sys.argv[1]) in git_names:
-        # Called as "gitcache git ..."
-        handle_git_command(called_as_base + sys.argv[0:2], sys.argv[2:])
-    else:
-        sys.exit(0 if git_cache() else 1)
+    with invocation_context() as context:
+        try:
+            if os.path.basename(sys.argv[0]) in git_names:
+                # Called as "git ..."
+                handle_git_command(called_as_base + sys.argv[0:1], sys.argv[1:])
+            elif len(sys.argv) > 1 and os.path.basename(sys.argv[1]) in git_names:
+                # Called as "gitcache git ..."
+                handle_git_command(called_as_base + sys.argv[0:2], sys.argv[2:])
+            else:
+                sys.exit(0 if git_cache() else 1)
+        except SystemExit as exit_error:
+            if context is not None:
+                context.set_exit_code(exit_error.code)
+            raise

@@ -35,6 +35,7 @@ from .commands.submodule_update import git_submodule_update
 from .commands.update_all import git_update_all_mirrors
 from .config import Config
 from .git_options import GitOptions
+from .invocation_log import set_mode_disabled, set_mode_gitcache, set_mode_realgit
 
 # -----------------------------------------------------------------------------
 # Logger
@@ -70,7 +71,7 @@ def call_real_git(args: List[str]) -> int:
     return simple_call_command([config.get("System", "RealGit")] + args)
 
 
-# pylint: disable=too-many-branches
+# pylint: disable=too-many-branches,too-many-statements
 def handle_git_command(called_as: List[str], args: List[str]) -> None:
     """Handle a git command.
 
@@ -82,11 +83,13 @@ def handle_git_command(called_as: List[str], args: List[str]) -> None:
 
     if is_gitcache_disabled():
         LOG.debug("gitcache disabled by configuration. Calling real git command.")
+        set_mode_disabled()
         sys.exit(call_real_git(args))
 
     git_options = GitOptions(args)
     if git_options.has_bail_out():
         LOG.debug("bail out")
+        set_mode_realgit("bail_out")
         sys.exit(call_real_git(args))
 
     LOG.debug(
@@ -97,46 +100,61 @@ def handle_git_command(called_as: List[str], args: List[str]) -> None:
         git_options.command_args,
     )
 
-    if git_options.get_command() == "cleanup":
+    command = git_options.get_command()
+    if command == "cleanup":
+        set_mode_gitcache(command)
         sys.exit(git_cleanup())
 
-    elif git_options.get_command() == "update-mirrors":
+    elif command == "update-mirrors":
+        set_mode_gitcache(command)
         sys.exit(git_update_all_mirrors())
 
-    elif git_options.get_command() == "delete-mirror":
+    elif command == "delete-mirror":
+        set_mode_gitcache(command)
         sys.exit(git_delete_mirror(git_options.command_args))
 
-    elif git_options.get_command() == "ls-remote":
+    elif command == "ls-remote":
+        set_mode_gitcache(command)
         sys.exit(git_ls_remote(git_options))
 
-    elif git_options.get_command() == "checkout":
+    elif command == "checkout":
+        set_mode_gitcache(command)
         sys.exit(git_checkout(git_options))
 
-    elif git_options.get_command() == "clone":
+    elif command == "clone":
+        set_mode_gitcache(command)
         sys.exit(git_clone(called_as, git_options))
 
-    elif git_options.get_command() == "lfs_fetch":
+    elif command == "lfs_fetch":
+        set_mode_gitcache(command)
         sys.exit(git_lfs_fetch(git_options))
 
-    elif git_options.get_command() == "lfs_pull":
+    elif command == "lfs_pull":
+        set_mode_gitcache(command)
         sys.exit(git_lfs_pull(git_options))
 
-    elif git_options.get_command() == "pull":
+    elif command == "pull":
+        set_mode_gitcache(command)
         sys.exit(git_pull(git_options))
 
-    elif git_options.get_command() == "fetch":
+    elif command == "fetch":
+        set_mode_gitcache(command)
         sys.exit(git_fetch(git_options))
 
-    elif git_options.get_command() == "submodule_init":
+    elif command == "submodule_init":
+        set_mode_gitcache(command)
         sys.exit(git_submodule_init(git_options))
 
-    elif git_options.get_command() == "submodule_update":
+    elif command == "submodule_update":
+        set_mode_gitcache(command)
         sys.exit(git_submodule_update(called_as, git_options))
 
-    elif git_options.get_command() == "remote_add":
+    elif command == "remote_add":
+        set_mode_gitcache(command)
         sys.exit(git_remote_add(git_options))
 
     LOG.debug("Command '%s' is not handled by gitcache. Calling the real git command.", git_options.get_command())
+    set_mode_realgit("unhandled_command")
     sys.exit(call_real_git(args))
 
 

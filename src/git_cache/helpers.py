@@ -16,7 +16,18 @@ Copyright:
 # -----------------------------------------------------------------------------
 import logging
 import os
+import re
 import shutil
+
+# Pattern to match ssh, git, http[s] and ftp[s]:
+#                                  <proto>      [user@]  <host>  [:port]   <path>
+_RE_URL_WITH_PROTO = re.compile(r"([a-zA-Z]+)://([^@]+@)?([^:/]+)(:[0-9]+)?/(.*)")
+
+# Pattern to match scp-like syntax:  [user@]  <host>       <path>
+_RE_URL_WITHOUT_PROTO = re.compile(r"([^@]+@)?([^:/\\]{2,}):(.*)")
+
+# Pattern to match file://<path>
+_RE_URL_WITH_FILE = re.compile(r"file://(.*)")
 
 # -----------------------------------------------------------------------------
 # Logger
@@ -107,3 +118,39 @@ def rmtree(name: str, ignore_errors: bool = False, repeated: bool = False) -> No
     # On newer python versions the onerror argument is deprecated:
     # pylint: disable=deprecated-argument
     shutil.rmtree(name, onerror=onerror)
+
+
+def strip_credentials(url: str, mask: bool = False) -> str:
+    """Remove any credentials from the specified url.
+
+    Args:
+        url (str):   The URL of the repository.
+        mask (bool): If set to True the credentials are replaced with [MASKED].
+
+    Return:
+        Returns the URL without credentials.
+    """
+    if match := _RE_URL_WITH_FILE.match(url):
+        return url
+
+    if match := _RE_URL_WITH_PROTO.match(url):
+        masked_creds = "[MASKED]@" if match.group(2) and mask else ""
+        return f"{match.group(1)}://{masked_creds}{match.group(3)}{match.group(4) or ''}/{match.group(5)}"
+
+    if match := _RE_URL_WITHOUT_PROTO.match(url):
+        masked_creds = "[MASKED]@" if match.group(1) and mask else ""
+        return f"{masked_creds}{match.group(2)}:{match.group(3)}"
+
+    return url
+
+
+def subprocess_env() -> dict:
+    """Return a copy of the environment safe for RealGit child processes.
+
+    Strips invocation log settings so nested ``git`` calls via PATH (e.g. from
+    git-lfs) do not write into the parent's log files.
+    """
+    env = os.environ.copy()
+    for key in ("GITCACHE_DETAIL_LOG", "GITCACHE_SUMMARY_LOG", "GITCACHE_DETAIL_LOG_LEVEL"):
+        env.pop(key, None)
+    return env

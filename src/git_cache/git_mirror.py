@@ -27,7 +27,8 @@ from .config import Config, has_git_lfs_cmd
 from .database import Database
 from .git_options import GitOptions
 from .global_settings import GITCACHE_DIR
-from .helpers import rmtree
+from .helpers import rmtree, strip_credentials
+from .invocation_log import record_cache
 
 # -----------------------------------------------------------------------------
 # Logger
@@ -170,14 +171,22 @@ class GitMirror:
             with Locker(f"Mirror {self.path}", self.lockfile, self.config):
                 if not mirror_exists:
                     rmtree(self.path, ignore_errors=True)
-                    return self._clone(ref)
+                    if self._clone(ref):
+                        record_cache("miss_create", self.path)
+                        return True
+                    return False
 
                 if force or self._update_time_reached():
-                    return self._update(ref)
+                    if self._update(ref):
+                        record_cache("hit_update", self.path)
+                        return True
+                    return False
 
                 LOG.info("Update time of mirror %s not reached yet.", self.path)
+                record_cache("hit_skip", self.path)
         except portalocker.exceptions.LockException:
             LOG.error("Update timed out due to locked mirror.")
+            record_cache("lock_timeout", self.path)
             return False
         return True
 
@@ -198,9 +207,13 @@ class GitMirror:
             with Locker(f"Mirror {self.path}", self.lockfile, self.config):
                 if not mirror_exists:
                     rmtree(self.path, ignore_errors=True)
-                    return self._clone(ref)
+                    if self._clone(ref):
+                        record_cache("miss_create", self.path)
+                        return True
+                    return False
         except portalocker.exceptions.LockException:
             LOG.error("Clone timed out due to locked mirror.")
+            record_cache("lock_timeout", self.path)
             return False
         return True
 
@@ -759,18 +772,7 @@ class GitMirror:
         Return:
             Returns the URL without credentials.
         """
-        if match := RE_URL_WITH_FILE.match(url):
-            return url
-
-        if match := RE_URL_WITH_PROTO.match(url):
-            masked_creds = "[MASKED]@" if match.group(2) and mask else ""
-            return f"{match.group(1)}://{masked_creds}{match.group(3)}{match.group(4) or ''}/{match.group(5)}"
-
-        if match := RE_URL_WITHOUT_PROTO.match(url):
-            masked_creds = "[MASKED]@" if match.group(1) and mask else ""
-            return f"{masked_creds}{match.group(2)}:{match.group(3)}"
-
-        return url
+        return strip_credentials(url, mask=mask)
 
     @staticmethod
     # pylint: disable=too-many-branches,too-many-return-statements
