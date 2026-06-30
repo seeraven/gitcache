@@ -2,10 +2,12 @@
 
 ## Upcoming version
 
-- Feature: Add optional detail and summary log files controlled by `GITCACHE_DETAIL_LOG` and `GITCACHE_SUMMARY_LOG` for CI-friendly invocation tracing.
-- Feature: Add environment variable `GITCACHE_DISABLE` to disable gitcache wrapping and always forward commands to the real `git` executable (`1`, `true`, `yes`, `on`). Useful for CI environments to externally disable gitcache e.g. by setting a global variable.
+## v1.0.34
+
+- Feature: Add optional detail and summary log files controlled by `GITCACHE_DETAIL_LOG` and `GITCACHE_SUMMARY_LOG` for CI-friendly invocation tracing. (thanks to ditschi)
+- Feature: Add environment variable `GITCACHE_DISABLE` to disable gitcache wrapping and always forward commands to the real `git` executable (`1`, `true`, `yes`, `on`). Useful for CI environments to externally disable gitcache e.g. by setting a global variable. (thanks to ditschi)
 - Bugfix: Normalize explicit `lfs.url` for HTTP(S)/FTP(S) remotes to the canonical `<repo>.git/info/lfs` endpoint.
-  This fixes broken LFS auth flows when clone URLs omit `.git` (seen on GHES) while keeping SSH/SCP/file-style remotes unchanged.
+  This fixes broken LFS auth flows when clone URLs omit `.git` (seen on GHES) while keeping SSH/SCP/file-style remotes unchanged. (thanks to ditschi)
 
 ## v1.0.33
 
