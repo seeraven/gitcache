@@ -11,6 +11,9 @@ on:
   push:
     tags: 'v*'
 
+env:
+  IN_GITHUB_ACTION: 1
+
 jobs:
   build-wheel:
     runs-on: ubuntu-latest
