@@ -18,6 +18,7 @@ import logging
 import os
 import re
 import shutil
+from typing import Optional
 
 # Pattern to match ssh, git, http[s] and ftp[s]:
 #                                  <proto>      [user@]  <host>  [:port]   <path>
@@ -120,12 +121,47 @@ def rmtree(name: str, ignore_errors: bool = False, repeated: bool = False) -> No
     shutil.rmtree(name, onerror=onerror)
 
 
+def keep_username(creds: Optional[str]) -> str:
+    """Reduce a credentials part of an URL to the plain 'user@' prefix.
+
+    Args:
+        creds (str): The credentials part of an URL including the trailing '@',
+                     e.g. 'user@' or 'user:password@'. May be None or empty.
+
+    Return:
+        Returns the 'user@' prefix without any password, or an empty string
+        if no credentials were given.
+    """
+    if not creds:
+        return ""
+    return creds[:-1].split(":", 1)[0] + "@"
+
+
+def _strip_password(creds: str, mask: bool = False) -> str:
+    """Remove the password from a credentials part of an SSH URL.
+
+    The username is required for SSH authentication and therefore kept.
+
+    Args:
+        creds (str): The credentials part of an URL including the trailing '@',
+                     e.g. 'user@' or 'user:password@'.
+        mask (bool): If set to True the password is replaced with [MASKED].
+
+    Return:
+        Returns 'user@' resp. 'user:[MASKED]@' if masking a password.
+    """
+    has_password = ":" in creds[:-1]
+    if has_password and mask:
+        return keep_username(creds)[:-1] + ":[MASKED]@"
+    return keep_username(creds)
+
+
 def strip_credentials(url: str, mask: bool = False) -> str:
     """Remove any credentials from the specified url.
 
     Args:
         url (str):   The URL of the repository.
-        mask (bool): If set to True the credentials are replaced with [MASKED].
+        mask (bool): If set to True the removed parts are replaced with [MASKED].
 
     Return:
         Returns the URL without credentials.
@@ -134,12 +170,17 @@ def strip_credentials(url: str, mask: bool = False) -> str:
         return url
 
     if match := _RE_URL_WITH_PROTO.match(url):
-        masked_creds = "[MASKED]@" if match.group(2) and mask else ""
-        return f"{match.group(1)}://{masked_creds}{match.group(3)}{match.group(4) or ''}/{match.group(5)}"
+        proto, creds, host, port, path = match.groups()
+        if not creds:
+            return url
+        if proto.lower() == "ssh":
+            return f"{proto}://{_strip_password(creds, mask)}{host}{port or ''}/{path}"
+        return f"{proto}://{'[MASKED]@' if mask else ''}{host}{port or ''}/{path}"
 
     if match := _RE_URL_WITHOUT_PROTO.match(url):
-        masked_creds = "[MASKED]@" if match.group(1) and mask else ""
-        return f"{masked_creds}{match.group(2)}:{match.group(3)}"
+        # For SCP-style URLs (user@host:path), keep the username as-is. SCP syntax
+        # has no place for a password, so there is nothing to strip or mask here.
+        return url
 
     return url
 

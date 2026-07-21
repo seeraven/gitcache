@@ -27,7 +27,7 @@ from .config import Config, has_git_lfs_cmd
 from .database import Database
 from .git_options import GitOptions
 from .global_settings import GITCACHE_DIR
-from .helpers import rmtree, strip_credentials
+from .helpers import keep_username, rmtree, strip_credentials
 from .invocation_log import record_cache
 
 # -----------------------------------------------------------------------------
@@ -756,7 +756,8 @@ class GitMirror:
                 path = path[:-1]
             if path.endswith(".git"):
                 path = path[:-4]
-            return f"{match.group(1)}://{match.group(3)}{match.group(4) or ''}/{path}"
+            creds = keep_username(match.group(2)) if match.group(1).lower() == "ssh" else ""
+            return f"{match.group(1)}://{creds}{match.group(3)}{match.group(4) or ''}/{path}"
 
         if match := RE_URL_WITHOUT_PROTO.match(url):
             path = posixpath.normpath(match.group(3))
@@ -766,7 +767,9 @@ class GitMirror:
                 path = path[:-1]
             if path.endswith(".git"):
                 path = path[:-4]
-            return f"{match.group(2)}:{path}"
+            # SCP-style URLs (user@host:path) have no syntax for a password, so the
+            # username portion can be kept as-is without needing to strip anything.
+            return f"{match.group(1) or ''}{match.group(2)}:{path}"
 
         return url
 
