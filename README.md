@@ -71,6 +71,14 @@ of the mirrors are only performed if explicitly requested by a
 network usage even further.
 
 
+## Security Considerations
+
+The main idea behind gitcache is to perform the caching of the git repositories
+only for the **current user**. This means that you should not share the mirrored
+git repositories with other users, as you do not know if another user would have
+the permission to access the remote repository.
+
+
 ## Installation on Linux
 
 gitcache is distributed as a single executable packaged using [pyInstaller].
@@ -342,14 +350,6 @@ URLs in log files are masked, but log files may still contain sensitive paths â€
 restrict file permissions and retention accordingly.
 
 
-## Security Considerations
-
-The main idea behind gitcache is to perform the caching of the git repositories
-only for the current user. This means that you should not share the mirrored
-git repositories with other users, as you do not know if another user would have
-the permission to access the remote repository.
-
-
 ## Development
 
 To start development on gitcache, you have to clone this repository first including
@@ -378,6 +378,27 @@ dedicated suffixes on the targets to specify the environment to use:
 For example, if you want to execute the unit tests on Ubuntu 22.04, you can call
 
     make unittests.ubuntu22.04
+
+
+## Local Testing
+
+When you are developing you might want to test your changes interactively. To not
+interfere with an already existing installation of `gitcache` you can setup an
+environment to use a local `GITCACHE_DIR` as shown in the following example:
+
+    # Enter a new shell with the correct python-environment
+    make venv-bash
+
+    # Create the temporary gitcache directory
+    mkdir /tmp/gitcache
+    export GITCACHE_DIR=/tmp/gitcache
+
+    # Create a symlink named git to access gitcache as git
+    ln -s gitcache src/git
+    export PATH=$PWD/src:$PATH
+
+    # If you are already using a gitcache locally, you can remove it from the path with something like this:
+    export PATH=$(echo "${PATH}" | tr ':' '\n' | grep -v 'repoCache/bin' | xargs | tr ' ' ':')
 
 
 ## Notes on Releases
