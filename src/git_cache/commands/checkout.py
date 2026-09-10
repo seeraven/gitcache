@@ -43,23 +43,24 @@ def git_checkout(git_options: GitOptions) -> int:
         Returns 0 on success, otherwise the return code of the last failed
         command.
     """
-    # Collect all refs for an lfs fetch
+    mirror_url = get_mirror_url(git_options)
+    if mirror_url is None:
+        return simple_call_command(git_options.get_real_git_all_args())
+
+    mirror = GitMirror(url=mirror_url, database=Database())
+
+    # Collect all commits for an lfs fetch
     ref_candidates = [x for x in git_options.command_args if not x.startswith("-") and not x.startswith(":")]
     lfs_fetch_refs = []
     for ref in ref_candidates:
         command = git_options.get_real_git_with_options()
-        command += ["show-ref", ref]
-        retval, output = getstatusoutput(command)
-        if retval == 0 and "remotes" in output:
-            lfs_fetch_refs.append(ref)
+        command += ["rev-parse", "--verify", "--quiet", f"{ref}^{{commit}}"]
+        retval, commit = getstatusoutput(command)
+        if retval == 0 and mirror.has_commit(commit):
+            lfs_fetch_refs.append(commit)
 
-    if lfs_fetch_refs:
-        mirror_url = get_mirror_url(git_options)
-        if mirror_url:
-            database = Database()
-            mirror = GitMirror(url=mirror_url, database=database)
-            for ref in lfs_fetch_refs:
-                mirror.fetch_lfs(ref)
+    for ref in lfs_fetch_refs:
+        mirror.fetch_lfs(ref)
 
     return simple_call_command(git_options.get_real_git_all_args())
 

@@ -49,6 +49,12 @@ def test_checkout(gitcache_ifc: GitcacheIfc):
     )
     assert os.path.exists(lfs_obj_file)
 
+    # Checkout of a commit should fetch the lfs files as well
+    commit = gitcache_ifc.run_ok(["git", "-C", checkout, "rev-parse", "extra_branch"]).stdout.strip()
+    lfs_updates = gitcache_ifc.db_field("lfs-updates", repo)
+    gitcache_ifc.run_ok(["git", "-C", checkout, "checkout", commit])
+    assert lfs_updates + 1 == gitcache_ifc.db_field("lfs-updates", repo)
+
 
 # ----------------------------------------------------------------------------
 #  EOF
