@@ -2,6 +2,9 @@
 
 ## Upcoming version
 
+- Bugfix: Check the existence of a mirror while holding the mirror lock to no longer delete a mirror that was
+  created by a concurrent gitcache process.
+
 ## v1.0.34
 
 - Feature: Add optional detail and summary log files controlled by `GITCACHE_DETAIL_LOG` and `GITCACHE_SUMMARY_LOG` for CI-friendly invocation tracing. (thanks to ditschi)
