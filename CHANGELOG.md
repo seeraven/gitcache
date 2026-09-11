@@ -2,6 +2,10 @@
 
 ## Upcoming version
 
+- Bugfix: Fetch the LFS objects of a `git checkout` of a tag or a commit as well. Previously, only a checkout of a
+  branch triggered an LFS fetch of the mirror and the LFS objects of a tag or commit were downloaded by the git-lfs
+  filters of the checkout itself.
+
 ## v1.0.34
 
 - Feature: Add optional detail and summary log files controlled by `GITCACHE_DETAIL_LOG` and `GITCACHE_SUMMARY_LOG` for CI-friendly invocation tracing. (thanks to ditschi)
