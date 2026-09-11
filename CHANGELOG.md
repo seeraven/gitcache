@@ -4,6 +4,9 @@
 
 - Bugfix: Check the existence of a mirror while holding the mirror lock to no longer delete a mirror that was
   created by a concurrent gitcache process.
+- Bugfix: Fetch the LFS objects of a `git checkout` of a tag or a commit as well. Previously, only a checkout of a
+  branch triggered an LFS fetch of the mirror and the LFS objects of a tag or commit were downloaded by the git-lfs
+  filters of the checkout itself.
 
 ## v1.0.34
 

@@ -262,6 +262,19 @@ class GitMirror:
         LOG.warning("LFS fetch skipped as git-lfs is not available on this system!")
         return True
 
+    def has_commit(self, commit: str) -> bool:
+        """Check whether the given commit is part of the mirror.
+
+        Args:
+            commit (str): The commit to search for.
+
+        Return:
+            Returns True if the mirror contains the given commit.
+        """
+        command = [self.config.get("System", "RealGit"), "cat-file", "-e", f"{commit}^{{commit}}"]
+        return_code, _ = getstatusoutput(command, cwd=self.git_dir)
+        return return_code == 0
+
     def cleanup(self):
         """Delete the mirror if it is too old.
 
