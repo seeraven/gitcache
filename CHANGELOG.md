@@ -7,6 +7,10 @@
 - Bugfix: Fetch the LFS objects of a `git checkout` of a tag or a commit as well. Previously, only a checkout of a
   branch triggered an LFS fetch of the mirror and the LFS objects of a tag or commit were downloaded by the git-lfs
   filters of the checkout itself.
+- Bugfix: Skip the gitcache executable itself when searching for the real git command. Previously, only a symlink
+  named `git` was skipped, so that renaming or hard-linking the gitcache executable to `git` resulted in an
+  infinite recursion. As the check now compares the candidates with the gitcache executable, a symlink pointing to
+  the real git command is no longer skipped either.
 
 ## v1.0.34
 
