@@ -20,6 +20,7 @@ import logging
 import os
 import platform
 import re
+import sys
 from typing import Any, Callable, Dict, List, Optional
 
 import pytimeparse
@@ -92,9 +93,11 @@ def find_git() -> str:
         cmd = "git.exe" if on_windows else "git"
         for candidate in path.split(os.path.pathsep):
             candidate = os.path.join(candidate, cmd)
-            if os.path.exists(candidate) and os.access(candidate, os.X_OK):
-                if not os.path.islink(candidate):
-                    return candidate
+            if not os.path.exists(candidate) or not os.access(candidate, os.X_OK):
+                continue
+            if os.path.samefile(candidate, sys.executable):
+                continue
+            return candidate
 
     LOG.warning("Can't find git command! Please specify manually in the config file!")
     return "/usr/bin/git"
