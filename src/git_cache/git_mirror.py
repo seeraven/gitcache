@@ -166,10 +166,9 @@ class GitMirror:
         Return:
             Returns True if the mirror was updated or False if the request timed out.
         """
-        mirror_exists = self.database.get(self.path) is not None
         try:
             with Locker(f"Mirror {self.path}", self.lockfile, self.config):
-                if not mirror_exists:
+                if self.database.get(self.path) is None:
                     rmtree(self.path, ignore_errors=True)
                     if self._clone(ref):
                         record_cache("miss_create", self.path)
@@ -202,10 +201,9 @@ class GitMirror:
         Return:
             Returns True if the mirror exists now or False if the request timed out.
         """
-        mirror_exists = self.database.get(self.path) is not None
         try:
             with Locker(f"Mirror {self.path}", self.lockfile, self.config):
-                if not mirror_exists:
+                if self.database.get(self.path) is None:
                     rmtree(self.path, ignore_errors=True)
                     if self._clone(ref):
                         record_cache("miss_create", self.path)
@@ -227,10 +225,9 @@ class GitMirror:
         Return:
             Returns True if the command was successfull, otherwise False.
         """
-        mirror_exists = self.database.get(self.path) is not None
         try:
             with Locker(f"Mirror {self.path}", self.lockfile, self.config):
-                if not mirror_exists:
+                if self.database.get(self.path) is None:
                     LOG.error("Mirror does not exist!")
                     return False
                 return self._fetch(command_args)
