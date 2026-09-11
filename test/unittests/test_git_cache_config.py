@@ -13,6 +13,7 @@
 # -----------------------------------------------------------------------------
 import importlib
 import os
+import platform
 import shutil
 import sys
 import tempfile
@@ -163,14 +164,18 @@ UrlPatterns:
 class GitCacheFindGitTest(TestCase):
     """Test the :func:`git_cache.config.find_git` function."""
 
+    ON_WINDOWS = platform.system().lower().startswith("win")
+    GIT_CMD = "git.exe" if ON_WINDOWS else "git"
+    GITCACHE_CMD = "gitcache.exe" if ON_WINDOWS else "gitcache"
+
     def setUp(self):
         """Set up the test case with a gitcache executable and a real git command."""
         self.tmp_dir = tempfile.mkdtemp()
-        self.gitcache_cmd = self._create_executable(self.tmp_dir, "gitcache")
+        self.gitcache_cmd = self._create_executable(self.tmp_dir, self.GITCACHE_CMD)
 
         self.real_git_dir = os.path.join(self.tmp_dir, "real")
         os.makedirs(self.real_git_dir)
-        self.real_git_cmd = self._create_executable(self.real_git_dir, "git")
+        self.real_git_cmd = self._create_executable(self.real_git_dir, self.GIT_CMD)
 
         self.gitcache_dir = os.path.join(self.tmp_dir, "gitcache_bin")
         os.makedirs(self.gitcache_dir)
@@ -200,17 +205,20 @@ class GitCacheFindGitTest(TestCase):
 
     def test_skip_git_symlink(self):
         """git_cache.config.find_git: Skip a symlink to the gitcache executable."""
-        os.symlink(self.gitcache_cmd, os.path.join(self.gitcache_dir, "git"))
+        try:
+            os.symlink(self.gitcache_cmd, os.path.join(self.gitcache_dir, self.GIT_CMD))
+        except OSError:
+            self.skipTest("This system does not allow the creation of symlinks.")
         self.assertEqual(self._find_git(self.gitcache_cmd), self.real_git_cmd)
 
     def test_skip_git_hardlink(self):
         """git_cache.config.find_git: Skip a hard link to the gitcache executable."""
-        os.link(self.gitcache_cmd, os.path.join(self.gitcache_dir, "git"))
+        os.link(self.gitcache_cmd, os.path.join(self.gitcache_dir, self.GIT_CMD))
         self.assertEqual(self._find_git(self.gitcache_cmd), self.real_git_cmd)
 
     def test_skip_git_executable(self):
         """git_cache.config.find_git: Skip the gitcache executable itself named git."""
-        gitcache_as_git = self._create_executable(self.gitcache_dir, "git")
+        gitcache_as_git = self._create_executable(self.gitcache_dir, self.GIT_CMD)
         self.assertEqual(self._find_git(gitcache_as_git), self.real_git_cmd)
 
 
