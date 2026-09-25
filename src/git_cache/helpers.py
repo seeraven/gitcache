@@ -137,6 +137,46 @@ def keep_username(creds: Optional[str]) -> str:
     return creds[:-1].split(":", 1)[0] + "@"
 
 
+def get_user(url: str) -> Optional[str]:
+    """Get the user of the specified url.
+
+    Args:
+        url (str): The URL of the repository.
+
+    Return:
+        Returns the user without any password or None if the URL has no user.
+    """
+    if _RE_URL_WITH_FILE.match(url):
+        return None
+
+    if match := _RE_URL_WITH_PROTO.match(url):
+        creds = match.group(2)
+    elif match := _RE_URL_WITHOUT_PROTO.match(url):
+        creds = match.group(1)
+    else:
+        return None
+
+    return keep_username(creds)[:-1] or None
+
+
+def is_ssh_url(url: str) -> bool:
+    """Check whether the specified url is an ssh:// or scp-style URL.
+
+    Args:
+        url (str): The URL of the repository.
+
+    Return:
+        Returns True if the URL uses ssh.
+    """
+    if _RE_URL_WITH_FILE.match(url):
+        return False
+
+    if match := _RE_URL_WITH_PROTO.match(url):
+        return match.group(1).lower() == "ssh"
+
+    return _RE_URL_WITHOUT_PROTO.match(url) is not None
+
+
 def _strip_password(creds: str, mask: bool = False) -> str:
     """Remove the password from a credentials part of an SSH URL.
 

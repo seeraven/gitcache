@@ -27,7 +27,7 @@ from .config import Config, has_git_lfs_cmd
 from .database import Database
 from .git_options import GitOptions
 from .global_settings import GITCACHE_DIR
-from .helpers import keep_username, rmtree, strip_credentials
+from .helpers import get_user, is_ssh_url, keep_username, rmtree, strip_credentials
 from .invocation_log import record_cache
 
 # -----------------------------------------------------------------------------
@@ -525,24 +525,21 @@ class GitMirror:
 
         return self._remove_credentials_from_remote()
 
+    def _set_remote_url(self, url: str) -> bool:
+        """Set the URL of the origin remote of the mirror."""
+        command = [self.config.get("System", "RealGit"), "-C", self.git_dir, "remote", "set-url", "origin", url]
+        cmd_retval = simple_call_command(command)
+        if cmd_retval != 0:
+            LOG.error("Command '%s' gave return code of %d!", command, cmd_retval)
+            return False
+        return True
+
     def _remove_credentials_from_remote(self):
         """Remove any credentials from the mirror remote URLs."""
         safe_url = self.strip_credentials(self.url)
         if self.url != safe_url:
             LOG.info("Removing credentials from the mirror remote URLs.")
-            command = [
-                self.config.get("System", "RealGit"),
-                "-C",
-                self.git_dir,
-                "remote",
-                "set-url",
-                "origin",
-                safe_url,
-            ]
-            cmd_retval = simple_call_command(command)
-            if cmd_retval != 0:
-                LOG.error("Command '%s' gave return code of %d!", command, cmd_retval)
-                return False
+            return self._set_remote_url(safe_url)
 
         return True
 
@@ -551,21 +548,35 @@ class GitMirror:
         safe_url = self.strip_credentials(self.url)
         if self.url != safe_url:
             LOG.info("Temporarily restoring credentials on the mirror remote URLs.")
-            command = [
-                self.config.get("System", "RealGit"),
-                "-C",
-                self.git_dir,
-                "remote",
-                "set-url",
-                "origin",
-                self.url,
-            ]
-            cmd_retval = simple_call_command(command)
-            if cmd_retval != 0:
-                LOG.error("Command '%s' gave return code of %d!", command, cmd_retval)
-                return False
+            return self._set_remote_url(self.url)
+
+        if self._remote_lost_user():
+            LOG.info("Restoring the user on the mirror remote URL.")
+            return self._set_remote_url(self.url)
 
         return True
+
+    def _remote_lost_user(self) -> bool:
+        """Check whether the mirror remote is an ssh URL that lost the user of the mirror URL.
+
+        gitcache v1.0.31 to v1.0.34 stripped the user of ssh URLs from the
+        mirror remote, so such mirrors can not authenticate any more.
+
+        Return:
+            Returns True if the mirror URL has a user and the remote is an ssh
+            URL of the same repository without one.
+        """
+        if not get_user(self.url):
+            return False
+
+        command = [self.config.get("System", "RealGit"), "-C", self.git_dir, "remote", "get-url", "origin"]
+        retval, remote_url = getstatusoutput(command)
+        if retval != 0:
+            return False
+        remote_url = remote_url.strip()
+        if not is_ssh_url(remote_url) or get_user(remote_url):
+            return False
+        return self.get_mirror_path(remote_url) == self.path
 
     def _update(self, ref=None, handle_gc_error=True):
         """Update the mirror.

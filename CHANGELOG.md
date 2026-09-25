@@ -15,6 +15,8 @@
   user of an SSH URL is part of the address, not a secret. Dropping it left mirrors created from SSH URLs
   unable to authenticate on `gitcache -u` and whenever the same repository was reached through an HTTPS URL
   (#159, thanks to waipeng).
+- Bugfix: Restore the user on the remote of mirrors created by v1.0.31 to v1.0.34 on their next use with an
+  SSH URL.
 
 ## v1.0.34
 
