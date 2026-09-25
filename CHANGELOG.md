@@ -11,6 +11,10 @@
   named `git` was skipped, so that renaming or hard-linking the gitcache executable to `git` resulted in an
   infinite recursion. As the check now compares the candidates with the gitcache executable, a symlink pointing to
   the real git command is no longer skipped either.
+- Bugfix: Keep the user of `ssh://` and scp-style URLs when normalizing URLs and stripping credentials. The
+  user of an SSH URL is part of the address, not a secret. Dropping it left mirrors created from SSH URLs
+  unable to authenticate on `gitcache -u` and whenever the same repository was reached through an HTTPS URL
+  (#159, thanks to waipeng).
 
 ## v1.0.34
 

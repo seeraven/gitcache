@@ -247,7 +247,7 @@ def test_clone_recurse_submodules_remote_submodules(gitcache_ifc: GitcacheIfc):
 def test_clone_via_ssh(gitcache_ifc: GitcacheIfc, remote_url: str):
     """Test clone via ssh URLs."""
     gitcache_ifc.run_ok(["git", "-C", gitcache_ifc.workspace.workspace_path, "clone", remote_url])
-    db_url = remote_url[:-4].replace("git@", "")
+    db_url = remote_url[:-4]
     assert "github.com/seeraven/gitcache" in gitcache_ifc.db_field("mirror-dir", db_url)
 
 
@@ -262,7 +262,7 @@ def test_clone_via_ssh(gitcache_ifc: GitcacheIfc, remote_url: str):
 def test_clone_via_ssh_and_port(gitcache_ifc: GitcacheIfc, remote_url: str):
     """Test clone via ssh URLs."""
     gitcache_ifc.run_ok(["git", "-C", gitcache_ifc.workspace.workspace_path, "clone", remote_url])
-    db_url = remote_url[:-4].replace("git@", "")
+    db_url = remote_url[:-4]
     assert "github.com_22/seeraven/gitcache" in gitcache_ifc.db_field("mirror-dir", db_url)
 
 

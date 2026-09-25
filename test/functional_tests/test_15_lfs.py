@@ -38,7 +38,7 @@ def test_lfs_fetch(gitcache_ifc: GitcacheIfc, remote_url: str):
     # Initial clone
     checkout = os.path.join(gitcache_ifc.workspace.workspace_path, "lfs-example")
     gitcache_ifc.run_ok(["git", "clone", remote_url, checkout])
-    db_url = remote_url.replace("git@", "")
+    db_url = remote_url
     assert 0 == gitcache_ifc.db_field("mirror-updates", db_url)
     assert 1 == gitcache_ifc.db_field("lfs-updates", db_url)
 
@@ -81,7 +81,7 @@ def test_lfs_pull(gitcache_ifc: GitcacheIfc, remote_url: str):
     """Test not caching ls-remotes from local filesystem."""
     checkout = os.path.join(gitcache_ifc.workspace.workspace_path, "lfs-example")
     gitcache_ifc.run_ok(["git", "clone", remote_url, checkout])
-    db_url = remote_url.replace("git@", "")
+    db_url = remote_url
     assert 0 == gitcache_ifc.db_field("mirror-updates", db_url)
     assert 1 == gitcache_ifc.db_field("lfs-updates", db_url)
 
