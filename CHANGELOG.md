@@ -15,8 +15,9 @@
   user of an SSH URL is part of the address, not a secret. Dropping it left mirrors created from SSH URLs
   unable to authenticate on `gitcache -u` and whenever the same repository was reached through an HTTPS URL
   (#159, thanks to waipeng).
-- Bugfix: Restore the user on the remote of mirrors created by v1.0.31 to v1.0.34 on their next use with an
-  SSH URL.
+- Bugfix: Set the ssh user of the mirror remote to the user of the command URL. This restores the user on
+  mirrors created by v1.0.31 to v1.0.34 on their next use with an SSH URL, and follows the user when the same
+  repository is reached with different ssh users (thanks to Bilb).
 
 ## v1.0.34
 

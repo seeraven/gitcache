@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2026 by Clemens Rabe <clemens.rabe@clemensrabe.de>
+# Copyright (c) 2026 by Audric Ackermann <audric@getsession.org>
 # All rights reserved.
 # This file is part of gitcache (https://github.com/seeraven/gitcache)
 # and is released under the "BSD 3-Clause License". Please see the LICENSE file

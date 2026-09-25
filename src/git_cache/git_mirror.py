@@ -550,23 +550,27 @@ class GitMirror:
             LOG.info("Temporarily restoring credentials on the mirror remote URLs.")
             return self._set_remote_url(self.url)
 
-        if self._remote_lost_user():
-            LOG.info("Restoring the user on the mirror remote URL.")
-            return self._set_remote_url(self.url)
+        if self._remote_user_differs():
+            LOG.info("Setting the user of the mirror remote URL to the one of the mirror URL.")
+            if not self._set_remote_url(self.url):
+                return False
+            self.database.set_url(self.path, self.normalize_url(self.url))
 
         return True
 
-    def _remote_lost_user(self) -> bool:
-        """Check whether the mirror remote is an ssh URL that lost the user of the mirror URL.
+    def _remote_user_differs(self) -> bool:
+        """Check whether the mirror remote is an ssh URL of the same repository with another user.
 
-        gitcache v1.0.31 to v1.0.34 stripped the user of ssh URLs from the
-        mirror remote, so such mirrors can not authenticate any more.
+        The ssh user selects the account the mirror authenticates with, so the
+        remote follows the user of the mirror URL. This also repairs mirrors of
+        gitcache v1.0.31 to v1.0.34, which stripped the user from the remote.
 
         Return:
             Returns True if the mirror URL has a user and the remote is an ssh
-            URL of the same repository without one.
+            URL of the same repository with a different user or without one.
         """
-        if not get_user(self.url):
+        user = get_user(self.url)
+        if not user:
             return False
 
         command = [self.config.get("System", "RealGit"), "-C", self.git_dir, "remote", "get-url", "origin"]
@@ -574,7 +578,7 @@ class GitMirror:
         if retval != 0:
             return False
         remote_url = remote_url.strip()
-        if not is_ssh_url(remote_url) or get_user(remote_url):
+        if not is_ssh_url(remote_url) or get_user(remote_url) == user:
             return False
         return self.get_mirror_path(remote_url) == self.path
 
