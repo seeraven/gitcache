@@ -566,11 +566,12 @@ class GitMirror:
         gitcache v1.0.31 to v1.0.34, which stripped the user from the remote.
 
         Return:
-            Returns True if the mirror URL has a user and the remote is an ssh
-            URL of the same repository with a different user or without one.
+            Returns True if the mirror URL is an ssh URL with a user and the
+            remote is an ssh URL of the same repository with a different user
+            or without one.
         """
         user = get_user(self.url)
-        if not user:
+        if not user or not is_ssh_url(self.url):
             return False
 
         command = [self.config.get("System", "RealGit"), "-C", self.git_dir, "remote", "get-url", "origin"]

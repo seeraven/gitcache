@@ -109,6 +109,14 @@ class GitCacheAddCredentialsToRemoteTest(TestCase):
         set_url.assert_not_called()
         mirror.database.set_url.assert_not_called()
 
+    def test_non_ssh_url_never_rewrites_remote(self):
+        """_remote_user_differs(): Only an ssh mirror URL may set the user of the remote."""
+        for url in ("https://token@github.com/org/repo.git", "git://user@github.com/org/repo.git"):
+            mirror = self._mirror(url)
+            with mock.patch("git_cache.git_mirror.getstatusoutput") as get_url:
+                self.assertFalse(mirror._remote_user_differs(), url)  # pylint: disable=protected-access
+            get_url.assert_not_called()
+
     def test_http_credentials_are_restored(self):
         """_add_credentials_to_remote(): Restore http credentials without reading the remote."""
         mirror = self._mirror("https://user:secret@github.com/org/repo.git")
