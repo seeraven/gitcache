@@ -27,7 +27,7 @@ from .config import Config, has_git_lfs_cmd
 from .database import Database
 from .git_options import GitOptions
 from .global_settings import GITCACHE_DIR
-from .helpers import rmtree, strip_credentials
+from .helpers import get_user, is_ssh_url, keep_username, rmtree, strip_credentials
 from .invocation_log import record_cache
 
 # -----------------------------------------------------------------------------
@@ -525,24 +525,21 @@ class GitMirror:
 
         return self._remove_credentials_from_remote()
 
+    def _set_remote_url(self, url: str) -> bool:
+        """Set the URL of the origin remote of the mirror."""
+        command = [self.config.get("System", "RealGit"), "-C", self.git_dir, "remote", "set-url", "origin", url]
+        cmd_retval = simple_call_command(command)
+        if cmd_retval != 0:
+            LOG.error("Command '%s' gave return code of %d!", command, cmd_retval)
+            return False
+        return True
+
     def _remove_credentials_from_remote(self):
         """Remove any credentials from the mirror remote URLs."""
         safe_url = self.strip_credentials(self.url)
         if self.url != safe_url:
             LOG.info("Removing credentials from the mirror remote URLs.")
-            command = [
-                self.config.get("System", "RealGit"),
-                "-C",
-                self.git_dir,
-                "remote",
-                "set-url",
-                "origin",
-                safe_url,
-            ]
-            cmd_retval = simple_call_command(command)
-            if cmd_retval != 0:
-                LOG.error("Command '%s' gave return code of %d!", command, cmd_retval)
-                return False
+            return self._set_remote_url(safe_url)
 
         return True
 
@@ -551,21 +548,40 @@ class GitMirror:
         safe_url = self.strip_credentials(self.url)
         if self.url != safe_url:
             LOG.info("Temporarily restoring credentials on the mirror remote URLs.")
-            command = [
-                self.config.get("System", "RealGit"),
-                "-C",
-                self.git_dir,
-                "remote",
-                "set-url",
-                "origin",
-                self.url,
-            ]
-            cmd_retval = simple_call_command(command)
-            if cmd_retval != 0:
-                LOG.error("Command '%s' gave return code of %d!", command, cmd_retval)
+            return self._set_remote_url(self.url)
+
+        if self._remote_user_differs():
+            LOG.info("Setting the user of the mirror remote URL to the one of the mirror URL.")
+            if not self._set_remote_url(self.url):
                 return False
+            self.database.set_url(self.path, self.normalize_url(self.url))
 
         return True
+
+    def _remote_user_differs(self) -> bool:
+        """Check whether the mirror remote is an ssh URL of the same repository with another user.
+
+        The ssh user selects the account the mirror authenticates with, so the
+        remote follows the user of the mirror URL. This also repairs mirrors of
+        gitcache v1.0.31 to v1.0.34, which stripped the user from the remote.
+
+        Return:
+            Returns True if the mirror URL is an ssh URL with a user and the
+            remote is an ssh URL of the same repository with a different user
+            or without one.
+        """
+        user = get_user(self.url)
+        if not user or not is_ssh_url(self.url):
+            return False
+
+        command = [self.config.get("System", "RealGit"), "-C", self.git_dir, "remote", "get-url", "origin"]
+        retval, remote_url = getstatusoutput(command)
+        if retval != 0:
+            return False
+        remote_url = remote_url.strip()
+        if not is_ssh_url(remote_url) or get_user(remote_url) == user:
+            return False
+        return self.get_mirror_path(remote_url) == self.path
 
     def _update(self, ref=None, handle_gc_error=True):
         """Update the mirror.
@@ -756,7 +772,8 @@ class GitMirror:
                 path = path[:-1]
             if path.endswith(".git"):
                 path = path[:-4]
-            return f"{match.group(1)}://{match.group(3)}{match.group(4) or ''}/{path}"
+            creds = keep_username(match.group(2)) if match.group(1).lower() == "ssh" else ""
+            return f"{match.group(1)}://{creds}{match.group(3)}{match.group(4) or ''}/{path}"
 
         if match := RE_URL_WITHOUT_PROTO.match(url):
             path = posixpath.normpath(match.group(3))
@@ -766,7 +783,9 @@ class GitMirror:
                 path = path[:-1]
             if path.endswith(".git"):
                 path = path[:-4]
-            return f"{match.group(2)}:{path}"
+            # SCP-style URLs (user@host:path) have no syntax for a password, so the
+            # username portion can be kept as-is without needing to strip anything.
+            return f"{match.group(1) or ''}{match.group(2)}:{path}"
 
         return url
 

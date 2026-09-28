@@ -91,6 +91,12 @@ class GitCacheDatabaseTest(TestCase):
         self.assertEqual(1, database.get(repo_abs_path)["clones"])
         self.assertEqual(1, database.get(repo_abs_path)["updates"])
 
+        database.set_url(repo_abs_path, "http://dummy/other")
+        self.assertEqual("http://dummy/other", database.get(repo_abs_path)["url"])
+        self.assertEqual(1, database.get(repo_abs_path)["mirror-updates"])
+        self.assertEqual(1, database.get(repo_abs_path)["clones"])
+        self.assertEqual(1, database.get(repo_abs_path)["updates"])
+
         database.clear_counters(repo_abs_path)
         self.assertEqual(0, database.get(repo_abs_path)["mirror-updates"])
         self.assertEqual(0, database.get(repo_abs_path)["clones"])

@@ -72,6 +72,18 @@ class Database:
             }
             self._save()
 
+    def set_url(self, path: str, url: str) -> None:
+        """Set the upstream URL of an existing entry, keeping its counters.
+
+        Args:
+            path (str): The path of the repository mirror.
+            url (str):  The upstream repository URL.
+        """
+        with portalocker.Lock(GITCACHE_DB_LOCK):
+            self._load()
+            self.database[path]["url"] = url
+            self._save()
+
     def remove(self, path: str) -> None:
         """Remove an entry from the database.
 
