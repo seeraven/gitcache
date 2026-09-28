@@ -2,11 +2,9 @@ coloredlogs==15.0.1
     # via gitcache (pyproject.toml)
 humanfriendly==10.0
     # via coloredlogs
-portalocker==3.2.0
+portalocker==4.4.0
     # via gitcache (pyproject.toml)
 pyreadline3==3.5.6
     # via humanfriendly
 pytimeparse==1.1.8
     # via gitcache (pyproject.toml)
-pywin32==312
-    # via portalocker
