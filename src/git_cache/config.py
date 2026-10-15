@@ -80,6 +80,19 @@ def has_git_lfs_cmd() -> bool:
     return has_git_lfs_cmd.has_git_lfs  # type: ignore
 
 
+def _is_gitcache_executable(candidate: str) -> bool:
+    """Check whether the given path is the running gitcache executable.
+
+    A frozen gitcache is ``sys.executable``. A pip-installed gitcache is a script
+    started by the Python interpreter, so ``sys.executable`` is the interpreter and
+    the script is ``sys.argv[0]``.
+    """
+    own_paths = [sys.executable]
+    if sys.argv and sys.argv[0]:
+        own_paths.append(sys.argv[0])
+    return any(os.path.exists(own) and os.path.samefile(candidate, own) for own in own_paths)
+
+
 def find_git() -> str:
     """Locate the real git command.
 
@@ -95,7 +108,7 @@ def find_git() -> str:
             candidate = os.path.join(candidate, cmd)
             if not os.path.exists(candidate) or not os.access(candidate, os.X_OK):
                 continue
-            if os.path.samefile(candidate, sys.executable):
+            if _is_gitcache_executable(candidate):
                 continue
             return candidate
 

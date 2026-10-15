@@ -193,10 +193,11 @@ class GitCacheFindGitTest(TestCase):
         os.chmod(path, 0o755)
         return path
 
-    def _find_git(self, executable):
+    def _find_git(self, executable, argv0=None):
         """Call find_git() as the given executable with the gitcache dir in front of the real git dir."""
         path = os.path.pathsep.join([self.gitcache_dir, self.real_git_dir])
-        with mock.patch.object(sys, "executable", executable), mockenv(PATH=path):
+        argv = [argv0 if argv0 is not None else executable]
+        with mock.patch.object(sys, "executable", executable), mock.patch.object(sys, "argv", argv), mockenv(PATH=path):
             return git_cache.config.find_git()
 
     def test_gitcache_executable(self):
@@ -220,6 +221,21 @@ class GitCacheFindGitTest(TestCase):
         """git_cache.config.find_git: Skip the gitcache executable itself named git."""
         gitcache_as_git = self._create_executable(self.gitcache_dir, self.GIT_CMD)
         self.assertEqual(self._find_git(gitcache_as_git), self.real_git_cmd)
+
+    def test_skip_git_symlink_to_script(self):
+        """git_cache.config.find_git: Skip a symlink to a gitcache script run by a separate interpreter."""
+        interpreter = self._create_executable(self.tmp_dir, "python")
+        git_symlink = os.path.join(self.gitcache_dir, self.GIT_CMD)
+        try:
+            os.symlink(self.gitcache_cmd, git_symlink)
+        except OSError:
+            self.skipTest("This system does not allow the creation of symlinks.")
+        self.assertEqual(self._find_git(interpreter, argv0=git_symlink), self.real_git_cmd)
+
+    def test_skip_without_argv0(self):
+        """git_cache.config.find_git: Ignore an empty sys.argv[0]."""
+        interpreter = self._create_executable(self.tmp_dir, "python")
+        self.assertEqual(self._find_git(interpreter, argv0=""), self.real_git_cmd)
 
 
 # -----------------------------------------------------------------------------
