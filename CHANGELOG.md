@@ -1,6 +1,8 @@
 # Changelog of gitcache
 
-## Upcoming version
+## Upcoming Version
+
+## v1.0.35
 
 - Bugfix: Check the existence of a mirror while holding the mirror lock to no longer delete a mirror that was
   created by a concurrent gitcache process.
