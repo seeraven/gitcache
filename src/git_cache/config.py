@@ -62,10 +62,12 @@ def str_to_seconds(string: str) -> int:
     seconds = pytimeparse.parse(string)
     if seconds is None:
         try:
-            seconds = int(string.strip())
+            seconds_int = int(string.strip())
         except ValueError:
-            seconds = 0
-    return seconds
+            seconds_int = 0
+    else:
+        seconds_int = int(seconds)
+    return seconds_int
 
 
 def has_git_lfs_cmd() -> bool:
